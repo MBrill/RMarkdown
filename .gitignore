@@ -17,7 +17,7 @@ images/
 # HTML from Rmd is not versioned!
 **/*.html
 # Ignore R files
-Rmd/.Rhistory
+**/.Rhistory
 # Ignore markdown output for the Github-Example
 *.md
 exampleGithub_files/
