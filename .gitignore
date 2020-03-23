@@ -23,6 +23,7 @@ images/
 # README.md nicht ignorieren
 !README.md
 exampleGithub_files/
+
 # Shiny example
 **/Example/
 # Daten ignorieren, das sind Kopien!
