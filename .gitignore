@@ -20,6 +20,8 @@ images/
 **/.Rhistory
 # Ignore markdown output for the Github-Example
 *.md
+# README.md nicht ignorieren
+!README.md
 exampleGithub_files/
 # Shiny example
 **/Example/
