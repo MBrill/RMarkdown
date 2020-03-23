@@ -1,0 +1,56 @@
+---
+title: "Simulation eines Punktschätzers"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Anwendung
+Für die Darstellung der Punktschätzer verwenden wir im Skript 
+zu schließender Statistik eine Stichprobe aus 10 elektronischen Bauteilen, die wir darauf überprüfen, ob sie funktionstüchtig sind
+(1) oder nicht (0). Damit können wir eine einfache Zählvariable erzeugen und die *Erfolgswahrscheinlichkeit*, hier die Ausschuss-Wahrscheinlichkeit, schätzen. Im Text
+werden bereits zwei willkürliche Werte aufgezählt. In diesem Dokument setzen wir einen Wert von p und simulieren mit Hilfe von *rbinom* zehn Stichproben, die jeweils wieder 10 Werte enthalten.
+Das arithmetische Mittel jeder Stichprobe verwenden wir als Punktschätzer. Damit wollen wir klar machen, dass ein Punktschätzer
+so gut wie immer falsch liegt.
+
+# Durchführung
+
+```{r grundgesamtheit, echo=TRUE}
+p <- 0.32
+size <- 1
+n <- 10
+trials <- 10
+```
+Wir simulieren eine Binomialverteilung mit Erfolgswahrscheinlichkeit p = ´r p` und den Ausprägungen 0 und 1. Wir erzeugen
+`r trials` Stichproben und speichern die arithmetischen Mittel,
+die Punktschätzung für die gesuchte Erfolgswahrscheinlichkeit,
+in einem Vektor ab.
+
+```{r simulation, echo=TRUE}
+estimates <- rep(0.0, n)
+
+for(i in 1:n) {
+   estimates[i] <- mean(rbinom(n, size, p))
+}
+
+estimates
+```
+
+Wir erhalten jedes Mal eine andere Schätzung, die mehr oder weniger
+weit von p entfernt ist. Wir können die Mittelwertsregel anwenden, dann werden die Schätzungen besser und erhalten als Schätzung für p
+den Wert `r mean(estimates)`.
+
+
+

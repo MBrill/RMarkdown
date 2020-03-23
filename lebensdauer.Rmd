@@ -1,0 +1,123 @@
+---
+title: "Das Beispiel Lebensdauer von Ersatzteilen"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Bamberg und Baur
+Der Datensatz enthält Angaben über die Lebensdauern eines Ersatzteils in Stunden und ist dem Buch
+von Bamberg und Baur [@bamberg_93] entnommen.  Der Datensatz wird zum Beispiel als bei der Einführung von Histogrammen eingesetzt.
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read.csv2("data/lebensdauer.csv")
+```
+# Visualisierungen
+
+## Balkendiagramme
+Jetzt geben wir die Daten grafisch aus. Wir beginnen mit Balkendiagrammen
+für die kardinalen Werte. Dabei bemerkt man schnell, dass es sinnvoll ist
+bei kardinalen Merkmalen Klassen zu bilden und aus dem Balkendiagramm
+ein Histogramm zu machen.
+
+Die erste Darstellung verwendet die Reihenfolge in der die Angaben in der 
+Datei stehen:
+```{r plotOrig, message=FALSE, results='markup'}
+# Plot absolute Häufigkeiten
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Lebensdauer), 
+           fill=myPalette[3]) +
+    scale_x_continuous(limits=c(0, 600)) + 
+  labs(
+    title="Lebensdauer von Ersatzteilen in Stunden", 
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggsave(filename="lebensdauer.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Histogramme
+Die Abbildung zeigt, dass wir mit diesem Balkendiagramm nicht viel anfangen
+können. Wir aggregieren die Werte und führen Klassen (bins) ein. Dabei
+gibt es sehr viele Möglichkeiten, wie wir die Klassengrenzen bilden.
+Das Argument *binwidth* kann die Ergebnisse einer Funktion
+übernehmen, zum Beispiel *binwidth=function(x) 2 * IQR(x) / (length(x)^(1/3)*,
+also eine anonyme Funktion. Alternativ kann man 
+einen Vektor mit Grenzen an *breaks* übergeben.
+Der Default für den Wert *bins* ist 30 und damit unbrauchbar - man muss
+also auf jeden Fall eigene und sinnvolle Klassen bilden.
+In der Vorlesung verwenden wir immer Klassen, die den rechten
+Wert noch enthalten, also Intervalle (a, b]. Das können
+wir auch ggplot übergeben, mit der Ästhetik *closed="right"*.
+In OpenOffice wurden die einzelnen Säulen noch mit einem Rahmen
+versehen, da das für eine bessere Sichtbarkeit sorgt. Dies
+erreichen wir mit der Option *color="black".
+
+Als erste Abbildung verwenden wir das Histogramm mit *geom_histogram*
+und die Klassen wie in der Folie. Wir beginnen also mit dem Wert
+von 0, die letzte Klasse endet bei 600 und die Klassenbreite
+ist 100.
+```{r plotHisto1, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_histogram(mapping=aes(x=Lebensdauer), closed="right", 
+          breaks=seq(0, 600,100),
+          fill=myPalette[3], color="black") +
+          scale_x_continuous(limits=c(0, 600)) + 
+          labs(
+             title="Lebensdauer von Ersatzteilen in Stunden", 
+             subtitle="Klassenbreite 100",
+             caption="Erstellt mit ggplot2 3.1.0",
+             x="",
+             y="absolute Häufigkeit"
+  ) 
+
+ggsave(filename="lebensdauerHisto1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Eine Alternative ist die halbe Klassenbreite. Wir verwenden
+12 Klassen:
+```{r plotHisto2, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_histogram(mapping=aes(x=Lebensdauer), closed="right", 
+          breaks=seq(0, 600, 50),
+          fill=myPalette[3], color="black") +
+    scale_x_continuous(limits=c(0, 600)) + 
+  labs(
+    title="Lebensdauer von Ersatzteilen in Stunden", 
+    subtitle="Klassenbreite 50",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggsave(filename="lebensdauerHisto2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis
+
+
+

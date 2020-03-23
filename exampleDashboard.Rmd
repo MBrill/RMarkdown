@@ -1,0 +1,70 @@
+---
+title: "Dashboards und Karten"
+output: flexdashboard::flex_dashboard
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+```
+
+# Dashboard
+
+## Spalte 1
+
+### Karat
+
+```{r}
+ggplot(diamonds, aes(carat)) + 
+  geom_histogram(binwidth = 0.1, fill="green", color="black") +
+  labs(
+    x = "Karat",
+    y = ""
+  )
+```
+
+### Schliff
+
+```{r}
+ggplot(diamonds, aes(cut)) + 
+  geom_bar( fill="orange", color="black") +
+  labs(
+    x = "Schliff",
+    y = ""
+  )
+```
+
+### Farbe
+
+```{r}
+ggplot(diamonds, aes(color)) + 
+  geom_bar( fill="yellow", color="black") +
+  labs(
+    x = "Farbe",
+    y = ""
+  )
+```
+
+## Spalte 2
+
+### Die größten Diamanten
+
+```{r}
+diamonds %>% 
+  arrange(desc(carat)) %>% 
+  head(50) %>% 
+  select(carat, cut, color, price) %>% 
+  DT::datatable()
+```
+
+
+# OpenStreetMap Karten mit Leaflet
+```{r leaflet}
+library(leaflet)
+leaflet() %>%
+  setView(7.36, 49.262 , zoom = 15) %>% 
+  addTiles() %>%
+  addMarkers(7.3611, 49.262, popup = "Campus Zweibrücken") 
+```
+

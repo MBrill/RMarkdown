@@ -1,0 +1,210 @@
+---
+title: "Arbeiten mit Daten in R"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Voraussetzungen
+
+Sie sollten den Text mit Hilfe von R nachvollziehen; entweder schon beim ersten Lesen oder anschließend. Das Dokument geht davon aus,
+dass Sie die Videos *Arbeiten mit Daten in R* und *Daten importieren* kennen.
+
+Legen Sie ein neues Verzeichnis für das Projekt an. Auf der Lernplattform
+finden Sie Links auf zwei ASCII-Dateien *Auto.data* und *Auto.csv*. Speichern
+Sie diese Dateien in ihrem Projekt, zum Beispiel im Unterverzeichnis
+*data*.
+
+# Datentypen
+
+## Der Datentyp factor
+
+In der beschreibenden Statistik unterscheiden wir zwischen qualitativen
+und quantitativen Merkmalen. Die qualitativen Merkmale hatten wir dort sogar
+nochmals in nominale und ordinale Merkmale unterteilt. In R werden qualitative
+Merkmale mit Hilfe des Datentyps *factor* repräsentiert. Wir können
+Faktoren aus Zahlen erzeugen:
+
+
+```{r xy, echo=TRUE}
+x <- factor(1)
+y <- factor(2)
+x
+y
+```
+Die Variablen x und y sind keine Zahlen mehr, arithmetische Operationen
+ergeben keinen Sinn:
+
+```{r xyplus, echo=TRUE}
+x+y
+```
+Wenn wir Strings für Faktoren verwenden und diese ausgeben, dann werden
+die möglichen Ausprägungen, in R als *Levels* bezeichnet, ohne Anführungszeichen ausgegeben.
+
+```{r stringFaktoren1, echo=TRUE}
+daten <- c(11, 14, 17, 10, 19, 20, 1, 11, 9, 15)
+daten.vergleich <- factor(daten<15)
+levels(daten.vergleich)
+```
+
+Das Ergebnis des Vergleichs daten<15 sind logische Werte, dabei wird der Vergleich für jedes Element des Vektors daten durchgeführt. Es gibt nur zwei mögliche Ergebnisse, TRUE oder FALSE. Dies wird auch mit der Funktion levels(daten.vergleich) auf der Konsole ausgegeben.
+
+Wenn wir die Funktion levels auf der linken Seite eines Zuweisung verwenden kännen wir die möglichen Ausprägungen neu definieren. Wir verwenden zwei Strings, die wir genauso wie die logischen Ausprägungen sortieren und übergeben:
+
+```{r stringFaktoren2, echo=TRUE}
+levels(daten.vergleich) <- c("hoch", "niedrig")
+levels(daten.vergleich)
+```
+
+## Data Frames
+Der Datentyp *data.frame* fasst Daten zusammen. Ein *data.frame* ist eine Liste
+von Spaltenvektoren, die alle die gleiche Länge besitzen. Im folgenden Beispiel legen wir drei Vektoren an und fassen diese zu einem *data.frame* zusammen:
+```{r dataFrame, echo=TRUE}
+n <- c(2, 3, 5)
+s <- c("aa", "bb", "cc")
+b <- c(TRUE, FALSE, TRUE)
+f <- data.frame(n,s,b)
+head(f)
+```
+
+Wir hatten bereits das Package MASS installiert, das solche Datensätze enthält. Der Datensatz *mtcar*s ist als Default in R verfügbar, ohne ein Package dafür zu laden.
+Die Variable *mtcars* ist vom Typ *data.frame*. Davon überzeugen wir uns mit Hilfe der Funktion *class*:
+```{r dataFrame2, echo=TRUE}
+class(mtcars)
+```
+
+Die erste Zeile eines Datensatzes enthält Spaltennamen. Jede weitere Zeile beginnt
+mit einem Namen für diese Zeile, gefolgt von den Werten. Jeder Wert in einer Datenzeile wird in R als *cell* bezeichnet.
+Die Anzahl der Spalten und Zeilen eines Datensatzes können wir mit *ncol* und
+*nrow* abfragen. Auf die einzelnen Werte greifen wir wie auf Matrixelemente zu.
+Die Anweisung mtcars[1, 2] ergibt die Ausgabe 6. Wir können aber auch die
+Zeilen- und Spaltennamen für den Zugriff verwenden:
+```{r dataFrame3, echo=TRUE}
+mtcars["Mazda RX4", "cyl"]
+```
+
+Eine Spalten eines Datensatzes können wir mit einem Index oder mit Hilfe des
+Spaltenamens ansprechen. Die Spalte mit der Überschrift *mpg* erhalten wir durch mtcars[1]
+oder mtcars["mpg"]. Analog können wir mehrere Spalten ausgeben. Dazu verwenden wir einen Indexvektor oder einen Vektor mit Spaltenüberschriften wie
+mtcars[c("mpg", "hp")]. Die Spalte mit derÜÜberschrift *mpg* erhalten wir auch
+mit der Notation mtcars$mpg.
+
+Auch auf Zeilen greifen wir mit Indizes oder Namen zu. Die Notation mtcars[24,]
+enthält eine Wildcard. Damit ist die 24. Zeile und alle Spalten gemeint. Analog verwenden wir mtcars["Camaro Z28",].
+Sehr nützlich ist die Möglichkeit, Zeilen in einem Datensatz mit Hilfe von logischen Ausdrücken zu filtern. Die Spalte mit der Überschrift *am* gibt an, ob der entsprechende PKW ein Automatikgetriebe hat oder nicht. Dabei ist diese dychotome Eigenschaft mit 0 wie FALSE und 1 für TRUE codiert. Wir hatten bereits festgehalten, dass logische und arithmetische Ausdrücke auf einen Vektor angewandt werden können:
+
+```{r dataFrame4, echo=TRUE}
+L <- mtcars$am == 0
+head(mtcars[L, ])
+```
+
+Eine Liste der Anzahl der Zylinder aller Autos ohne Automatikgetriebe erhalten
+wir so:
+```{r dataFrame5, echo=TRUE}
+mtcars[L,]$cyl
+```
+
+# Daten importieren
+
+Der erste Schritt bei der Analyse von Daten in R ist, diese Daten in die
+Software zu importieren. Als Beispiel verwenden wir dazu den Datensatz 
+*Auto*,
+den wir auf der Lernplattform finden. Dieser Datensatz ist im Package ISLR enthalten. Aber in diesem Abschnitt arbeiten wir zur Übung mit zwei Versionen des
+Datensatzes, die in ASCII-Dateien abgelegt sind.
+
+## ASCII-Daten
+Angenommen. die Datei *Auto.data* ist im Verzeichnis data gespeichert, das als
+Unterverzeichnis unseres Arbeitsverzeichnisses angelegt ist, dann lesen wir die
+Daten mit den folgenden Anweisungen ein:
+
+```{r ascii1, echo=TRUE}
+car <- read.table("data/Auto.data")
+View(car)
+```
+Die zweite Anweisung öffnet in der R–Konsole ein Fenster mit einer Darstellung
+der Daten, die einer Tabellenkalkulation nachempfunden ist. In RStudio werden
+die Daten ähnlich in einem neuen Fenster angezeigt. Die Datei Auto.data ist eine
+ASCII–Datei, so dass es auch möglich gewesen wäre, die Datei vor dem Öffnen mit 
+einem ASCII-Editor zu betrachten.
+
+Die Datei enthält Spalten-Überschriften, was wir R aber nicht mitgeteilt haben, so
+dass die Daten nicht korrekt geladen wurden. Und wir werden sehen, dass Fehler
+in den Daten vorliegen – es gibt Einträge, die nicht vorhanden sind. Diese sind in
+der Datei mit dem Character "?" markiert. Wir importieren die Datei nochmals,
+und geben dieses Mal an, dass die erste Zeile Spaltennamen enth¨alt, und dass ?
+fehlende Daten markiert:
+
+```{r ascii2, echo=TRUE}
+car <- read.table("data/Auto.data", header=T, na.strings="?")
+View(car)
+```
+
+Die dim–Funktion zeigt uns, dass der Datensatz 397 Zeilen mit jeweils 9 Merkmalen in den Spalten aufweist. Die Zeilen mit fehlenden Daten löschen wir mit Hilfe der Funktion na.omit:
+
+```{r ascii4, echo=TRUE}
+car <- na.omit(car)
+dim(car)
+```
+
+Ein häufig auftretendes Problem beim Import von ASCII–Daten ist die Tatsache,
+dass in den angelsächsischen L¨andern ein Dezimalpunkt und in Deutschland das
+Dezimalkomma verwendet wird. Die Funktion *read.csv* geht als Default davon
+aus, dass die Spalten durch ein Blank getrennt sind und Dezimalbrüche mit dem
+Dezimalpunkt dargestellt wird. Beide Einstellungen können mit sep für den Spaltentrenner und dec für den Dezimaltrenner während des Aufrufs verändert werden. Wenn wir bereits wissen, dass in den Daten das Dezimalkomma eingesetzt
+wird bietet es sich an, die Funktion *read.csv2* zu verwenden. In dieser Funktion
+wird das Dezimalkomma erwartet, und der Trenner für die verschiedenen Spalten
+ist das Semikolon. Es gibt weiterhin die Funktionen read.delim und read.delim2.
+Der Unterschied liegt wieder in den verschiedenen Zeichen in den Dezimalbrüchen.
+Beide Funktionen erwarten als Default einen Tabulator als Trennzeichen für die
+Spalten.
+
+Wenn wir das Package *tidyverse* laden gibt es als weitere Alternative
+die Funktionen *read_delim*, *read_csv* und *read_csv2*, die sich analog wie die eben beschriebenen Funktionen verhalten. Die Funktionen in *tidyverse*, besser gesagt im Package *readr* sind zu empfehlen, da sie neu implementiert wurden und sehr performant sind.
+
+
+## Daten im csv-Format
+
+Sehr häufig arbeiten wir mit Daten im csv–Format, die wir mit *read.csv* importieren. Der Funktion *read.csv* geben wir wie für *read.table* mit, dass Spaltenüberschriften enthalten sind und das Zeichen ? fehlende Daten markiert:
+
+```{r ascii3, echo=TRUE}
+car <- read.csv("data/Auto.csv", header=T, na.strings = "?")
+dim(car)
+```
+
+## Microsoft Excel
+
+Neben Dateien im csv–Format liegen die Daten sehr häufig im xls- oder xlsx-Format, also im Format für Microsoft Excel, vor. In Foren findet man sehr häufig
+den Hinweis, das Format nicht einzulesen – denn wir können in Excel oder OpenOffice die Daten im csv–Format exportieren. Aber natürlich gibt es in R auch
+Lösungen, um die nativen Daten einzulesen. Und wie so häufig gibt es gleich mehrere.
+
+Eine Lösung, die eine Laufzeit-Umgebung von Java voraussetzt ist das Package *XLConnect*. Durch die Verwendung von Java ist das Package plattformunabhängig und setzt noch nicht einmal eine Installation von Excel voraus. Beide
+Excel-Formate werden unterstützt und wir können beim Importieren auf Blätter
+zugreifen. Eine ähnliche Lösung ist das Package xlsx, das wieder auf Java basiert. Eine dritte Lösung ist die Verwendung des Package readxl.
+
+## RStudio
+RStudio bietet eine gute Unterstützung beim Import von Daten. Wenn wir eine csv-Datei oder eine andere ASCII-Datei im Datei-Tab von RStudio auswählen erhalten wir ein Kontext-Menu, das auch die Option *Import Dataset ...* enthält. Wählen wir diese Option aus wird ein Fenster geöffnet, in dem wir die Einstellung für das Einlesen einstellen und direkt eine Vorschau erhalten. Ganz rechts unten erhalten wir auch den R-Code für die Konsole, der damit ausgeführt wird. Abbildung 1 zeigt
+dieses Fenster.
+
+![*Abbildung 1*: Import von Daten mit RStudio](images/studioImport.png)
+
+Im Reiter *Environment* finden Sie das Pulldown *Import Data*. Wenn Sie
+dieses Menu aufklappen erhalten Sie eine Auswahl
+zwischen csv-, Excel und mehreren Statistikpaketen wie in Abbildung 2 zu sehen.
+
+![*Abbildung *2: Import von Daten in RStudio](images/xlsimportRStudio1.png)
+
+Wenn wir Excel ausgewählt haben erhalten wir wieder ein Fenster wie in Abbildung 1, in dem wir die weiteren Einstellungen durchführen können. RStudio verwendet hier das Package readxl. 
+
+

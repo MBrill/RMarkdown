@@ -1,0 +1,261 @@
+---
+title: "Grafische Ausgabe der von stetigen Verteilungen - Normalverteilung"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+```
+
+# Daten
+Wir definieren einen x-Bereich, die Dichte geben wir mit Hilfe einer
+*stat_function* in ggplot aus.
+
+```{r daten, echo=TRUE}
+xmin <- -3
+daten <- tribble(
+  ~x,
+  xmin,
+  -xmin
+)
+
+daten2 <- tribble(
+  ~x,
+  -3,
+  6
+)
+```
+
+# Die Dichte und Verteilung der Standardnormalverteilung
+```{r glocke, echo=TRUE}
+stdGlocke <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Dichte der Standardnormalverteilung",
+    y=""
+  ) 
+
+stdGlocke
+
+ggsave(filename="standardGlocke.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Mit Hilfe der Funktion *pnorm* erhalten wir eine grafische Ausgabe
+der Verteilungsfunktion:
+
+```{r verteilung, echo=TRUE}
+stdV <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = pnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Verteilung der Standardnormalverteilung",
+    y=""
+  ) 
+
+stdV
+
+ggsave(filename="standardV.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Normalverteilungen
+
+Wir erstellen eine Abbildung der Dichte einer Normalverteilung.
+```{r normalDichte, echo=TRUE}
+ggplot(data = daten2, aes(x)) +
+  stat_function(fun = dnorm, n = 1001, args = list(mean = 2, sd = 1),
+                color="orange", size=1.5) +  
+  labs(
+    title="Dichte der Normalverteilung N(2, 1)",
+    y=""
+  ) 
+
+ggsave(filename="gaussNormal.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Zusätzlich erstellen wir noch eine grafische Ausgabe mit drei
+Verteilungsfunktionen mit verschiedenen Erwartungswerten und Varianzen.
+
+```{r mehrere, echo=TRUE}
+ggplot(data = daten2, aes(x)) +
+  stat_function(fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                color="red", size=1.5) +  
+  stat_function(fun = dnorm, n = 1001, args = list(mean = 2, sd = 0.5),
+                color="green", size=1.5) + 
+  stat_function(fun = dnorm, n = 1001, args = list(mean = 2, sd = 1),
+                color="blue", size=1.5) + 
+  labs(
+    title="Dichtefunktionen der Normalverteilung",
+    subtitle="Rot: N(0,1), Grün: N(2,0.5), Blau: N(2, 1)",
+    y=""
+  ) 
+
+ggsave(filename="gaussDensities.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+
+```{r mehrereV, echo=TRUE}
+ggplot(data = daten2, aes(x)) +
+  stat_function(fun = pnorm, n = 1001, args = list(mean = 0, sd = 1),
+                color="red", size=1.5) +  
+  stat_function(fun = pnorm, n = 1001, args = list(mean = 2, sd = 0.5),
+                color="green", size=1.5) + 
+  stat_function(fun = pnorm, n = 1001, args = list(mean = 2, sd = 1),
+                color="blue", size=1.5) + 
+  labs(
+    title="Verteilungsfunktionen der Normalverteilung",
+    subtitle="Rot: N(0,1), Grün: N(2,0.5), Blau: N(2, 1)",
+    y=""
+  ) 
+
+ggsave(filename="gaussDistris.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Visualisierung eines Quantils
+Wir können grafische Darstellungen erstellen, mit denen wir
+den Begriff des Quantils einer Normalverteilung visualisieren.
+
+Dazu stellen wir zuerst wieder mit Hilfe von stat_function die
+Dichte-Funktion dar und fügen anschließend mit *geom_area*
+ein gefülltes Polygon hinzu.
+
+```{r quantil, echo=TRUE}
+# Polygonwerte für den gefüllten Bereich
+mu <- 0
+sd <- 1
+q <- 0.95
+
+# Wie viele Punkte verwenden wir für die Glockenkurve
+l <- 1000
+# oberer x-Wert mit qnorm berechnen
+ub <- qnorm(q)
+pmin <- xmin
+pmax <- ub
+
+# x-Werte für das Polygon besetzen
+px <- seq(pmin, pmax, length=l)*sd + mu
+# Funktionswerte berechnen mit dnorm
+py <- dnorm(px, mu, sd)
+
+polygonValues <- tibble(px, py)
+
+qDens <- ggplot() +
+  stat_function(data = daten, aes(x), 
+                fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour=myPalette[3], size=1.5) +  
+  geom_vline(xintercept=pmax) +
+  labs(
+    title="95%-Quantil der Standardnormalverteilung",
+    y=""
+  ) 
+
+qDens +
+    geom_area(data=polygonValues, mapping=aes(x=px, y = py),
+              fill=myPalette[1])
+
+ggsave(filename="95quantile.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Mit sehr ähnlichen Anweisungen können wir einen k-sigma Bereich oder
+die Gleichung Phi(x) - Phi(-x) visualisieren - wir schneiden
+einfach symmetrisch zum Erwartungswert der Dichtefunktion ab.
+Wir erzeugen die Werte von oben neu, dabei ersetzen wir aber
+die untere Grenze für das Polygon durch den Wert -2.
+
+```{r ksigmaArea1, echo=TRUE}
+# Polygonwerte für den gefüllten Bereich
+mu <- 0
+sd <- 1
+
+# Wie viele Punkte verwenden wir für die Glockenkurve
+l <- 1000
+# oberer x-Wert 
+ub <- 2.0
+pmin <- -ub
+pmax <- ub
+
+# x-Werte für das Polygon besetzen
+px <- seq(pmin, pmax, length=l)*sd + mu
+# Funktionswerte berechnen mit dnorm
+py <- dnorm(px, mu, sd)
+
+polygonValues <- tibble(px, py)
+
+ksigma1Plot <- ggplot() +
+  stat_function(data = daten, aes(x), 
+                fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour=myPalette[3], size=1.5) +  
+  geom_vline(xintercept=pmax) +
+  geom_vline(xintercept=pmin) +
+  labs(
+    title="Phi(2)-Phi(-2)",
+    y=""
+  ) 
+
+ksigma1Plot +
+    geom_area(data=polygonValues, mapping=aes(x=px, y = py),
+              fill=myPalette[1])
+
+ggsave(filename="normalArea2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Exakt mit der gleichen Technik erstellen wir noch einen Plot für die k-sigma-Regeln, hier mit sigma = 1.
+
+```{r ksigmaArea2, echo=TRUE}
+# Polygonwerte für den gefüllten Bereich
+mu <- 0
+sd <- 1
+k <- 1
+
+# Wie viele Punkte verwenden wir für die Glockenkurve
+l <- 1000
+# oberer x-Wert 
+ub <- mu + k*sd 
+pmin <- -ub
+pmax <- ub
+
+# x-Werte für das Polygon besetzen
+px <- seq(pmin, pmax, length=l)*sd + mu
+# Funktionswerte berechnen mit dnorm
+py <- dnorm(px, mu, sd)
+
+polygonValues <- tibble(px, py)
+
+ksigma2Plot <- ggplot() +
+  stat_function(data = daten, aes(x), 
+                fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour=myPalette[3], size=1.5) +  
+  geom_vline(xintercept=pmax) +
+  geom_vline(xintercept=pmin) +
+  labs(
+    title= "1 Sigma-Bereich der Standardnormalverteilung",
+    y=""
+  ) 
+
+ksigma2Plot +
+    geom_area(data=polygonValues, mapping=aes(x=px, y = py),
+              fill=myPalette[1])
+
+ggsave(filename="ksigmaNormal.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```

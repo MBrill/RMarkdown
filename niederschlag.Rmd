@@ -1,0 +1,279 @@
+---
+title: "Das Beispiel Niederschläge in Wien und Dakar"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Benesch
+Der Datensatz enthält Angaben über die Niederschlagswerte in Dakar und Wien und ist dem Buch
+von Benesch [@benesch_13] entnommen.  Der Datensatz wird zum Beispiel als Motivation für die Einführung
+von Streuungsparametern verwendet. Tabelle 1 zeigt die Werte
+
+```{r daten, message=FALSE, echo=FALSE}
+# Code aus RStudio <<Import Dataset>>
+daten <- read_delim("data/niederschlag.csv", 
+    ";", escape_double = FALSE, locale = locale(date_names = "de", 
+        decimal_mark = ","), trim_ws = TRUE)
+
+# Länge erechnen für die empirische Standardabweichun
+n <- length(daten$Wien)
+multiplikator <- n/(n-1)
+
+kable(daten, align="l",
+      caption="Tabelle 1: Niederschlagswerte in den Städten Wien und Dakar in mm") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+# Wir verwenden gather, um einen zweiten tibble zu erstellen,
+# der in 'long format' ist. Damit können wir in ggplot gruppieren
+# und erhalten zwei Balken pro Monat.
+datenLF <- daten %>%
+                gather(
+                  Wien, Dakar, key="Stadt", value="Niederschlag"
+                )
+```
+
+Der Mittelwert für die Werte aus Wien ist `r mean(daten$Wien)`, der Median ist `r median(daten$Wien)`. Vergleicht man 
+diese Werte mit dene für Dakar (der Mittelwert ist `r mean(daten$Dakar)`, Median ist `r median(daten$Dakar)`),
+dann scheinen die Werte nicht so weit auseinander zu liegen wie man vielleicht erwarten würde.
+
+Wir betrachen die beiden Streuungsmaße Interquartilsabstand und empirische Standardabweichung. Der Interquartilsabstand
+ist `r IQR(daten$Wien)` mm für Wien und `r IQR(daten$Dakar)` mm für Dakar. Die empirische Standardabweichung für Wien
+ist durch `r sqrt(multiplikator*var(daten$Wien))` mm gegeben, die empirische Varianz für Wien ist `r multiplikator*var(daten$Wien)`.
+Die Werte für Dakar lauten `r sqrt(multiplikator*var(daten$Dakar))` mm mit einer empirischen Varianz von `r multiplikator*var(daten$Dakar)`. Offensichtlich streuen die Werte in Dakar deutlich stärker als in Wien.
+
+# Visualisierungen
+
+## Balkendiagramme
+Wir beginnen mit Balkendiagrammen
+für die beiden Städte, die wir in ein Diagramm einbauen. Die Balkendiagramme für die einzelnen Städte
+verwenden einen einheitlichen Maßstab für die y-Achse, damit man die Werte vergleichen kann.
+Wir geben die Balkendiagramme für beide Städte einzeln aus, mit dem gleichen Maßstab auf der y-Achse,
+um die Werte besser vergleichen zu können, und in einem gemeinsamen Balkendiagramm. Alle Balkendiagramme
+produzieren wir sowohl vertikal als auch horizontal.
+
+```{r bar, message=FALSE, results='markup', echo=FALSE}
+balkenWien <- ggplot(daten, aes(x=Monat)) + 
+  ylim(0, 220) +
+  scale_x_discrete(limits=c("Januar", "Februar", "Maerz", "April", "Mai", "Juni",
+                     "Juli", "August", "September", "Oktober", "November", "Dezember")) +
+  geom_bar(stat="identity", mapping=aes(y=Wien),
+                fill=myPalette[3], position="dodge") +    
+  labs(
+    title="Niederschlagsmengen in Wien", 
+    x="", 
+    y="Niederschlagsmenge in mm"
+  ) 
+
+# Schräge Beschriftung für besere Lesbarkeit
+balkenWien +  theme(axis.text.x=element_text(angle=45,hjust=1))
+
+ggsave(filename="niederschlagWien.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+balkenWien + coord_flip()
+
+ggsave(filename="niederschlagWienVert.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+balkenDakar <- ggplot(daten, aes(x=Monat)) + 
+  ylim(0, 220) + 
+  scale_x_discrete(limits=c("Januar", "Februar", "Maerz", "April", "Mai", "Juni",
+                     "Juli", "August", "September", "Oktober", "November", "Dezember")) +
+  geom_bar(stat="identity", mapping=aes(y=Dakar),
+                fill=myPalette[2], position="dodge") + 
+  labs(
+    title="Niederschlagsmengen in Dakar", 
+    x="", 
+    y="Niederschlagsmenge in mm"
+  )  
+
+balkenDakar + theme(axis.text.x=element_text(angle=45,hjust=1))
+
+ggsave(filename="niederschlagDakar.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+balkenDakar + coord_flip()
+
+ggsave(filename="niederschlagDakarVert.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+balken <- ggplot(datenLF, aes(x=Monat, y=Niederschlag, fill=Stadt)) + 
+  ylim(0, 220) + 
+  scale_x_discrete(limits=c("Januar", "Februar", "Maerz", "April", "Mai", "Juni",
+                     "Juli", "August", "September", "Oktober", "November", "Dezember")) +
+  geom_bar(stat="identity", 
+                position="dodge") +
+  scale_fill_brewer(palette="Set2") + 
+      labs(
+         title="Niederschlagsmengen in Dakar und Wien", 
+         x="", 
+         y="Niederschlagsmenge in mm"
+  ) 
+
+balken + theme(axis.text.x=element_text(angle=45,hjust=1)) +
+
+ggsave(filename="niederschlag.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+balken + coord_flip()
+
+ggsave(filename="niederschlagVert.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+```
+
+## Polar-Plots
+Mit ggplot können wir schnell aus Balkendiagrammen Polar-Plots erstellen. Dafür müssen wir das Koordinatensystem
+wechseln. Auch hier verwenden wir für alle Abbildungen einen einheitlichen Maßstab für die y-Achse.
+
+```{r polar, message=FALSE, results='markup', echo=FALSE}
+balkenWien + coord_polar()
+
+balkenDakar + coord_polar()
+
+balken + coord_polar()
+```
+
+## Box-Plots
+Hier machen wir noch die Box-Plots hin, gleich für beide Städte in einer Plot. DAs geht jetzt wieder mit dem
+tibble, den wir mit gather erzeugt haben. Das Beispiel auch verwenden, um gather zu erläutern (und endlich selbst zu verstehen). Die Länge der Whiskers sind als Default das 1,5-fache des Interquartilsabstands.
+Auch diese Darstellung fertigen wir in zwei Ausführungen an, horizonal und vertikal.
+Man erkenn gut die beiden Aussenpunkte für Dakar, die letztendlich dazu führen, dass die Streuungsmaße so groß sind.
+
+```{r box, message=FALSE, results='markup', echo=FALSE}
+box <- ggplot(datenLF, aes(x=Stadt, y= Niederschlag, fill=Stadt)) + 
+  ylim(0, 220) +
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=4,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set2") + 
+  labs(
+         title="Niederschlagsmengen in Dakar und Wien",
+         y="Niederschlag in mm"
+  ) 
+
+box
+
+ggsave(filename="niederschlagBox.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+box + coord_flip()
+
+ggsave(filename="niederschlagBoxVert.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+```
+
+## Fehlerbalken
+Für Tschebyscheff und andere Betrachtungen werden Abbildungen erzeugt, die Fehlerbalken
+mit geom_errorbar erzeugen. Hier können wir die Länge der Balken selbst einstellen, also
+neben k=1 auch k=2 oder andere k-Werte verwenden.
+
+Als Vorbereitung berechnen wir die Mittelwerte und die Standardabweichungen für die
+beiden Städte nochmals und speichern diese Werte in Variablen ab, die wir anschließend
+für die Darstellung der Fehlerbalken verwenden. Wir verwenden die empirische
+Standardabweichung, deshalb korrigieren wir das Ergebnis von sd mit Hilfe des Multiplikators n/(n-1).
+
+Bemerkung: in den Seiten zur Evaluation findet man, wie das mit Hilfe einer Pipeline
+in tidyverse geht. Hier machen wir das "per Hand".
+
+```{r barsPrep, message=FALSE, results='markup', echo=TRUE}
+barsDF <- tibble(
+             Stadt = factor(c("Wien", "Dakar")),
+             Means = c(mean(daten$Wien), mean(daten$Dakar)),
+             SE = c(multiplikator*sd(daten$Wien), multiplikator*sd(daten$Dakar))
+           )
+
+barWien <- tibble(
+             Stadt = factor(c("Wien")),
+             Means = c(mean(daten$Wien)),
+             SE = c(multiplikator*sd(daten$Wien))
+         )
+
+
+# Wir speichern den k-Wert für die Abbildung in einer Variable ab
+k <- 1
+```
+
+```{r bars, message=FALSE, results='markup', echo=TRUE}
+bars1 <- ggplot(data=barsDF, aes(Means, Stadt, colour=Stadt)) + 
+  xlim(-50, 150) +
+  geom_errorbarh(xmin=barsDF$Means-k*barsDF$SE, xmax=barsDF$Means+k*barsDF$SE, 
+                 height=0.3, size=1.5,
+                 show.legend=FALSE) +
+  geom_point(shape=21, size=4, fill="grey",
+             show.legend=FALSE)
+
+bars1 + scale_color_brewer(palette="Set2") + 
+        labs(
+         title="Niederschlagsmengen in Dakar und Wien (k=1)",
+         x="Niederschlag in mm"
+        ) 
+
+ggsave(filename="niederschlagBark1.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+
+k <- 2
+bars2 <- ggplot(data=barsDF, aes(Means, Stadt, colour=Stadt)) + 
+  xlim(-150, 200) +
+  geom_errorbarh(xmin=barsDF$Means-k*barsDF$SE, xmax=barsDF$Means+k*barsDF$SE, 
+                 height=0.3, size=1.5,
+                 show.legend=FALSE) +
+  geom_point(shape=21, size=4, fill="grey",
+             show.legend=FALSE)
+
+bars2 + scale_color_brewer(palette="Set2") + 
+        labs(
+         title="Niederschlagsmengen in Dakar und Wien (k=2)",
+         x="Niederschlag in mm"
+         ) 
+
+ggsave(filename="niederschlagBark2.png", plot=last_plot(), device="png",
+      path="images/", width=16, height=9, units="cm")
+```
+
+
+```{r barsWien, message=FALSE, results='markup', echo=TRUE}
+k <- 1
+barW <- ggplot(data=barWien, aes(Means, Stadt, colour=Stadt)) + 
+  xlim(-50, 150) +
+  geom_errorbarh(xmin=barWien$Means-k*barWien$SE, xmax=barWien$Means+k*barWien$SE, 
+                 height=0.3, size=1.5,
+                 show.legend=FALSE) +
+  geom_point(shape=21, size=4, fill="grey",
+             show.legend=FALSE)
+
+barW + scale_color_brewer(palette="Set2") + 
+        labs(
+         title="Niederschlagsmengen inWien (k=1)",
+         x="Niederschlag in mm"
+         )
+```
+
+# Literaturverzeichnis
+
+
+

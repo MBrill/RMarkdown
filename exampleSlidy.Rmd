@@ -1,0 +1,46 @@
+---
+title: "Die erste HTML Präsentation"
+author: "Manfred Brill"
+date: "8 Mai 2019"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(dplyr)
+
+smaller <- diamonds %>%
+  filter(carat <= 2.5)
+```
+
+## R Markdown
+
+Dies ist eine [R Markdown](http://rmarkdown.rstudio.com) Präsentation. Als Option verwenden wir hier *ioslides*. Neue Folien erstellen wir
+mit einer Überschrift der Stufe 2, also mit 
+´## Überschrift´.
+
+## Eine Folie mit Bullet Points
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Eine Folie mit R Ausgaben
+
+```{r smaller, echo = TRUE}
+smaller
+```
+
+## Eine Folie mit einer Grafik
+
+```{r histogramm}
+  ggplot(smaller, aes(carat)) +
+  geom_histogram(binwidth = 0.05, fill="green", color="black") +
+  labs(
+    title="Datensatz diamonds - Verteilung der Karatzahlen",
+    x = "Karat",
+    y = "Absolute Häufigkeit"
+  )
+```
+

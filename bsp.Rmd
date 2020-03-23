@@ -1,0 +1,88 @@
+---
+title: "Das Beispiel Bruttosozialprodukt"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+# Funktion für das geometrische Mittel
+library(psych)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=6)
+```
+
+# Ein Beispiel aus Assenmacher
+Der Datensatz enthält Angaben über die Entwicklung des Bruttosozialprodukts in der BRD und ist dem Buch
+von Assenmacher [@assenmacher_96] entnommen.  Der Datensatz wird als Motivation für  die Einführung des geometrischen Mittels verwendet.
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read.csv2("data/bsp.csv")
+```
+
+Die Werte für das Bruttosozialprodukt sind in Milliarden D-Mark angegeben. Wir fügen den Daten eine weitere Spalte mit den Wachstumsfaktoren hinzu
+und geben das Ergebnis in Tabelle 1 aus.
+```{r wachstum, message=FALSE, echo=FALSE}
+daten <- mutate(daten,
+                wachstum = Bruttosozialprodukt/lag(Bruttosozialprodukt) 
+)
+```
+
+```{r tabelle, message=FALSE, results='markup', echo=FALSE}
+kable(daten,
+        align="l",
+        caption="Tabelle 1: Der Datensatz Bruttosozialprodukt",
+        col.names=c("Jahr", "Bruttosozialprodukt in Milliarden DM", "Wachstumsfaktor")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+In R gibt es keine Funktion für das geometrische Mittel. Man kann natürlich
+selbst eine Funktion implementieren oder das Paket *psych* laden. Dort gibt es die Funktion geometric.mean(). Wir erhalten für das geometrischen Mittel
+der Wachstumsfaktoren den Wert `r options(digits=3); geometric.mean(daten$wachstum, na.rm=TRUE)`.
+In der Vorlesung wird auch das arithmetische Mittel berechnet, also Nachweis,
+dass wir in einem solchen Datensatz das geometrische Mittel verwenden müssen.
+Für das arithmetische Mittel erhalten wir `r mean(daten$wachstum, na.rm=TRUE)`.
+Der Unterscheid erscheint klein, wenn wir aber ausgehend von 1950 mit Hilfe der Mittelwerte den Wert für das Jahr 1965 berechnen erhalten wir beim arithmetischen
+Mittel einen Fehler von 3,45 Milliarden DM. 
+
+# Visualisierungen
+Wir betrachen eine Zeitreihe. Solche Daten werden typischer Weise mit der Zeit auf der x-Achse und den Werten auf der y-Achse ausgegeben.
+
+
+```{r plotOrig, message=FALSE, results='markup'}
+# Plot der Zeitreihe
+years <- seq(from =1950, to=1965, by=1)
+ggplot(daten) + 
+  geom_line(mapping=aes(x=Jahr, y=Bruttosozialprodukt), col=myPalette[3], size=2) +
+  scale_x_discrete(limits=years) +           
+  labs(
+    title="Bruttosozialprodukt der Bundesrepublik Deutschland 1950 - 1965", 
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="Jahr",
+    y="Milliarden DM"
+  ) 
+
+ggsave(filename="bsp.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis
+
+
+

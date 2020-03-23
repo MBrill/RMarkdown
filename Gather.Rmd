@@ -1,0 +1,114 @@
+---
+title: "Gather an Hand des Datensatzes Niederschlag"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(kableExtra)
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Benesch
+Der Datensatz enthält Angaben über die Niederschlagswerte in Dakar und Wien und ist dem Buch
+von Benesch [@benesch_13] entnommen.  Der Datensatz wird zum Beispiel als Motivation für die Einführung
+von Streuungsparametern verwendet.
+
+
+```{r daten, message=FALSE, echo=FALSE}
+# Code aus RStudio <<Import Dataset>>
+daten <- read_delim("data/niederschlag.csv", 
+    ";", escape_double = FALSE, locale = locale(date_names = "de", 
+        decimal_mark = ","), trim_ws = TRUE)
+```
+
+Der Datensatz enthält 12 Zeilen, pro Monat je einen Wert für Dakar und Wien. Die Werte sind in entsprechenden
+Spalten enthalten. Tabelle 1 zeigt die eingelesenen werte.
+```{r kableDaten, message=FALSE, echo=FALSE}
+kable(daten, align="l",
+      caption="Tabelle 1: Niederschlagswerte in den Städten Wien und Dakar in mm") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Wir verwenden gather, um einen zweiten tibble zu erstellen,
+der in 'long format' ist. Damit können wir in ggplot gruppieren
+und erhalten zwei Balken pro Monat. Ohne diese Gruppierung wird es aufwändig,
+Box-Plots oder Balkendiagramme zu erstellen, die beide Städte in einer Darstellung
+zeigen. Mit dem neuen Datenformat können wir gruppieren und ggplot
+alles weitere für uns erledigen lassen.
+
+Die Funktion gather erhält die beiden Spalten, die wir bearbeiten möchten. Wir erzeugen
+key-value Paare, die wir Stadt und Niederschlag nennen. Die Spalte Stadt verwenden wir
+für die Gruppierung, die Werte in Niederschlag werden grafisch ausgegeben. Der neue tibble
+enthält 24 Zeilen.
+
+```{r datenLF, message=FALSE, echo=TRUE}
+datenLF <- daten %>%
+               gather(
+                   Wien, Dakar, key="Stadt", value="Niederschlag"
+               )
+```
+
+In Tabelle 2 sehen wir das Ergebnis.
+```{r gatheringKable, message=FALSE, echo=FALSE, results='markup'}
+kable(datenLF,  align="l",
+      caption="Tabelle 2: Niederschlagswerte in einem long format") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+# Verwendung des neuen Datenformats
+
+Jetzt können wir einen Box-Plot oder ein Balkendiagramm erstellen lassen, der den neuen Datensatz verwendet.
+Auch ein Balkendiagramm, der pro Monat zwei Balken anzeigt ist problemlos möglich.
+
+```{r box, message=FALSE, results='markup', echo=TRUE}
+ggplot(datenLF, aes(x=Stadt, y= Niederschlag, fill=Stadt)) + 
+  ylim(0, 220) +
+  geom_boxplot(color="black", 
+               outlier.color="red", 
+               outlier.shape=23, 
+               outlier.size=4,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set2") + 
+  labs(
+         title="Niederschlagsmengen in Dakar und Wien",
+         y="Niederschlag in mm"
+  ) +
+  coord_flip()
+
+ggplot(datenLF, aes(x=Monat, y=Niederschlag, fill=Stadt)) + 
+  ylim(0, 220) + 
+  scale_x_discrete(limits=c("Januar", "Februar", "Maerz", "April", "Mai", "Juni",
+                     "Juli", "August", "September", "Oktober", "November", "Dezember")) +
+  geom_bar(stat="identity", 
+           position="dodge") +
+  scale_fill_brewer(palette="Set2") + 
+      labs(
+         title="Niederschlagsmengen in Dakar und Wien", 
+         x="", 
+         y="Niederschlagsmenge in mm"
+  ) +
+  coord_flip()
+```
+
+# Literaturverzeichnis
+
+
+

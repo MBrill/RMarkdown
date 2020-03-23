@@ -1,0 +1,117 @@
+---
+title: "Das Beispiel Energieeffizienzklassen"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus für einen ordinalen Datensatz
+Der Datensatz enthält Angaben über die Energieeffizienzklassen
+für Waschmaschinen. 
+Die Daten werden als Beispiel in der Stochastik-Vorlesung
+eingesetzt. Die Daten gibt es in  zwei Varianten, einmal
+mit 5 und einmal mit 6 Elementen. Damit kann die Berechnung des Medians
+bei einer geraden Anzahl von Elementen demonstriert werden.
+
+Wir erzeugen  die zulässigen
+Klassen: diese sind durch D, C, B, A, A+, A++ bis A+++ gegeben.
+Anschließend lesen wir die Daten ein und weisen die vorher definierten Level
+hinzu. Da wir später die Häufigkeiten grafisch darstellen möchten
+erzeugen wir entsprechende Variablen:
+```{r daten, message=FALSE, echo=TRUE}
+stufen <- as.factor(c("D", "C", "B", "A", "A+", "A++", "A+++"))
+daten5 <- read_delim("data/energieEffizienz5.csv", 
+    ";", escape_double = FALSE, 
+    col_types = cols(Effizienzklasse = col_factor(levels = stufen)))
+
+absFr5 <- table(daten5$Effizienzklasse)
+
+daten6 <- read_delim("data/energieEffizienz6.csv", 
+    ";", escape_double = FALSE, 
+    col_types = cols(Effizienzklasse = col_factor(levels = stufen)))
+
+absFr6 <- table(daten6$Effizienzklasse)
+```
+
+
+Der Datensatz enthält Fantasienamen für Waschmaschinen und Angaben über Effizienzklassen.
+
+In Tabelle 1 und 2 finden wir die absoluten und relativen Häufigkeiten:
+```{r tabelleAbs5, message=FALSE, results='markup', echo=FALSE}
+kable(absFr5,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Energieeffizienzklassen (n=5)",
+        col.names=c("Effizienzklasse", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+
+```{r tabelleAbs6, message=FALSE, results='markup', echo=FALSE}
+kable(absFr6,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Energieeffizienzklassen (n=6)",
+        col.names=c("Effizienzklasse", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+# Visualisierungen
+
+```{r plot, message=FALSE, results='markup'}
+# Plots absolute Häufigkeiten
+ggplot(daten5) + 
+  geom_bar(mapping=aes(x=Effizienzklasse),
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=stufen) + 
+  scale_y_discrete(limits=c(0.0, 1.0, 2.0, 3.0)) +
+  labs(
+    title="Effizienzklassen von Waschmaschinen", 
+    x="Effizienzklasse", 
+    y="Absolute Häufigkeit"
+  ) 
+
+ggsave(filename="effizienz5.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+
+ggplot(daten6) + 
+  geom_bar(mapping=aes(x=Effizienzklasse),
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=stufen) + 
+  scale_y_discrete(limits=c(0.0, 1.0, 2.0, 3.0)) +
+  labs(
+    title="Effizienzklassen von Waschmaschinen", 
+    x="Effizienzklasse", 
+    y="Absolute Häufigkeit"
+  ) 
+
+ggsave(filename="effizienz6.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+```
+# Literaturverzeichnis
+
+
+

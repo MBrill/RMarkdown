@@ -1,0 +1,165 @@
+---
+title: "Beschreibende Statistik mit R:  Parameter"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+bibliography: literatur.bib
+---
+
+```{r setup, include=FALSE, echo=TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=4)
+```
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+
+# Daten
+Als Beispieldaten verwenden wir den Datensatz *Lieferzeiten*, den wir auch in der Vorlesung verwenden. Sie finden die Daten in der Lernplattform. Die R-Anweisungen in diesem Text gehen davon aus,
+dass die *csv*-Datei im Unterverzeichnis *data* liegt.
+Die Daten sind [@bamberg_93] entnommen. 
+
+Der Datensatz *BSP* enthält Angaben über die Entwicklung des Bruttosozialprodukts in der BRD und ist dem Buch
+von Assenmacher [@assenmacher_96] entnommen. Wir haben ihn in der Vorlesung
+als Beispiel für das geometrische Mittel verwendet.
+
+Wir lesen die Daten mit Hilfe der Funktion *read_csv2*
+aus dem Tidyverse-Package ein. Für das Bruttosozialprodukt erzeugen wir
+eine weitere Spalte mit den Wachstumsfaktoren.
+
+```{r daten, message=FALSE, echo=TRUE}
+liefer <- read_csv2("data/lieferzeiten.csv")
+
+bsp <- read_csv2("data/bsp.csv")
+bsp <- bsp %>%
+  mutate(
+      wachstum = Bruttosozialprodukt/lag(Bruttosozialprodukt)
+)
+```
+
+Die Werte einer Zeitreihe wie im Datensatz BSP können wir mit Hilfe
+von *geom_line* grafisch darstellen:
+
+```{r bspPlot, message=FALSE, echo=TRUE, results='markup'}
+years <- seq(from =1950, to=1965, by=1)
+ggplot(bsp) + 
+  geom_line(mapping=aes(x=Jahr, y=Bruttosozialprodukt), col=myPalette[3], size=2) +
+  scale_x_discrete(limits=years) +           
+  labs(
+    title="Bruttosozialprodukt der Bundesrepublik Deutschland 1950 - 1965", 
+    x="Jahr",
+    y="Milliarden DM"
+  ) 
+```
+
+Es überrascht natürlich nicht, dass wir mit R alle Parameter bestimmen können, die wir in der Vorlesung eingeführt haben.
+Wie in der Lehrveranstaltung betrachten wir zuerst die Lage- und anschließend die Streuungsparameter.
+
+# Lageparameter
+Für ordinale Skalen haben wir den Median und die Quantile, insbesondere die Quartile, eingeführt. Für den Median gibt es die gleichnamige Funktion
+*median*. Die Quartile können wir mit der Funktion *quantile* abfragen.
+Diese Funktion gibt uns neben den beiden Quartilen auch minimale und maximale Merkmalsausprägungen zurück. Der Median als 50%-Quartil ist auch in der Ausgabe enthalten. Mit q[2] und q[4] können auf die beiden Quartile zugreifen.
+
+Wir können *quantile* eine Liste mit den gewünschten Anteilen übergeben. Im Beispiel erhalten wir so wieder die beiden Quartile Q_1 und Q_3. Rzeugen wir
+einen Vektor mit Einträgen von 0.1 bis 0.9 mit Schrittweite 0.1, dann können wir auf diese Weise auch die Dezile eines Datensatzes bestimmen.
+
+```{r lage1, message=FALSE, echo=TRUE}
+liefer.median <- median(liefer$Lieferzeiten)
+
+q <- quantile(liefer$Lieferzeiten)
+liefer.q1 <- q[2]
+liefer.q3 <- q[4]
+
+pr <- c(0.25, 0.75)
+q <- quantile(liefer$Lieferzeiten, probs = pr)
+q
+
+pr = seq(0.1, 0.9, 0.1)
+liefer.dezile <- quantile(liefer$Lieferzeiten, probs = pr)
+liefer.dezile
+```
+
+In R gibt es keine Funktion für das geometrische Mittel. Man kann natürlich
+selbst eine Funktion implementieren oder das Paket *psych* laden. Dort gibt es die Funktion geometric.mean(). Dieses Package enthält auch die Funktion
+*harmonic.mean*, die das harmonische Mittel berechnet. Als Beispiel
+für das harmonische Mittel besetzen wir einen Vektor mit den Geschwindigkeiten eines Fahrradfahrers aus der Vorlesung.
+
+```{r loadPsch, echo=TRUE, warning=FALSE}
+library(psych)
+```
+
+```{r lage2, message=FALSE, echo=TRUE, message=FALSE}
+liefer.mean <- mean(liefer$Lieferzeiten)
+
+bsp.geoMean <- geometric.mean(bsp$wachstum)
+bsp.geoMean
+
+fahrrad <- c(4.0, 40.0)
+fahrrad.harMean <- harmonic.mean(fahrrad)
+fahrrad.harMean
+```
+
+# Streuungsparameter
+Wenn wir die Quartile verwenden können als Streuungsparameter den 
+Interquartilsabstand IQR berechnen. Die Funktion dafür in R hat diesen Namen.
+
+```{r streuung1, message=FALSE, echo=TRUE}
+liefer.iqr <- IQR(liefer$Lieferzeiten)
+liefer.iqr
+```
+
+Für kardinale Skalen haben wir die Varianz und die Standardabweichung definiert. Dabei hatten wir zwei Varianten, die empirische und die korrigierte Varianz bzw. Standardabweichung, eingeführt. In R und eigentlich allen Statistik-Paketen finden wir als Default immer die korrigierte Varianz.
+Die Funktionen in R heißen dafür *var* und für die korrigierte Standardabweichung *sd*. Die empirische Varianz können wir durch Multiplikation mit (n-1)/n aus der korrigierten Varianz berechnen, wenn n die Anzahl der Merkmalsausprägungen ist.
+
+```{r streuung2, message=FALSE, echo=TRUE}
+liefer.n <- nrow(liefer)
+
+liefer.var <- var(liefer$Lieferzeiten)
+liefer.var
+liefer.empvar <- ((liefer.n-1)/liefer.n)*liefer.var
+liefer.empvar
+liefer.sd <- sd(liefer$Lieferzeiten)
+liefer.sd
+liefer.empsd <- sqrt(liefer.empvar)
+liefer.empsd
+```
+
+# Übersichtsfunktionen
+Mit Hilfe der Funktion *summary* können wir mit einem Funktionsaufruf
+die wichtigesten Parameter abrufen.Das Fünfzahlen-Maß erhalten wir mit der Funktion *fivenum*. Das Package *psych*, das wir schon für das geometrische
+und harmonische Mittel eingesetzt haben bietet die Funktion *describe* an,
+die eine ganze Reihe von Parametern ausgibt. Diese Funktion können wir auch erweitern, wir können wie im Beispiel angeben, dass wir zusätzlich auch den IQR n die Ausgabe aufnehmen möchten.
+
+```{r surveyFunctions, echo=TRUE}
+summary(liefer$Lieferzeiten)
+
+fivenum(liefer$Lieferzeiten)
+
+describe(liefer$Lieferzeiten)
+
+describe(liefer$Lieferzeiten, IQR=TRUE)
+```
+
+# Literaturverzeichnis
+
+
+

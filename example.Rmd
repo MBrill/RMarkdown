@@ -1,0 +1,29 @@
+---
+title: "Die Größe von Diamanten"
+author: "Manfred Brill"
+date: "7. Mai 2019"
+output: 
+   html_document : default
+   github_document: default
+---
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+
+smaller <- diamonds %>%
+  filter(carat <= 2.5)
+```
+
+Wir haben Daten über ungefähr `r nrow(diamonds)` Diamanten.
+Nur `r nrow(diamonds) - nrow(smaller)` sind größer als 2,5 Karat.
+Die Verteilung der restlichen Diamanten wird in der folgenden Abbildung dargestellt:
+
+```{r, echo = FALSE, message=FALSE, results='markup',}
+  ggplot(smaller, aes(carat)) +
+  geom_histogram(binwidth = 0.05, fill="green", color="black") +
+  labs(
+    title="Datensatz diamonds - Verteilung der Karatzahlen",
+    x = "Karat",
+    y = "Absolute Häufigkeit"
+  )
+```

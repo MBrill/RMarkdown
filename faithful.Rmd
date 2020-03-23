@@ -1,0 +1,246 @@
+---
+title: "Das Beispiel Old Faithful"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(tidyverse)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+
+# Empirische Varianz und Standardabweichung
+source("scripts/empsd.r", encoding='UTF-8')
+source("scripts/empvar.r", encoding='UTF-8')
+```
+
+# Die Daten
+Im Gegebensatz zu vielen anderen Datensätzen müssen wir hier keine Daten importieren. Der Datensatz steht mit der Default-Installation zur Verfügung.
+Enthalten sind 272 Beobachtungen von 2 Merkmalen, die Zeit zwischen zwei
+Eruptionen dieses Geysirs im Yellowstone Nationalpark und die Dauer der Eruptionen. Mehr Details kann man mit help(faithful) in R abfragen.
+Die Namen der Merkmale sind *eruptions* für die Dauer in Minuten
+und *waiting*, die Zeiten zwischen zwei Eruptionen, ebenfalls in Minuten.
+
+```{r parameter, echo=FALSE}
+n <- length(faithful$eruptions)
+mittelwert= mean(faithful$eruptions)
+median = median(faithful$eruptions)
+qs <- quantile(faithful$eruptions, type=4)
+q1 <- qs[2]
+q3 <- qs[4]
+varianz <- empvar(faithful$eruptions)
+stabw <- empsd(faithful$eruptions)
+iqr <- IQR(faithful$eruptions)
+minimum = min(faithful$eruptions)
+maximum = max(faithful$eruptions)
+spannbreite = maximum-minimum
+```
+
+Hier in Kürze die Parameter für das Merkmal eruptions:
+
+|Parameter  | Wert |
+| ------------- | ------------- |
+| Arithmetisches Mittel  | `r mittelwert` |
+| Median  |  `r median` |
+| Minimum  | `r minimum` |
+| Maximum  | `r maximum` |
+| Spannbreite  | `r spannbreite` |
+| Interquartilsabstand  | `r iqr` |
+| Empirische Standaradabweichung  | `r stabw` |
+| Empirische Varianz  | `r varianz` |
+
+# Visualisierungen
+
+## Histogramme
+Wichtig für die Histogramme ist die Wahl der Anzahl der Klassen.
+Wenn man wie in der folgenden Abbildung bei ggplot keine Angaben macht,
+dann werden als Default 30 Klassen verwendet. Man erhält auch von R eine Warnung, dass dieser Default verwendet wird und dass man versuchen sollte, bessere Klassen zu bilden.
+
+```{r histogramm1, message=FALSE, results='markup', echo=FALSE}
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="30 Klassen (Default ggplot)"
+  )
+
+ggsave(filename="faithfulDefault.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wir verwenden in den nächsten beiden Bildern eine Klassenbreite
+von 0,5 und 0.05. In der Abbildung mit der Klassenbreite 0,05
+sieht man sehr gut eine Teilung der Werte; oft findet man in der Literatur,
+dass die Ausbrauchszeiten bei ungefähr 2 oder 4 Minuten liegen.
+
+```{r histogramm2, message=FALSE, results='markup', echo=FALSE}
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 binwidth=0.5,
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="Klassenbreite 0,5"
+  )
+
+ggsave(filename="faithful05.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 binwidth=0.05,
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="Klassenbreite 0,05"
+  )
+
+ggsave(filename="faithful005.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Faustregel
+In der Vorlesung haben wir verchiedene Regeln für die Bilden von Klassen betrachtet. Mit
+der Faustregel ziehen wir die Wurzel aus der Anzahl der Werte  `r length(faithful$eruptions)`:
+wir erhalten `r sqrt(length(faithful$eruptions))` und wählen als Wert die 16. Damit können
+wir die Klassenbreite berechnen und anschließend an ggplot übergeben. Wir berechnen die Klassenbreite
+und erzeugen dann die Teilungen des Werte-Intervalls mit Hilfe der Funktion *seq*.
+
+```{r faustregel, message=FALSE, results='markup', echo=TRUE}
+width=spannbreite/16
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 breaks=seq(minimum, maximum, width),
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="16 Klassen an Hand der Faustregel"
+  )
+
+ggsave(filename="faithfulFaust.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## DIN-Norm
+In der Vorlesung haben wir verchiedene Regeln für die Bilden von Klassen betrachtet. 
+Die DIN-Norm empfiehl ab 100 Werten mindestens zehn Klassen. Wir berechnen die Klassenbreite
+und erzeugen dann die Teilungen des Werte-Intervalls mit Hilfe der Funktion *seq*.
+
+```{r din, message=FALSE, results='markup', echo=FALSE}
+width=spannbreite/10
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 breaks=seq(minimum, maximum, width),
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="10 Klassen nach DIN-Norm"
+  )
+
+ggsave(filename="faithfuldin.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Regel von Scott
+Scott schlägt vor die Standardabweichung für die Berechnung der Klassenbreite 
+einzusetzen.
+
+```{r scott, message=FALSE, results='markup', echo=FALSE}
+nenner <- n^(1/3)
+width=(3.49*stabw)/nenner
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 breaks=seq(minimum, maximum, width),
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="Klassenbreite nach Scott"
+  )
+
+ggsave(filename="faithfulscott.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Regel von Friedman-Diaconis
+Friedman-Diaconis verwenden statt der Standardabweichung den Interquartilsabstand für die Berechnung der Klassenbreite 
+einzusetzen.
+
+```{r friedman, message=FALSE, results='markup', echo=FALSE}
+nenner <- n^(1/3)
+width=(2.0*iqr)/nenner
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = eruptions), 
+                 colour="black",
+                 fill=myPalette[1],
+                 breaks=seq(minimum, maximum, width),
+                 show.legend=FALSE) +
+  labs(
+         title="Dauer der Eruptionen von Old Faithful", 
+         x="Dauer in Minuten", 
+         y="Absolute Häufigkeiten",
+         subtitle="Klassenbreite nach Friedman-Diaconis"
+  )
+
+ggsave(filename="faithfuldiaconis.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Box-Plot
+Wir machen noch einen Box-Plot für die Daten.
+
+```{r box, message=FALSE, results='markup', echo=FALSE}
+ggplot(faithful,aes(y = iris[,1:4]) + 
+  geom_boxplot(color="black", 
+               fill=myPalette[1],
+               group=iris[,5],
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set2") + 
+  labs(
+         title="Merkmal eruptions im Datensatz faithful",
+         x="",
+         y="Dauer der Eruption in Minuten"
+  ) 
+```

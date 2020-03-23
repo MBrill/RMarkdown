@@ -1,0 +1,88 @@
+---
+title: "Das Beispiel Neugeborene"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Eine Geburtenstation
+Dieses Beispiel wird während der ganzen Lehrveranstaltung verwendet, beginnend mit Skalen bis hin zur schließenden Statistik. Es gibt keine ASCII-Datei dafür, 
+sondern wir verwenden wie auf den Folien eine Geburtenstation mit 10 Geburten an einem bestimmten Tag, davon sind 7 Sungs und 3 sind Mädchen. Dabei werden die 
+Jungs mit "J" und die Mädchen mit "M" codiert.
+
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- as.data.frame(c("M", "M", "M", "J", "J", "J", "J", "J", "J", "J"))
+colnames(daten) <- c("Geschlecht")
+
+# Häufigkeiten
+n <- nrow(daten)
+absFr <- table(daten$Geschlecht)
+```
+
+Der Datensatz enthält `r nrow(daten)` Werte.
+In Tabelle 1  finden wir die absoluten  Häufigkeiten:
+```{r tabelleAbs, message=FALSE, results='markup', echo=FALSE}
+kable(absFr,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Neugeborene",
+        col.names=c("Ausprägungen", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+
+# Visualisierungen
+## Balkendiagramm
+Jetzt geben wir die Daten grafisch aus. Wir beginnen mit Balkendiagrammen
+für die absoluten  Häufigkeiten:
+```{r plot, message=FALSE, results='markup', echo=FALSE}
+# Plot absolute Häufigkeiten
+plotAbs <- ggplot(daten) + 
+  geom_bar(mapping=aes(x=Geschlecht),fill=myPalette[3]) +
+  #scale_x_discrete(limits=c("Junge", "Mädchen")) +  
+  labs(
+    title="Neugeborenenstation Schilda, 1. April 2017", 
+        caption="Erstellt mit ggplot2 3.1.0",
+    x="", 
+    y="Absolute Häufigkeit"
+  ) 
+
+plotAbs
+
+ggsave(filename="neugeboreneAbsolut.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wir können auch ein horizontales Balkendiagramm erstellen:
+```{r plotHori, message=FALSE, results='markup'}
+plotAbs + 
+  coord_flip()
+
+ggsave(filename="lieferzeitenAbsolutHori.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+
+
+

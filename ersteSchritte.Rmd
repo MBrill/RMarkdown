@@ -1,0 +1,171 @@
+---
+title: "Erste Schritte mit R"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+```
+# Vorbemerkungen
+Dieser Text geht davon aus, dass Sie R installiert, ein Arbeitsverzeichnis angelegt und das Video ['Erste Schritte mit R'](https://www.youtube.com/watch?v=uaJkFNqWDEU&feature=youtu.be) gesehen haben. Sie sollten diesen Text mit Hilfe von R nachvollziehen.
+
+Im Folgenden finden Sie immer wieder Eingaben auf der Konsole, die in einem Kasten dargestellt sind:
+```{r showConsole, include=TRUE, tidy=TRUE}
+# In einer solchen Box finden Sie Eingaben an die Konsole.
+
+# Zeilen, die mit # beginnen sind Kommentare.
+```
+Direkt darunter finden Sie Ausgaben des Systems, wenn es solche gibt.
+
+# Einige Eingaben auf der Konsole
+Neben einer Reihe von Funktionen sind in der Basis-Installation von R auch Datensätze verfügbar, die wir direkt verwenden können.
+Einer dieser Datensätze trägt den Namen *mtcars* und enthält Angaben über eine Menge von 
+Automobilen wie Anzahl der Zylinder oder die Leistung des Motors. Die ersten Zeilen
+eines Datensatzes geben wir in der Konsole mit der Funktion *head* aus:
+
+```{r listmtcars, include=TRUE, tidy=TRUE}
+head(mtcars)
+```
+
+Wir könnten auch den ganzen Datensatz ausgeben, dazu geben wir einfach den Namen auf der Konsole ein. Da dies aber zu viele Zeilen sind verzichten wir darauf. Wir werden noch einen Blick auf Datensätze
+in R werfen. Wir erkennen aber schon, dass in jeder Zeile ein Exemplar eines PKWs steht, und in den
+entsprechenden Spalten die Attribute dieses Exemplars.
+
+Wenn wir wissen möchten, was die einzelnen Spalten bedeutet können wir die Hilfe-Seiten in R
+aufrufen. Dazu gibt es das Kommand *help* oder einfach *?*:
+
+```{r helpmtcars, include=TRUE, eval=TRUE}
+?mtcars
+```
+Es öffnet sich ein Browser-Fenster mit Hilfetexten. Wenn Sie in RStudio arbeiten finden Sie die Hilfetexte
+im Tab *Help*. 
+
+# Packages
+R ist in *Packages* gegliedert. Die grundlegenden Packages sind durch
+die Installation verfügbar.
+Wir werden in diesem Abschnitt eines dieser Packages verwenden. 
+Anschließend installieren wir eine
+Reihe von Packages und verwenden sie.
+
+## Packages verwenden
+
+Ein Package in R kann Funktionen, aber auch Daten enthalten. Eine große Sammlung von Daten ist im Package *MASS* enthalten. 
+Im Normalfall sollte dieses Package bereits installiert sein. Wir möchten mit Daten über die Stadt Boston arbeiten, die im gleichnamigen Datensatz enthalten sind. Der Datensatz hat den Namen
+*Boston*, also verwenden wir wieder die Funktion head:
+```{r bostonWrong, include=TRUE, eval=TRUE, error=TRUE}
+head(Boston)
+```
+Wir erhalten eine Fehlermeldung.
+Im Gegensatz zu *mtcars* ist dieser Datensatz
+in einem Package enthalten, das wir vor der Verwendung mit *library* laden müssen. Anschließend können wir
+mit *head* die ersten Zeilen der Daten ansehen:
+```{r bostonLoad, include=TRUE}
+library(MASS)
+head(Boston)
+```
+Mit
+```{r bostonHelp, include=TRUE, eval=FALSE}
+?Boston
+```
+erhalten wir die Information, dass dieser Datensatz Werte zu Stadtteilen von Boston enthält und auch, was die verschiedenen Spalten enthalten.
+
+## Packages installieren
+Im Verlauf der Lehrveranstaltung werden wir eine ganze Reihe von zusätzlichen Packages installieren.
+Hier betrachten wir einige davon, die wir später auch verwenden werden. 
+
+
+### RColorBrewer
+Das Projekt [ColorBrewer](http://colorbrewer2.org/) stellt eine Menge von Farbpaletten für verschiedene Anwendungen zur Verfügung. Eine Version für R ist als Package *RColorBrewer* verfügbar,
+das wir jetzt installieren werden.
+
+In der Konsole wählen Sie *Pakete $\to$ Installiere Paket(e)...* und geben
+in den folgenden Fenstern einen Mirror und das Package *RColorBrewer* an.
+In RStudio wählen Sie *Tools $\to$ Install Packages.... *.
+Im anschließend dargestellten Fenster wählen Sie bei *Install from:* die Option 
+*Repository (CRAN, CRANextra)* und geben bei Packages den Namen *RColorBrewer* ein.
+
+Wir aktivieren bei der Installation eines Package die Option
+*Install dependencies*. Damit stellen wir sicher, dass wirklich alle benötigten Inhalte installiert werden!
+
+Ist die Installation abgeschlossen können wir das Package wie bereits geübt laden und verwenden:
+```{r brewerLoad, include=TRUE, eval=TRUE}
+library(RColorBrewer)
+```
+Eventuell kommt eine Warnung auf Grund von verschiedenen Versionen des Package
+und ihrer R-Installation, die wir im Normalfall ignorieren können.
+Mit *help(RColorBrewer)* oder einfach *?RColorBrewer* können wir
+wieder die Hilfeseiten aufrufen.
+
+Nützlich ist eine Funktion, mit der wir eine Liste aller verfügbaren Farbpaletten
+erhalten. Da die Liste ziemlich lang ist verwenden wir wieder *head*:
+```{r brewerList, include=TRUE, eval=TRUE}
+head(brewer.pal.info)
+```
+
+### Tidyverse
+Das Package *tidyverse* enthät gleich eine ganze Menge von einzelnen Packages. Wir können diese einzeln installieren oder als Gesamtpaket. Hinter diesem Package steckt eine Community, die große Teile von R neu implementiert. Die im Paket enthaltenen Funktionen haben eine sehr gute Performanz und sind hervoragend auf einander abgestimmt. Wir werden *tidyverse* häufig einsetzen, deshalb installieren wir
+das Packag. Die Installation verläuft analog zum oben beschriebenen Vorgehen. Danach laden
+wir das Paket:
+```{r tidyLoad, include=TRUE, eval=TRUE}
+library(tidyverse)
+```
+
+Es werden gleich eine ganze Reihe von einzelnen Packages geladen. Die Warnungen können wir ignorieren. Wenn wir nur das Package *readr* oder *gplot* verwenden möchten können wir diese natürlich auch
+einzeln laden.
+
+### Import von Daten
+Für den Import von  Daten aus einer Tabellenkalkulation gibt es eine ganze Reihe
+von Lösungen in R. Eben haben wir *readr* als Bestandteil von *tidyverse* geladen, damit
+können wir Daten im csv-Format laden. Es gibt die Möglichkeit Dateien im xls- oder xlsx-Format
+direkt zu lesen, auch für das OpenOffice-Format gibt es entsprechende Packages.
+Die Lösungen unterscheiden sich vor allem daran, ob eine *Perl*- oder eine *Java*-Installation
+vorausgesetzt wird. 
+
+Wenn wir *Perl*  installiert haben können wir das Package *gdata* verwenden. Ist eine
+*Java*-Runtime installiert können wir *XLConnect* oder *xlsx* verwenden.
+Die Installation erfolgt wieder wie oben beschrieben, anschließend können wir zum Beispiel
+*xlsx* mit der Funktion *library* laden:
+```{r xlsxLoad, include=TRUE, eval=TRUE}
+library(xlsx)
+```
+Nützlich ist die Funktion *apropos*, mit der wir eine Liste der im Package verfügbaren
+Funktionen erhalten:
+```{r xlsxList, include=TRUE, eval=TRUE}
+apropos("xlsx")
+```
+Wir erkennen, dass wir nicht nur Daten lesen sondern auch exportieren können. Das Thema
+Daten werden wir noch näher betrachten. 
+
+Neben den Datenformaten aus der Office-Welt gibt es natürlich auch viele Datensätze
+in anderen Formaten,  zum Beispiel
+im *XML* oder *JSON*-Format. Auch dafür gibt es Packages:
+```{r micsLoad, include=TRUE, eval=TRUE}
+library(XML)
+library(RJSONIO)
+```
+## Installation von lokalen Packages
+Bisher haben wir Packages installiert, die im CRAN-Archiv liegen. Es gibt auch die Möglichkeit
+ein Package lokal aus einem zip-Archiv zu installieren. Diese Archive können aus einem GitHub-Repository oder einer anderen Website stammen. Als Beispiel verwenden wir das Archiv
+*ISLR*, das wir im OLAT-Kurs finden. Speichern Sie diese Datei auf ihrem Computer ab.
+
+In der Konsole wählen Sie *Pakete $\to$ Installiere Paket(e) aus lokalen Zip-Dateien...* und geben
+die Archivdatei an.
+In RStudio wählen Sie *Tools $\to$ Install Packages.... *.
+Im anschließend dargestellten Fenster wählen Sie bei *Install from:* die Option 
+*Package Archive File (.zip; .tar.gz)* und wählen wieder die Archivdatei aus.
+
+Nach der Installation laden wir das Package wie gewohnt. Im Package finden wir einen
+Datensatz *College*, von dem wir die ersten Zeilen ausgeben:
+```{r ISLRLoad, include=TRUE, eval=TRUE}
+library(ISLR)
+head(College)
+```

@@ -1,0 +1,307 @@
+---
+title: "Lineare Modelle"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(modelr)
+library(purrr)
+options(digits=2)
+```
+
+# Vorbemerkungen
+Dieses Dokument ist eine interne Version, mit wir nachvollziehen, wie wir mit *lm* und den Funktionen in *modelr* vorgehen. Parallel wird es dann ein Dokument geben, das ausgeteilt werden kann. Die Darstellung folgt in weiten Teilen
+[@wickham_16]
+
+Als Datensatz verwenden wir das Beispiel aus den Folien. den Datensatz *Luftfeuchtigkeit*.
+
+```{r daten, echo=TRUE}
+daten <- read_csv2("data/wassergehalt.csv")
+
+kable(daten,
+      align="l",
+      caption="Tabelle 1: Der Datensatz Luftfeuchtigkeit (Angaben in %)",
+      col.names=c("Luftfeuchtigkeit", "Wassergehalt")) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"), 
+       full_width = T, 
+       position = "center")
+```
+# Streuungsdiagramm und lineares Modell
+Bevor wir das lineare Modell erstellen zeigen wir die Daten in einem Streuungsdiagramm. Man sieht gut, dass wir versuchen sollten ein lineares Modell aufzustellen.
+
+```{r scatter, echo=TRUE}
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  labs(
+    title="Der Datensatz Luftfeuchtigkeit", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+ggsave(filename="wassergehalt1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Wir erzeugen Werte für Geraden und stellen die im Streuungsdiagramm dar
+grid <- tibble(
+  m = runif(20, 0.1, 0.4),
+  b = runif(20, 1.0, 4.0)
+)
+
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  geom_abline(slope=grid$m, intercept=grid$b, 
+              size=0.2, alpha=0.9, color="orange") +
+  labs(
+    title="Modelle für Luftfeuchtigkeit und Wassergehalt", 
+    subtitle="Steigung in [0.1, 0.4], Achsenabschnitt in [1.0, 4.0]",
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+ggsave(filename="wassergehaltModell3.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wir erstellen jetzt das lineare Modell und geben das Ergebnis gemeinsam
+mit dem Streuungsdiagramm der Daten aus. Anschließend erstellen wir
+mehr Werte für ein potentielles Modell, geben dies auch aus und färben die Geraden auch mit der Abweichung, die wir durch Einsetzen in die
+least-squares Funktion erhalten. Den Code dazu findet man in 
+*R for Data Science* ab Seite 353.
+
+Wir erzeugen noch ein weiteres Streuungsdiagramm, das weitere Geraden
+enthält. Insgesamt zeigen wir weitere 9 Geraden, deren Steigung äquidistant zwischen 0.2 und 0.3 variiert, bei Achsenabschnitten verwenden wir den Bereich 2.0 bis 3.0. 
+
+```{r model, echo=TRUE}
+sim <- lm(Wassergehalt ~ Luftfeuchtigkeit, data = daten)
+
+mbSim <- coef(sim)
+
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  geom_abline(intercept=mbSim[1], slope=mbSim[2], color="red") +
+  labs(
+    title="Lineares Modell Luftfeuchtigkeit und Wassergehalt", 
+    subtitle=paste("m = ", format(mbSim[2], digits=2), 
+                   " b = ", format(mbSim[1], digits=2)),
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+ggsave(filename="wassergehaltModell1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  geom_abline(intercept=mbSim[1], slope=mbSim[2], color="red") +
+  geom_abline(slope=grid$m, intercept=grid$b, 
+              size=0.2, alpha=0.9, color="orange") +
+  labs(
+    title="Lineares Modell Luftfeuchtigkeit", 
+    subtitle="Berechnetes Modell und alternative Geraden",
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Jetzt haben wir die Abbildungen und das lineare Modell erstellt, wie dies schon in den alten Folien zu diesem Thema mit Hilfe von OpenOffice durchgeführt wurde. Mit der *predict*-Funktion können wir jetzt Vorhersagen für Werte
+der Luftfeuchtigkeit machen, die wir nicht gemessen haben, in dem wir den Wert in das lineare Modell einsetzen.
+Zum Beispiel erhalten wir für eine Luftfeuchtigkeit von `r luft <- data.frame(Luftfeuchtigkeit = c(60.0)); luft[[1]]` Prozent einen Vorhersagewerten von `r predict(sim, luft)[1]` Prozent. Die Werte, die bisher mit OpenOffice vorhergesagt wurden weichen davon leicht ab. 
+
+Hier nochmals der R-Code, mit dem wir Vorhersagen, hier für die Werte 30 und 60 für die Luftfeuchtigkeit, erzeugen:
+
+```{r predictions, echo=TRUE}
+# Wir erzeugen die Werte, die wir einsetzen als data.frame
+luft <- tibble(Luftfeuchtigkeit = c(30.0, 60.0))
+
+# Wir setzen das berechnete Modell und die neuen Werte in predict ein
+predict(sim, luft)
+```
+
+# Vergleich von verschiedenen linearen Modellen
+Wir wollen jetzt systematisch die Residuen und die theoretischen Werte berechnen. Dabei wollen wir auch die Fehler berechnen. Die dadurch entstehenden Abbildungen sollen illustrieren, dass es ein *bestes* lineares Modell gibt, das die Fehlerquadrat-Funktion minimiert, ohne diese Minimierung weiter zu betrachen, da wir dazu mehrdimensionale Analysis benötigen.
+
+Dazu ersetzen wir, wie in *R for Data Science* ab Seite 348 illustriert, die *predict*-Funktion durch eine eigene Funktion, die x-Werte in eine Gerade einsetzt, die durch zwei double-Werte gegeben ist. Anschließend verwenden wir dieses Funktionen, um eine Menge von Geraden zu erzeugen, die dann in einem Streuungsdiagramm mit den Punkten dargestellt werden, gefärbt nach den Werten der Fehlerquadratfunktion. Die Implementierung der Funktionen verwendet
+Spaltennamen im Datensatz. Der Versuch, die Spalten mit Hilfe von [,1] oder [,2] anzusprechen führt zu Fehlern beim Aufruf von mean.
+
+```{r functions, echo=TRUE}
+# Erster Parameter: die Gerade als Vektor (m,b)
+# Zweiter Parameter: ein tibble mit zwei Spalten, wir verwenden
+# die x-Werte darin, die in der ersten Spalte erwartet werden
+linModel <- function(a, data) {
+  a[1] * data$Luftfeuchtigkeit + a[2]
+}
+
+# Die Least-Squares Funktion
+# Verwendet die gerade implementierte Funktion linModel
+# Erster Parameter: die Gerade als Vektor (m,b) 
+# Zweiter Parameter: ein tibble mit mindestens zwei Spalten.
+# Die erste Spalte wird als x-, die zweite Spalte als y-Wert interpretiert.
+leastSquares <- function(mod, data) {
+  difference <- (data$Wassergehalt - linModel(mod, data))^2
+  sqrt(mean(difference))
+}
+
+# Wir implementieren eine Funktion, die wir in der Pipeline
+# für mutate verwenden können
+simDist <- function(m, b) {
+  leastSquares(c(m, b), daten)
+}
+```
+
+Diese Funktionen verwenden wir jetzt, um für ein Gitter von möglichen
+Werte für m und b den Fehler in einer weiteren Spalte abzuspeichern
+und diese Daten zu visualisieren. Dabei verwenden wir 10 Werte für die Steigung zwischen 0,2 und 0,3 und 10 Werte für den Achsenabschnitt, zwischen
+2 und 3.
+
+```{r gitterModelle, echo=TRUE}
+# Wir erzeugen mit expand_grid (aus modelr) ein Gitter von möglichen
+# Werten für lineare Modelle
+grid <- expand.grid(
+  m = seq(0.1, 0.4, length=10),
+  b = seq(1.0, 4.0, length=10)
+  ) %>%
+  mutate(
+    distance = map2_dbl(m, b, simDist))
+
+ggplot(grid, aes(m,b)) + 
+  geom_point(
+    data = filter(grid, rank(distance) <= 10),
+    size=4, color="red") +
+  geom_point(aes(color=distance)) +
+  scale_color_distiller(palette="YlGn", guide="legend", 
+                        breaks=c(0.25, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0)) +
+  guides(color=guide_legend(title="Fehlerquadratwerte")) +
+  labs(
+    title="Ein Gitter mit Werten für m und b",
+    subtitle="Die besten 10 Werte sind rot markiert",
+    x = "Steigung", 
+    y = "Achsenabschnitt"
+  )
+```
+
+Unser Ergebnis des linearem Modell liegt auch im Bereich der 10 als beste markierte Modelle. Jetzt verwenden wir diese 10 Geraden und stellen sie im Streuungsdiagramm unserer Daten dar.
+
+```{r gitterGeraden, echo=TRUE}
+# Wir filtern außerhalb von ggplot
+grid <- grid %>%
+  filter(rank(distance) <= 5)
+
+ggplot(data=daten, aes(Luftfeuchtigkeit, Wassergehalt)) + 
+  geom_point(size=2, color="blue") +
+  geom_abline(intercept=mbSim[1], slope=mbSim[2], color="red") +  
+  geom_abline(
+    slope = grid$m, intercept = grid$b, 
+    color="grey30", alpha=0.8, size=0.1) +
+  labs(
+    title="Lineare Modelle Luftfeuchtigkeit", 
+    subtitle="Die besten 5 Modelle und das Optimum (rot)",
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Wir geben die Gitterwerte noch als Tabelle aus
+kable(grid,
+      align="l",
+      caption="Tabelle 2: Die linearen Modelle",
+      col.names=c("Steigung", "Achsenabschnitt", "Fehlerquadrat-Werte")) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"), 
+       full_width = T, 
+       position = "center")
+```
+
+
+# Residuen und theoretische Werte
+Wir erzeugen ein tibble mit den x-Werte unserer Daten. Diese Werte verwenden wir anschließend, um die theoretischen Werte und die Residuen zu berechnen und zu visualisieren.
+
+```{r theo, echo=TRUE}
+# x-Werte aus den Daten extrahieren
+grid <- daten %>%
+  data_grid(Luftfeuchtigkeit)
+
+grid
+
+# Mit Hilfe von add_predictions aus modelr können wir in dieses Gitter 
+# jetzt weitere Vorhersagen hinzufügen. Diese Funktion arbeitet
+# wie predict, allerdings können wir sie in eine Pipeline integrieren.
+# Auf der Spalte pred stehen jetzt die theoretischen Werte.
+grid <-grid %>%
+  add_predictions(sim)
+
+grid
+
+# Jetzt visualisieren wir diese Vorhersagen
+# Bild sieht ungefähr so aus wie mit abline
+ggplot(daten, aes(Luftfeuchtigkeit)) +
+  geom_point(aes(y=Wassergehalt)) + 
+  geom_line(
+    aes(y=pred),
+    data=grid,
+    color="red",
+    size=1
+  )
+```
+
+Jetzt verwenden wir die Funktion *add_residuals* aus *modelr* und erzeugen
+einen Residualplot. Im Buch wird auch ein Häufigkeitspolygon erstellt, was wir auch machen. Hier ist es wichtig, dass das Polygon mehr oder weniger 
+zufällig ist und nicht schief ist. Wir ersetzen das Polygon durch ein Histogramm.
+
+Für die Berechnung der Residuen verwenden wir die Originaldaten:
+
+```{r res, echo=TRUE}
+daten <- daten %>%
+  add_residuals(sim)
+
+daten
+
+# Histogramm für die Residuen
+ ggplot(daten, aes(resid)) + 
+   geom_histogram(binwidth=0.4, fill="orange", color="black") +
+   labs(
+      title="Histogramm der Residuen", 
+      subtitle="Klassenbreite 0,4",
+      x="Residuen", 
+      y="Absolute Häufigkeit"
+   ) 
+
+# Residualplot
+ggplot(daten, aes(Luftfeuchtigkeit, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color="orange") +
+  labs(
+    title="Residualplot für den Wassergehalt", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Residuen"
+  ) 
+
+ggsave(filename="wassergehaltResPlot.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis

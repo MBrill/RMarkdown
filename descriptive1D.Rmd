@@ -1,0 +1,367 @@
+---
+title: "Beschreibende Statistik mit R"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+bibliography: literatur.bib
+---
+
+```{r setup, include=TRUE, echo=TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Rmd bearbeiten
+library(knitr)
+library(kableExtra)
+# ggplot, Pipelines und mehr in Tidyverse
+library(tidyverse)
+# Farbpaletten
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+
+# Daten
+Als Beispieldaten verwenden wir den Datensatz *Lieferzeiten*, den wir auch in der Vorlesung verwenden. Sie finden die Daten in der Lernplattform. Die R-Anweisungen in diesem Text gehen davon aus,
+dass die *csv*-Datei im Unterverzeichnis *data* liegt.
+Die Daten sind [@bamberg_93] entnommen. 
+
+Als Beispiel für nominale Daten hatten wir in der Vorlesung den Datensatz
+*Familienstand* betrachtet, der [@benesch_13] entnommen ist. 
+
+Liegen die meisten Merkmalsausprägungen nur mit geringen Häufigkeiten vor und ist die Skala kardinal, dann haben wir Klassen gebildet und Histogramme dargestellt.
+Als Beispiel für solche hatten wir in der Vorlesung den Datensatz
+*Körpergröße* aus [@benesch_13] verwendet, den wir ebenfalls aus einer csv-Datei einlesen.
+
+Wir lesen die Daten mit Hilfe der Funktion *read_csv2*
+aus dem Tidyverse-Package ein. 
+
+```{r daten, message=FALSE, echo=TRUE}
+liefer <- read_csv2("data/lieferzeiten.csv")
+
+familien <- read_csv2("data/familienstand.csv")
+
+frauen <- read_csv2("data/koerpergroesse_frauen.csv")
+```
+
+Anschließend überprüfen wir,
+ob die Daten korrekt eingelesen wurden. Wir müssen bei den Lieferzeiten
+50 Werte erhalten haben, wovon wir uns mit der Funktion *nrow* überzeugen.
+Der Datensatz *frauen* muss 24 Werte enthalten.
+
+```{r check, message=FALSE, echo=TRUE}
+nrow(liefer)
+
+nrow(frauen)
+```
+
+# Häufigkeiten
+Mit Hilfe der Methoden der beschreibenden Statistik können wir Parameter für Merkmale berechnen und grafische Darstellungen erstellen. In der Vorlesung haben wir zwischen nominalen,ordinalen und kardinalen Skalen unterschieden. In R gibt es den Datentyp *numeric* für kardinale Skalen, qualitative Merkmale können wir
+mit dem Datentyp *factor* repräsentieren. Die Darstellung
+in diesem Dokument orientiert sich an der Reihenfolge der Themen in der Vorlesung *Stochastik*.
+
+Wir beginnen mit den absoluten und relativen Häufigkeiten
+und erstellen entsprechende Tabellen für den Datensatz Lieferzeiten. Dafür gibt es in R wie fast immer mehrere Lösungen. Wir konzentrieren uns hier auf die Funktionen, die in der Basis-Installation enthalten sind.
+
+Tabellen mit Häufigkeiten erstellen wir mit Hilfe
+der Funktion *table*. Wir können aus den absoluten Häufigkeiten
+mit Hilfe von R relative Häufigkeiten erstellen, oder wir verwenden direkt die Funktion *prop.table*.
+
+```{r freqTables, echo=TRUE}
+absolut <- table(liefer)
+absolut
+
+(absolut/nrow(liefer))*100
+
+relativ <- prop.table(absolut)
+relativ
+```
+
+Häufigkeiten können wir mit Hilfe von Balkendiagrammen
+darstellen. Dazu verwenden wir die Funktion *ggplot*, die wie *read_csv2* im Package Tidyverse enthalten ist. Wir erstellen zuerst einen sehr einfachen Plot, und anschließend sehen Sie, wie
+wir mit *ggplot* Achsenbeschriftungen und andere Formatierungen hinzufügen können.
+
+```{r bars, message=FALSE, results='markup'}
+ggplot(liefer) + 
+    geom_bar(mapping=aes(x=Lieferzeiten))
+           
+ggplot(liefer) + 
+  geom_bar(mapping=aes(x=Lieferzeiten),
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Absolute Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Häufigkeiten"
+  ) 
+
+relPlot <- ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop.., group=1),                fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) 
+
+relPlot
+```
+
+Es gibt mehrere Möglichkeiten für die grafische Ausgabe in R. Wenn Sie sich die Verwendung von *ggplot* genau ansehen erkennen Sie, dass wir nicht die Häufigkeiten, sondern die Urliste an die grafische Ausgabe übergeben. Die Funktion *geom_bar* ist verantwortlich für die Visualisierung von Häufigkeiten und erstellt diese Werte deshalb selbst.
+
+Wir haben bei der Erstellung des Balkendiagramms für die relativen
+Häufigkeiten noch eine Zuweisung verwendet. Wir können grafische Ausgaben mit *ggplot* in einer Variable speichern und erweitern.
+Das verwenden wir nun, um eine horizontale Darstellung zu erstellen:
+
+```{r balkenHori, message=FALSE, results='markup'}
+relPlot + 
+  coord_flip()
+```
+
+Wir hatten den Begriff der empirischen Verteilungsfunktion eingeführt. Diese Funktion entsteht durch das Kumulieren der Häufigkeiten. Die Funktion *ggplot* kennt diese Funktion, sie ist
+als Funktion *stat_ecdf* verfügbar. Die Abkürzung *ecdf* steht
+für *empirical cumulative distribution function*.
+
+```{r plotecdf, message=FALSE, results='markup'}
+# Plot absolute Häufigkeiten
+ggplot(liefer, aes(x=Lieferzeiten)) + 
+  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Empirische Verteilungsfunktion der Lieferzeiten", 
+
+    x="Tage", 
+    y=""
+  ) 
+```
+
+Häufigkeiten können wir auch für nominale Skalen bestimmen.
+Der Datensatz *Familienstand* ist ein Beispiel für Daten, in denen bereits absolute Häufigkeiten enthalten sind.
+
+In Tabelle 1 finden wir die absoluten Häufigkeiten:
+```{r familienTabelle, message=FALSE, results='markup', echo=FALSE}
+kable(familien,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Familienstand",
+        col.names=c("Ausprägungen", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Bei nominalen Skalen stellt sich die Frage nach der Reihenfolge im Balkendiagramm. Die folgenden Abbildungen zeigen die Alternativen, die wir in der Vorlesung bereits betrachtet hatten.
+Wir teilen *ggplot* mit *stat=identity* mit, dass die Häufigkeiten bereits bestimmt sind.
+
+Die erste Darstellung verwendet die Reihenfolge in der die Angaben in der 
+Datei stehen:
+```{r plotFamilien, message=FALSE, results='markup'}
+# Plot absolute Häufigkeiten
+ggplot(familien) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut), stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c("ledig", "verheiratet", "verwitwet", "geschieden")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Reihenfolge im Datensatz",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+Wenn wir die Merkmale auf x-Achse aufsteigend nach der absoluten Häufigkeit anordnen
+erhalten wir die folgende grafische Ausgabe:
+```{r FamilienAsc, message=FALSE, results='markup'}
+ggplot(familien) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut), 
+           stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=
+                     c("verwitwet", "geschieden", "ledig",
+                       "verheiratet")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Aufsteigend sortiert nach Häufigkeit",
+    y="absolute Häufigkeit",
+    x=""
+  ) 
+```
+
+Wenn wir die Merkmale auf x-Achse absteigend nach der absoluten Häufigkeit anordnen
+erhalten wir die folgende grafische Ausgabe - ein Pareto-Diagramm:
+```{r FamilienDsc, message=FALSE, results='markup'}
+ggplot(familien) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut), 
+           stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c("verheiratet", "ledig", "geschieden", "verwitwet")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Absteigend sortiert nach Häufigkeit",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+Eine neutrale Darstellung erhalten wir durch eine alphabetische Reihenfolge
+der Merkmale:
+```{r FamilienAlph, message=FALSE, results='markup'}
+ggplot(familien) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut), 
+           stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c("geschieden", "ledig", "verheiratet", "verwitwet")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Alphabetische Reihenfolge",
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+# Klassen und Histogramme
+
+Für dieses Thema verwenden wir den Datensatz *Körpergröße von Frauen*.
+Wir erstellen wieder Tabellen für die absolute und relative Häufigkeiten.
+
+```{r frauenFreq, echo=TRUE, message=FALSE}
+table(frauen)
+
+(table(frauen)/nrow(frauen))*100
+```
+
+In beiden Ausgaben sehen wir gut, dass wir nur sehr kleine Werte von Häufigkeiten für relativ viele Merkmalsausprägungen erhalten. Wir erstellen ein Balkendiagramm, das das gleiche Problem illustriert. Das Merkmal
+im Datensatz hat den Namen *Koerpergroesse*. Die x-Achse ist jetzt
+kontinuierlich, deshalb verwenden wir für diese Achse die Funktion
+*scale_x_continuous(limits=c(150.0, 185.0))*. Damit legen wir den minimalen
+und maximalen Wert für die Achse in der grafischen Ausgabe fest.
+
+```{r FrauenBars, message=FALSE, results='markup'}
+ggplot(frauen)  +
+  geom_bar(mapping=aes(x=Koerpergroesse),
+           fill=myPalette[3]) +
+  scale_x_continuous(limits=c(150.0, 185.0)) +
+  labs(
+    title="Absolute Häufigkeiten der Körpergroße von Frauen", 
+    x="Körpergröße in cm", 
+    y="Häufigkeiten"
+  ) 
+           
+
+```
+
+Wir bilden Klassen und stellen ein Histogramm dar. Dazu gibt es im Package
+*ggplot2* die Funktion *geom_histogram*. Für die Farbe der Balken
+können wir eine Füllfarbe und eine Randfarbe angeben. Für die Füllfarbe
+wählen wir wie bisher eine Farbe aus unserer Palette, für den Rand wählen wir Schwarz, um die einzelnen Balken optisch zu trennen. Bei der Konstruktion der Partition müssen wir uns immer entscheiden, ob die verwendeten Intervalle an den Grenzen, an denen die Intervall aneinanderstoßen links oder rechts offen sind. Das können wir *geom_histogram* mit der Option *closed="left"* übergeben. Diese Auswahl entspricht der Vereinbarung aus der Vorlesung.
+
+```{r FrauenHisto1, message=TRUE, results='markup'}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Default-Anzahl von Klassen",
+    x="Körpergröße in cm",
+    y="Häufigkeiten der Klassen"
+  ) 
+```
+
+R weist uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders gut ist.
+
+Wenn wir andere Klassengrenzen verwenden möchten übergeben wir diese mit
+Hilfe der Option *breaks*. Wir erzeugen einen Vektor mit den Grenzen
+der Klassen mit *seq(152, 182, 3)*. Wir geben also den minimalen und maximalen Wert an und die Schrittweite, also die gewünschte Klassenbreite.
+Wir können auch die Klassenbreite mit *binwidth* angeben, dann sucht
+*ggplot* geeignete Minima und Maxima.
+
+```{r FrauenHisto2, message=FALSE, results='markup'}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          breaks=seq(152.0, 182.0, 3.0),
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Klassenbreite 3 zwischen 150 und 185",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          binwidth=3.0,boundary=0,
+          fill=myPalette[3], 
+          color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Klassenbreite 3",
+    x="Körpergröße in cm",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+Bevor wir noch weitere Klassenbreiten verwenden geben wir die Klassenhäufigkeiten in einer Tabelle aus. Dazu verwenden wir das Package Tidyverse:
+
+```{r FrauenCut, echo=TRUE}
+klassen <- frauen %>%
+  count(cut_width(
+    Koerpergroesse, width=3.0, boundary=0, closed="left")
+  )
+klassen
+```
+
+Auch an dieser Ausgabe sehen wir, dass es eine Klasse mit 0 Merkmalsausprägungen gibt.
+
+Wir haben verschiedene Regeln für die Wahl der Klassenbreite betrachtet.
+
+```{r faustregeln, echo=TRUE, message=TRUE}
+n <- nrow(frauen)
+n
+wurzelN <- sqrt(n)
+wurzelN 
+```
+
+Eine Faustregel lautete die Anzahl der Klassen ungefähr mit der Wurzel der Anzahl
+der Elemente zu wählen, was wir im vorhergehenden Quelltext auch berechnet haben.
+Wir haben  `r n`Elemente in den Daten, die Wurzel ist ungefähr `r wurzelN`. Dann
+entscheiden wir uns für 5 Klassen. Als Grenzen können wir die minimalen und
+maximalen Ausprägungen oder einen Bereich wie [150, 185] wählen und erzeugen so
+ein Histogramm. Suchen wir die minimalen und maximalen Werte können wir das
+mit Hilfe der Funktionen *min* und *max* berechnen.
+
+```{r FrauenHisto3, message=FALSE, results='markup'}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          breaks=seq(150.0, 185.0, 5.0),
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Klassenbreite 5 zwischen 150 und 185",
+    x="Körpergröße in cm",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+# Literaturverzeichnis
+
+
+

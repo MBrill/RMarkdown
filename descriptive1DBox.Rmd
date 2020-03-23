@@ -1,0 +1,73 @@
+---
+title: "Beschreibende Statistik: Boxplots"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE, warnings=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+
+```{r libraries, message=FALSE, warning=FALSE, warnings=FALSE}
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+```
+
+
+# Daten
+Der Datensatz *Körpergröße* enthält Angaben über die Körpergröße in cm von Fauen und ist dem Buch von Benesch [@benesch_13] entnommen. Wir verwenden die 
+Funktion *read_csv2* aus dem Package *Tidyverse* und lesen die Daten ein.
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read_csv2("data/koerpergroesse_frauen.csv")
+```
+
+
+# Box-Plots
+In einem Box- oder allgemein in einem Box-Whiskers-Plot visualisieren
+wir den Median, die Quartile und allgemein die Verteilung der Stichproben-Werte. 
+Wir können vertikale oder horizontale Box-Plots erstellen.
+
+```{r plotBox, message=FALSE, results='markup'}
+box1 <- ggplot(daten) + 
+  geom_boxplot(mapping=aes(x="", y=Koerpergroesse),  
+          fill=myPalette[3], color="black") +
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="",    
+    x=" ",
+    y="Körpergröße"
+  ) 
+
+box1
+
+box1 + coord_flip()
+```
+
+# Literaturverzeichnis
+
+
+

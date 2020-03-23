@@ -1,0 +1,415 @@
+---
+title: "Kontingenztabellen und grafische Ausgaben"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Packages laden
+library(tidyverse)
+library(vcd)
+library(knitr)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Einlesen der Daten
+In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ein Merkmal enthalten und untersuchen den Zusammenhang zwischen zwei oder mehr Merkmalen.
+
+Als Einstieg betrachten wir das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Dieser Datensatz ist auf OLAT in den Kursen verfügbar und wurde manuell aus dem angegebenen Buch in eine csv-Datei übertragen. Wir lesen die Daten ein und speichern sie auf dem Objekt  *wohnungen*.
+Wir geben die ersten Zeilen dieser Daten aus, um
+uns davon zu überzeugen:
+```{r lesen, results='hide', message=FALSE, echo=FALSE}
+# Trenner auf Semikolon setzen
+wohnungen <- read.csv2("data/wohnungen.csv")
+```
+
+```{r  message=FALSE}
+head(wohnungen)
+```
+# Kontingenztabellen
+Wir erzeugen jetzt eine Kontingenztabelle - andere Bezeichnungen dafür sind Kreuztabellen oder in Microsoft Excel eine Pivot-Tabelle. Dazu verwenden wir die Funktion *table*. Für die Arbeit mit ggplot ist es nützlich die Häufigkeiten
+im sogenannten long-Format zu haben. Dazu verwenden wir einen Gruppierung
+und erzeugen eine weitere Spalte mit den Häufigkeiten.
+
+```{r tables, message=FALSE}
+wohnungen.table <- table(wohnungen)
+head(wohnungen.table)
+
+wohnungen.long <- wohnungen %>%
+  group_by(Personen, Zimmer) %>%
+  mutate(value=n())
+
+wohnungen.long
+```
+
+Alternativen zu *table* sind die Funktionen *xtable* oder *prop.table*.
+Wir haben die Randhäufigkeiten für eine Kontingenztabelle
+eingeführt, dazu verwenden wir die Funktion *addmargins*:
+```{r examplemargins, message=FALSE}
+tabelle <- addmargins(wohnungen.table)
+```
+
+Wenn wir relative Häufigkeiten darstellen möchten, können wir das mit einer Kombination aus *addmargins* und *prop.table* erzeugen:
+```{r margins, message=FALSE}
+addmargins(prop.table(wohnungen.table))
+```
+
+Neben der Möglichkeit, diese Tabelle wie in der R-Konsole darzustellen
+können wir die Funktion *kable* verwenden:
+
+```{r kableTabelle, message=FALSE, results='asis'}
+kable(tabelle, caption="Kontingenztabelle mit Randhäufigkeiten")
+```
+
+ChiQuadrat und auch den (nicht korrigierten) Kontingenzkoeffizienten erhalten wir mit vcd::assocstats!
+
+Wir verwenden einen weiteren Datensatz *Beruf und Sport*, der [@bamberg_93] entnommen ist. Wir verändern diese Daten später auch so,
+dass in den Werte statistische Unabhängigkeit vorliegt.
+
+```{r lesenBerufSport, results='hide', message=FALSE, echo=FALSE}
+sporttemp <- read.csv2("data/beruf_sport.csv", sep=";", header=T)
+sport <- as.matrix(sporttemp[-1])
+# Kürzere Strings für eine bessere Ausgabe
+rownames(sport) <- c("Arbeiter", "Angestellter", "Beamter", "Landw.", "Freiberufler")
+colnames(sport) <- c("Nie", "Gelegenl.", "Regelm.")
+```
+
+```{r kableBerufSport, message=FALSE, results='asis', echo=FALSE}
+kable(sport, caption="Kontingenztabelle für den Datensatz *Beruf und Sport*")
+```
+
+# Visualisierung von Kontingenztabellen
+Wir betrachten hier verschiedene Möglichkeiten der Visualisierung. 
+Ganz einfach können wir solche Kontingenztabellen mit Hilfe von gestapelten Balkendiagrammen oder mehreren Boxplots visualisieren. Diese Abschnitte müssen noch realisiert werden,
+Beispiele dazu gibt es bereits. Heatmaps sollten hier auch noch aufgenommen werden.
+
+Wir betrachten aktuell die folgenden Möglichkeiten genauer:
+
+* Balkendiagramme
+* Streuungsdiagramme
+* Mosaikplots
+* Heatmaps angefangen, aber noch nicht korrekt
+
+## Balkendiagramme
+
+```{r bar, message=FALSE}
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=myPalette[2]),
+           show.legend=FALSE) + 
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) 
+
+ggsave(filename="familienZimmerBar.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=myPalette[2]),
+           show.legend=FALSE) + 
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) 
+
+ggsave(filename="familienGroesseBar.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+```
+
+Jetzt erstellen wir zwei Balkendiagramme, mit denen wir beide Merkmale
+in einer Darstellung wieder finden. Persönlich gefällt es mir besser, wenn wir die Balken nicht übereinander
+stapeln, sondern nebeneinander anzeigen.
+
+```{r stackedDodged, message=FALSE}
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen))) + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Personen in der Familie"))
+
+ggsave(filename="familienZimmerBarStacked.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer))) + 
+  labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Zimmer in der Wohnung"))
+
+ggsave(filename="familienGroesseBarStacked.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen)),
+           position="dodge") + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Personen in der Familie"))
+
+ggsave(filename="familienZimmerBarDodged.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer)),
+           position="dodge") + 
+  labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Zimmer in der Wohnung"))
+
+ggsave(filename="familienGroesseBarDodged.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Streuungsdiagramme
+Wir können ein *Streuungsdiagramm*, einen *scatter plot*, für die Werte eines Datensatzes mit zwei oder mehr Merkmalen verwenden. 
+Wir erstellen ein kartesisches Koordinatensystem und tragen die Merkmalsausprägungen für die beiden Merkmale darauf ab. 
+
+Streuungsdiagramme können wir bei sehr vielen Werten hervorragend verwenden,
+um einen Eindruck über die Verteilung der Wertepaare zu erhalten. 
+Wir verwenden dazu
+den in R enthaltenen Datensatz *diamonds* mit Daten über 
+mehr als 50 000 Diamanten wie Preis, das Gewicht in Karat und andere 
+Attribute. Das Streuungsdiagramm verwendet nur die ersten 1 000 Zeilen
+des Datensatzes. Das Ergebnis finden wir unterhalb der R-Anweisungen.
+
+```{r scatterDiamond, message=FALSE}
+set.seed(42)
+dsamp <- diamonds[sample(nrow(diamonds), 1000), ]
+diamondPlot <- ggplot(dsamp, aes(carat, price))
+diamondPlot + 
+   geom_point(aes(colour = clarity)) + 
+   labs(
+     title="Streuungsdiagramm für den Datensatz diamonds", 
+     x = "Gewicht in Karat", 
+     y="Preis in Dollar") + 
+  guides(colour=guide_legend(title="Reinheit (clarity)", size=2.0))
+```
+
+Jetzt erzeugen wir Streuungsdiagramme für den Datensatz Familienzimmer.
+Für jedes Paar von Merkmalsausprägungen, wie
+zum das Paar (2,2), tragen wir im Diagramm ein Symbol ein.
+
+```{r scatter2, message=FALSE, results='markup', echo=FALSE}
+p <- ggplot(wohnungen, aes(Zimmer, Personen)) 
+p + geom_point(color=myPalette[2], size=3.0,
+              show.legend=FALSE) +
+   labs(
+         title="Streuungsdiagramm für die Kontingenztabelle Familienzimmer",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Anzahl der Personen in der Familie"
+  ) 
+
+ggsave(filename="familienScatter.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Hier noch eine grafische Ausgabe, die die auftretenden Häufigkeiten
+mit Hilfe der Größe der Markierungen visualisiert. Mit der Funktion *geom_count()* können wir die Größe
+der Punkte an Hand der Häufigkeiten in der Kontingenztabelle
+verändern:
+
+```{r scatter3, message=FALSE}
+p + geom_count(color=myPalette[2]) + 
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Anzahl der Personen in der Familie"
+  ) +
+  guides(size=guide_legend(title="Absolute Häufigkeiten", size=2.0))
+
+ggsave(filename="familienScatterFreq.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+```
+
+## Mosaikplots
+Wir können die Häufigkeiten hinter den einzelnen Punkten mit Farben zu visualisieren, dadurch
+entsteht eine sogenannte Heatmap. Wenn wir Flächen für die Visualisierung
+verwenden entsteht ein Mosaikplot. Hier konzentrieren wir uns auf die Erstellung der grafischen Ausgaben, im folgenden Abschnitt wird darauf eingegangen, wie ein Mosaikplot erstellt wird.
+
+Das plot-Kommando in R ist generisch, dies haben wir schon mehrfach verwendet. Übergeben wir plot eine Kontingenztabelle, dann wird als Default ein Mosaikplot erstellt. Wir können wieder Überschriften, Farben und Achsen definieren und erhalten die Ausgabe. Oder wir verwenden
+die Funktion *mosaicplot*, als Datensatz Beruf und Sport.
+
+```{r mosaicBerufSport, message=FALSE}
+mosaicplot(sport, col=myPalette[2], main="Sportliche Betätigung und Berufe",
+           off = c(10, 10, 10, 10))
+```
+
+Die Analyse kann auf das Basis dieser Visualisierung sofort beginnen - es ist offensichtlich, dass die Gruppe der Arbeiter, die nie Sport treiben die größte Häufigkeit aufweist. 
+
+In der Vorlesung wird noch eine weitere Kontingenztabelle gezeigt,
+die nur aus 980 Werten besteht. Diese Daten sind als Datei
+*beruf_sport_indep.csv* verfügbar. Dieser Datensatz
+wurde so erstellt, dass wir zwei statistisch unabhängige
+Merkmale erhalten. Geben wir anschließend die Mosaikplot aus, dann erkennen wir
+auch an der Visualisierung, dass die Häufigkeiten für das eine Merkmal nicht vom anderen Merkmal abhängen. 
+
+```{r lesenBerufSportIndep, results='hide', message=FALSE, echo=FALSE}
+# Daten löschen und neu einlesen und erzeugen
+rm(sporttemp)
+sporttemp <- read.csv2("data/beruf_sport_indep.csv", sep=";", header=T)
+sportInd <- as.matrix(sporttemp[-1])
+# Kürzere Strings für eine bessere Ausgabe
+rownames(sportInd) <- c("Arbeiter", "Angestellter", "Beamter", "Landw.", "Freiberufler")
+colnames(sportInd) <- c("Nie", "Gelegenl.", "Regelm.")
+```
+
+```{r mosaicBerufSportIndep, message=FALSE, echo=FALSE}
+mosaicplot(sportInd, col=myPalette[2], main="Sportliche Betätigung und Berufe  - statistisch unabhängige Werte", off = c(10, 10, 10, 10))
+```
+
+### Konstruktion eines Mosaikplots
+wir konstruieren einen Mosaikplot in den folgenden Schritten:
+
+* Wir starten mit einer rechteckigen Fläche.
+* In Richtung der x-Achse wird die Fläche proportional zu den Häufigkeiten des ersten Merkmals unterteilt.
+* Für die Visualisierung des zweiten Merkmals werden die so entstandenen Flächen
+in Richtung der $y$-Achse unterteilt, proportional zu den H?ufigkeiten des zweiten Merkmals.
+* Weitere Merkmale werden analog eingetragen, dabei werden die x- und die y-Achse
+alternierend verwendet.
+
+Diese Visualisierung hat den offensichtlichen Vorteil, dass man auch mehr als zwei Merkmale visualisieren kann.
+
+Wir konstruieren nun schrittweite Mosaikplots und beginnen damit, die Verteilung
+der sportlichen Betätigung zu visualisieren.
+
+``` {r mosaicConstruct1, warning=FALSE, message=FALSE}
+mosaicplot(sportInd[1,], dir="h",
+           main = "Sportliche Betätigung im Datensatz Beruf und Sport",
+           col = c(myPalette[2]),
+           off = c(10, 10, 10, 10))
+```
+
+```{r mosaicConstruct1Save, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+# Erzeugen der Grafik und Abspeichern als png-File
+mosaicplot(sportInd[1,], dir="h",
+           main = "Sportliche Betätigung im Datensatz Beruf und Sport",
+           col = c(myPalette[2]),
+           off = c(10, 10, 10, 10))
+
+ggsave(filename="mosaicConstruct1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wenn wir die ganze Matrix angeben erhalten wir wieder die Abbildung oben.
+Wir können auch mehr als eine Farbe verwenden:
+
+``` {r mosaicConstruct2, warning=FALSE, message=FALSE}
+mosaicplot(sportInd, 
+           main = "Sportliche Betätigung im Datensatz Beruf und Sport",
+           col = c(myPalette[2], myPalette[1]),
+           off = c(10, 10, 10, 10))
+```
+
+```{r mosaicConstruct2Save, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+# Erzeugen der Grafik und Abspeichern als png-File
+# cex und cex.axis werden verändert, um die Texte größer zu gestalten.
+png(file= "images/mosaicConstruct2.png", width=1024, height=1024)
+mosaicplot(sportInd, 
+           main = "Sportliche Betätigung im Datensatz Beruf und Sport",
+           col = c(myPalette[2], myPalette[1]),
+           cex.axis=1.3, cex=3, 
+           off = c(10, 10, 10, 10))
+dev.off()
+```
+
+Wie bereits bemerkt können wir diese Visualisierung auf mehr als zwei
+Merkmale anwenden. Dazu verwenden wir den Datensatz *Titanic*.
+Wenn wir den Hilfetext mit *help(Titanic)* aufrufen erhalten wir die Information, dass der Datensatz vier Merkmale enthält.
+
+* Class: die Level 1st, 2nd, 3rd und Crew
+* Sex: Male und Female
+* Age: Child und Adult
+* Survived: No und Yes
+
+Wir sind daran interessiert, ob das Überleben vom Geschlecht abhängt. Also
+übergeben wir dies mit Hilfe einer Formel an die Funktion mosaicplot:
+``` {r titanic1, warning=FALSE, message=FALSE}
+mosaicplot(~ Sex + Survived, data=Titanic, 
+         main = "Überlebende auf der Titanic",
+         col = c(myPalette[2], myPalette[1]),
+         off = c(5, 5, 5, 5))
+```
+
+Jetzt erzeugen wir einen Mosaikplot mit drei Merkmalen:
+
+``` {r titanic2, warning=FALSE, message=FALSE}
+mosaicplot(~ Sex + Age + Survived, data=Titanic, 
+          main = "Überlebende auf der Titanic",
+          col = c(myPalette[2], myPalette[1]),
+          off = c(15, 15, 15, 15))
+```
+
+Für die Arbeit mit Kontingenztabellen ist das Package *vcd*
+sehr nützlich. Dort gibt es die alternative Funktion *mosaic*. Diese Funktion vertauscht Zeilen und Spalten. Und sie hat den Vorteil, dass auch eine Legende dargestellt werden kann:
+
+``` {r vcd1, warning=FALSE, message=FALSE}
+mosaic(sportInd, shade=TRUE, 
+       highlighting_fill=myPalette[2], 
+       highlighting = c(2), 
+       main="Sportliche Betätigung",
+       direction=c("v", "h"),
+       spacing=spacing_equal(1.5),
+       alternate_labels=TRUE,
+       zero_shade=FALSE)
+```
+
+Wenn wir aus der Matrix *sport* eine Kontingenztabelle machen, dann wird 
+statt A und B auch die korrekte Merkmalsbezeichung dargestellt.
+
+## Heatmaps
+Wir können eine Kontingenztabelle mit Hilfe einer  Heatmap visualiseren.
+Wir verwenden Farbe um die Häufigkeiten zu visualisieren. Dazu verwenden
+wir wieder den Datensatz der Wohnungen. Wir verwenden geom_tile, als 
+Datensatz verwenden wir wohnungen.long.
+
+```{r heatWohnungen, message=FALSE}
+ggplot(data=wohnungen.long) +
+  #scale_y_discrete(limits=c(1, 2, 3, 4)) + 
+  geom_tile(mapping=aes(x=Zimmer, y=Personen, fill=value)) + 
+  scale_fill_distiller(palette="Dark2", guide="legend",
+                       breaks=c(1,2,3)) +
+  guides(fill=guide_legend(title="Häufigkeiten")) +
+  labs(
+    title="Heatmap Wohnsituation", 
+    x="Anzahl der Zimmer in der Wohnung", 
+    y="Anzahl der Personen in der Familie"
+  )  
+```
+
+Wir erzeugen eine Heatmap für den Datensatz Beruf und Sport. Dazu müssen wir
+oben die Daten in long-Format bringen!
+
+
+# Literaturverzeichnis

@@ -1,0 +1,180 @@
+---
+title: "Das Beispiel Körpergröße von Frauen"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Benesch
+Der Datensatz enthält Angaben über die Körpergröße in cm von Fauen und ist dem Buch
+von Benesch [@benesch_13] entnommen.  Der Datensatz wird zum Beispiel als Motivation für die Einführung von
+Klassen für kardinale Merkmale und bei der Einführung von Histogrammen
+eingesetzt.
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read.csv2("data/koerpergroesse_frauen.csv")
+```
+
+# Visualisierungen
+
+## Balkendiagramme
+Jetzt geben wir die Daten grafisch aus. Wir beginnen mit Balkendiagrammen
+für die kardinalen Werte. Dabei bemerkt man schnell, dass es sinnvoll ist
+bei kardinalen Merkmalen Klassen zu bilden und aus dem Balkendiagramm
+ein Histogramm zu machen.
+
+Die erste Darstellung verwendet die Reihenfolge in der die Angaben in der 
+Datei stehen:
+```{r plotOrig, message=FALSE, results='markup'}
+# Plot absolute Häufigkeiten
+plotAbs <- ggplot(daten) + 
+  geom_bar(mapping=aes(x=Koerpergroesse), 
+           fill=myPalette[3]) +
+  labs(
+    title="Körpergröße von Frauen", 
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+
+plotAbs +  scale_x_continuous(limits=c(150, 185))
+
+ggsave(filename="koerpergroesse.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Histogramme
+Die Abbildung zeigt, dass wir mit diesem Balkendiagramm nicht viel anfangen
+können. Wir aggregieren die Werte und führen Klassen (bins) ein. Dabei
+gibt es sehr viele Möglichkeiten, wie wir die Klassengrenzen bilden.
+Das Argument *binwidth* kann die Ergebnisse einer Funktion
+übernehmen, zum Beispiel *binwidth=function(x) 2 * IQR(x) / (length(x)^(1/3)*,
+also eine anonyme Funktion. Alternativ kann man 
+einen Vektor mit Grenzen an *breaks* übergeben.
+Der Default für den Wert *bins* ist 30 und damit unbrauchbar - man muss
+also auf jeden Fall eigene und sinnvolle Klassen bilden.
+In der Vorlesung verwenden wir immer Klassen, die den rechten
+Wert noch enthalten, also Intervalle (a, b]. Das können
+wir auch ggplot übergeben, mit der Ästhetik *closed="right"*.
+In OpenOffice wurden die einzelnen Säulen noch mit einem Rahmen
+versehen, da das für eine bessere Sichtbarkeit sorgt. Dies
+erreichen wir mit der Option *color="black".
+
+Als erste Abbildung verwenden wir das Histogramm mit *geom_histogram*
+und die Klassen wie in der Folie. Wir beginnen also mit dem Wert
+von 152, die letzte Klasse endet bei 182 und die Klassenbreite
+ist 6. Das erreichen wir mit Hilfe von *breaks=seq(152, 182, 6)*.
+```{r plotHisto1, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="let", 
+          breaks=seq(152, 182, 6),
+          fill=myPalette[3], color="black") +
+    scale_x_continuous(limits=c(150, 185)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Klassenbreite 6",
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggsave(filename="koerpergroesseHisto1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Eine Alternative ist die halbe Klassenbreite. Wir verwenden
+10 Klassen:
+```{r plotHisto2, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          breaks=seq(152, 182, 3),
+          fill=myPalette[3], color="black") +
+    scale_x_continuous(limits=c(150, 185)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Klassenbreite 3",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggsave(filename="koerpergroesseHisto2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Median und Balkendiagramm
+Wir können das Balkendiagramm für diesen Datensatz dazu verwenden den Median
+zu visualisieren.
+
+```{r plotMedian, message=FALSE, results='markup'}
+# Balkendiagramm und Medianlinie
+plotAbs + 
+  geom_vline(xintercept = 166.5, colour="red", size=1.5) +
+  scale_x_discrete(limits=c(155,160,165,170,175,180)) 
+
+ggsave(filename="koerpergroesseMedian.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Boxplots
+```{r quantiles, message=FALSE, results='markup', echo=FALSE}
+# Wir berechnen die Quantile für die Ausgabe im Text
+quant <- quantile(daten$Koerpergroesse)
+
+Q1 <- quant[2]
+Q3 <- quant[4]
+```
+
+Wir verwenden das Beispiel bei der Einführung von Box-Plots und dem Interquartilsabstand. Der Median für die Körpergrößen ist
+`r median(daten$Koerpergroesse)`. Das erste Quartil ist durch `r Q1` und das
+dritte Quartil durch `r Q3` gegeben. Der Interquartilsabstand ist
+`r Q3-Q1`. Die Werte in den Vorlesungsfolien unterscheiden sich leicht davon,
+da hier ein alternativer Berechnungsalgorithmus verwendet wurde.
+Der Box-Plot ist auch nicht sehr interessant, wir haben keine Fernpunkte in den Daten.
+
+```{r plotBox, message=FALSE, results='markup'}
+box1 <-ggplot(daten) + 
+  geom_boxplot(mapping=aes(x="", y=Koerpergroesse),  
+          fill=myPalette[3], color="black") +
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x=" ",
+    y="Körpergröße"
+  ) 
+
+box1
+
+ggsave(filename="koerpergroesseBoxplot.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+box1 + coord_flip()
+
+ggsave(filename="koerpergroesseBoxplotVert.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis
+
+
+

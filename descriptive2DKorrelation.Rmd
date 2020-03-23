@@ -1,0 +1,180 @@
+---
+title: "Korrelation und lineare Modelle"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+bibliography: literatur.bib 
+---
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+
+```{r setup, echo=TRUE, warnings=FALSE, message=FALSE}
+# R Markdwon
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+library(tidyverse)
+library(modelr)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+```
+
+# Daten
+Als Datensatz verwenden wir das Beispiel aus den Folien.  den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92]. Wir lesen die Werte mit der Funktion *read_csv2* aus dem Package *Tidyverse* ein. Zusätzlich verwenden
+wir wie in den Folien den Datensatz *Größe und Gewicht*, der Daten über die Körpergröße und das Körpergewicht enthält.
+
+```{r daten, echo=TRUE, message=FALSE}
+daten <- read_csv2("data/wassergehalt.csv")
+
+kable(daten,
+      align="l",
+      caption="Tabelle 1: Der Datensatz Luftfeuchtigkeit (Angaben in %)",
+      col.names=c("Luftfeuchtigkeit", "Wassergehalt")) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"), 
+       full_width = T, 
+       position = "center")
+
+grgewicht <- read_csv2("data/groesse_gewicht.csv")
+
+kable(grgewicht,
+      align="l",
+      caption="Tabelle 2: Der Datensatz Größe und Gewicht (Angaben in cm bzw. kg)",
+      col.names=c("Körpergröße", "Gewicht")) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"), 
+       full_width = T, 
+       position = "center")
+```
+
+# Kovarianz, Korrelationskoeffizient und Streuungsdiagramm
+Bevor wir die Daten grafisch darstellen berechnen wir die Kovarianz und den Korrelationskoeffienten. Dazu verwenden wir die
+Funktionen *cov* und *cor*:
+
+```{r koeffizienten, echo=TRUE, message=FALSE}
+# Korrektur
+n <- length(daten$Wassergehalt)
+((n-1)/n)*cov(daten$Luftfeuchtigkeit, daten$Wassergehalt, method="pearson")
+cor(daten$Luftfeuchtigkeit, daten$Wassergehalt, method="pearson")
+```
+
+Wie schon bei der Varianz müssen wir das Ergebnis der Funktion *cov* korrigieren, denn R verwenden die korrigierte Version mit
+dem Teiler n-1.
+
+Der Korrelationskoeffizient hat mit 0.98 einen Wert der sehr nahe bei 1 liegt. Das bedeutet, dass wir einen linearen Zusammenhang mit positiver Steigung vorliegen haben.
+
+Da wir vermuten, dass wir ausgehend von der Luftfeuchtigkeit auf den Wassergehalt schließen können, legen wir im Streuungsdiagramm die Luftfeuchtigkeit 
+auf die x- und den Wassergehalt auf die y-Achse.
+Die Wertepaare
+im Streuungsdiagramm geben wir mit *geom_point* aus.
+
+```{r scatter, echo=TRUE, results='markup'}
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  labs(
+    title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+
+```
+
+Das Streuungsdiagramm bestätigt den Wert des Korrelationskoeffizienten. Man sieht gut, dass wir versuchen sollten ein lineares Modell aufzustellen.
+
+Hier noch die Berechnungen für die Werte auf den Folien
+mit dem Datensatz *Größe und Gewicht*. Auch hier müssen wir
+die Korrektur für den Faktor 1/n durchführen.
+
+```{r parameterGewicht, echo=TRUE, message=FALSE}
+n <- length(grgewicht$Gewicht)
+
+((n-1)/n)*cov(grgewicht$Groesse, grgewicht$Gewicht)
+
+cor(grgewicht$Groesse, grgewicht$Gewicht, method="pearson")
+```
+
+# Berechnung eines linearen Modells
+Die Regressionsgerade, das lineare Modell für unsere Daten, berechnen wir mit Hilfe der Funktion *lm*. In der Ausgabe dieser Funktion können wir die berechnete Steigung und den Achsenabschnitt abfragen. Mit *summary(sim)*
+können wir auch eine Zusammenfassung der Ergebnisse abfragen. Hier finden wir
+wieder die Koeffizienten und unter *Multiple R-squared* auch den Werte des Bestimmungsmaßes. Ziehen wir aus diesem Wert erhalten wir den Korrelationskoeffizienten.
+
+Wir berechnen jetzt das lineare Modell und geben das Ergebnis gemeinsam
+mit dem Streuungsdiagramm der Daten aus. Dazu speichern wir die Steigung und
+den Achsenabschnitt in einem Vektor *mbSim*. 
+
+
+```{r model, echo=TRUE}
+sim <- lm(Wassergehalt ~ Luftfeuchtigkeit, data = daten)
+summary(sim)
+
+mbSim <- coef(sim)
+```
+
+Wir fügen dem Streuungsdiagramm die berechnete Gerade mit Hilfe der Funktion
+*geom_abline* hinzu. Die berechneten Werte für die Steigung und den Achsenabschnitt fügen wir der Beschriftung der Grafik hinzu.
+
+```{r scatterAB, echo=TRUE, results='markup'}
+ggplot(daten) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color="blue") +
+  geom_abline(intercept=mbSim[1], slope=mbSim[2], color="red") +
+  labs(
+    title="Lineares Modell Luftfeuchtigkeit und Wassergehalt", 
+    subtitle=paste("m = ", format(mbSim[2], digits=2), 
+                   " b = ", format(mbSim[1], digits=2)),
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+```
+
+# Vorhersagen
+Die Hauptanwendung für ein solches lineare Modell ist es, Vorhersagen für nicht gemessene Werte der Luftfeuchtigkeit zu machen. Dafür gibt es in R
+die Funktion *predict*. Dazu erzeugen wir einen neuen data.frame mit den x-Werte, für die wir Vorhersagen suchen und setzen diese Werte in *predict* ein:
+
+```{r Vorhersagen, echo=TRUE}
+luft <- data.frame(Luftfeuchtigkeit = c(60.0, 70.0)); 
+
+predict(sim, luft)
+```
+
+Bei 60 Prozent Luftfeuchtigkeit sagt unser Modell einen Wassergehalt von 16.8 Prozent voraus. Für 70 Prozent Luftfeuchtigkeit wird ein Wert von 19.2 Prozent vorhergesagt.
+
+
+# Residualplot
+
+In der Vorlesung hatten wir einen Residualplot erzeugt, um die Qualität des erstellten Modells einzuschätzen. Dazu verwenden wir die Funktion 
+*add_residuals* aus dem Package *modelr*.
+
+```{r res, echo=TRUE}
+daten <- daten %>%
+  add_residuals(sim)
+```
+
+In die grafische Darstellung legen wir jetzt die neu berechnete Spalte
+mit dem Namen *resid* und fügen eine Referenzlinie bei y=0 hinzu:
+
+```{r resPlots, echo=TRUE, results='markup'}
+ggplot(daten, aes(Luftfeuchtigkeit, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color="orange") +
+  labs(
+    title="Residualplot für den Wassergehalt", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Residuen"
+  ) 
+```
+
+Wenn sich die dargestellten Residuen mehr oder weniger zufällig um die Referenzlinie verteilen können wir davon ausgehen, dass wir keinen systematischen Fehler im Modell haben. Sind Muster im Residualplot zu sehen sollte man nach anderen, nicht-linearen Modellen suchen.
+
+# Literaturverzeichnis

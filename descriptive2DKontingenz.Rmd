@@ -1,0 +1,172 @@
+---
+title: "Kontingenzanalyse"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Packages laden
+library(tidyverse)
+
+library(vcd)
+library(DescTools)
+
+library(knitr)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+
+# Daten
+Wir betrachten das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Wir lesen die Daten ein und speichern sie auf dem Objekt  *wohnungen*.
+
+```{r lesen, results='hide', message=FALSE, echo=TRUE}
+# Trenner auf Semikolon setzen
+wohnungen <- read_csv2("data/wohnungen.csv")
+```
+
+# Kontingenztabellen
+Wir erzeugen aus den Daten eine Kontingenztabelle - andere Bezeichnungen dafür sind Kreuztabellen oder in Microsoft Excel Pivot-Tabelle. Dazu verwenden wir die Funktion *table*.
+
+```{r tables, message=FALSE}
+wohnungen.table <- table(wohnungen)
+head(wohnungen.table)
+```
+
+Alternativen zu *table* sind die Funktionen *xtable* oder *prop.table*.
+Die Funktion *prop.table* erzeugt eine Kontingenztabelle mit relativen
+Häufigkeiten.
+
+Wir haben die Randhäufigkeiten für eine Kontingenztabelle
+eingeführt, dazu verwenden wir die Funktion *addmargins*:
+```{r examplemargins, message=FALSE}
+tabelle <- addmargins(wohnungen.table)
+```
+
+Wenn wir relative Häufigkeiten darstellen möchten, können wir das mit einer Kombination aus *addmargins* und *prop.table* erzeugen:
+```{r margins, message=FALSE}
+addmargins(prop.table(wohnungen.table))
+```
+
+Neben der Möglichkeit, diese Tabelle wie in der R-Konsole darzustellen
+können wir die Funktion *kable* verwenden:
+
+```{r kableTabelle, message=FALSE, results='asis'}
+kable(tabelle, 
+      caption="Kontingenztabelle mit Randhäufigkeiten",
+      align="l") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+# Kontingenzanalyse
+Für die Kontingenzanalyse gibt es eine Reihe von Parametern.
+Diese beruhen alle auf dem Chi-Quadrat Parameter, der jedoch
+den Nachteil hat, dass er schwer zu interpretieren ist.
+
+In der Vorlesung führen wir den Kontingenzparameter und den korrigierten Kontingenzparameter ein. Ein weiterer normierter
+Parameter ist Cramer's V.
+
+ChiQuadrat und den korrigierten) Kontingenzkoeffizienten erhalten wir im Package *vcd* mit der Funktion *assocstats*. Den Wert
+für den chi-quadrat Parameter erhalten wir in der Ausgabe
+der Funktion. Der Wert wird Pearson X^2 angegeben.
+Den nicht korrigierten Kontingenzkoeffizienten C
+finden wir ebenfalls in der Ausgabe oder
+mit der Bezeichnung *cont*. Cramer's V erhalten wir
+analog.
+
+```{r assocstats, message=FALSE}
+assocstats(wohnungen.table)
+
+assocstats(wohnungen.table)$cont
+
+assocstats(wohnungen.table)$cramer
+```
+
+Das Package
+*DescTools* enthält eine ganze Reihe von Funktionen, die 
+diese und noch weitere Parameter berechnen. Den unkorrigierten
+und den korrigierten Kontingenzkoeffizienten erhalten
+wir mit der Funktion *ContCoef*, Cramer's V mit
+*CramerV*. Diese Funktionen haben den Vorteil, dass
+wir auch mit zwei Spalten eines Datensatzes arbeiten können,
+ohne vorher eine Kontingenztabelle zu bauen.
+
+
+```{r DescTools, message=FALSE}
+ContCoef(wohnungen.table)
+
+ContCoef(wohnungen.table, correct=TRUE)
+
+CramerV(wohnungen.table)
+```
+
+
+# Visualisierung von Kontingenztabellen
+Wir betrachten kurz die Visualisierung von Kontingenztabellen mit Hilfe
+von Balkendiagrammen.
+
+```{r stackedDodged, message=FALSE, echo=TRUE}
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen))) + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Personen in der Familie"))
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer))) + 
+  labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Zimmer in der Wohnung"))
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen)),
+           position="dodge") + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Personen in der Familie"))
+
+
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer)),
+           position="dodge") + 
+  labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Anzahl der Zimmer in der Wohnung"))
+```
+
+
+
+
+# Literaturverzeichnis

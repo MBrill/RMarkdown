@@ -1,0 +1,59 @@
+---
+title: "Grafische Ausgabe der von stetigen Verteilungen - Exponentialverteilung"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Die Dichte und Verteilung der Exponentialverteilung
+
+Analog zu den Bildern zur Normalverteilung können wir auch 
+eine Darstellung für die Exponentialverteilung produzieren.
+Wir verändern noch den Bereich der x-Werte, da wir
+nur positive Werte von x einsetzen.
+
+```{r expo, echo=TRUE}
+daten <- tribble(
+  ~x,
+  0,
+  6
+)
+
+expoDens <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = dexp, n = 1001, args = list(rate = 1),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Dichte der Exponentialverteilung",
+    y=""
+  ) 
+
+expoDens
+
+ggsave(filename="expoDens.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+expoDistri <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = pexp, n = 1001, args = list(rate = 1),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Verteilung der Exponentialverteilung",
+    y=""
+  ) 
+
+expoDistri
+
+ggsave(filename="expoDistri.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```

@@ -1,0 +1,27 @@
+# gitignore for the OpenOLAT Rmdfiles project
+
+## Editors:
+# WinEdt and vim
+*.bak
+*.sav
+*.prj
+
+*~
+*.un~
+
+# Folders with binaries and not versioned files
+# We do not version the bitmaps!
+images/
+
+## Rmd files
+# HTML from Rmd is not versioned!
+**/*.html
+# Ignore R files
+Rmd/.Rhistory
+# Ignore markdown output for the Github-Example
+*.md
+exampleGithub_files/
+# Shiny example
+**/Example/
+# Daten ignorieren, das sind Kopien!
+data/

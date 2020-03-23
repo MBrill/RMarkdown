@@ -1,0 +1,89 @@
+---
+title: "Scheinkorrelation"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+library(knitr)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Accent")
+options(digits=3)
+```
+
+# Beispiel
+Dieser Text beschreibt das Beispiel zum Thema Scheinkorrelation aus Fahrmeir et. al. Wir verwenden zwei Datensätze: einmal wortschatz.csv, der Angaben zur Körpergröße und zum Wortschatz von Kindern enthält. Und den Datensatz wortschatz2.csv, der zusätzlich Angaben über das Alter der Kinder enthält. Ziel des Beispiels ist es zu zeigen, dass in wortschatz.csv nur eine Scheinkorrelation entsteht. Der Zusammenhang wird über das dritte, in wortschatz2.csv enthaltene Merkmal des Alters erklärbar.
+
+# Import der Datensätze
+Wir lesen die Daten mit read.csv2 ein:
+```{r read}
+data <- read.csv2(file="data/wortschatz.csv", header=TRUE)
+data2 <- read.csv2(file="data/wortschatz2.csv", header=TRUE)
+```
+
+Die Körpergröße ist im Datensatz in Zentimeter angegeben. Der Wortschatz wird
+durch die in einem in den Sommerferien verfassten Text Worte beschrieben. Das Lebensalter
+ist in Jahren angegeben.
+
+Hier die Werte zum Wortschatz und Körpergröße:
+```{r show, echo=FALSE}
+kable(data)
+```
+
+Und hier die Werte, ergänzt um eine Spalte mit Angaben zur Körpergröße:
+```{r show2, echo=FALSE}
+kable(data2)
+```
+
+# Wortschatz und Körpergröße
+Da beide Merkmale in wortschatz.csv kardinal sind können den Korrelationskoeffizienten berechnen
+und erhalten einen Wert von `r cor(data$Wortschatz, data$Körpergrösse, method="pearson")`. Dieser
+Wert deutet eigentlich auf einen relativen lineare Zusammenhang hin. 
+
+Auch das Streuungsdiagramm untertützt diesen Wert:
+```{r scatter}
+ggplot(data, aes(Wortschatz, Körpergrösse)) +
+       geom_point(color=myPalette[1], size=3) +
+       labs(title="Wortschatz und Körpergröße")
+
+ggsave(filename="wortschatzGroesse.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Eine Scheinkorrelation
+Schon der gesunde Menschenverstand sagt uns, dass dieser Zusammenhang keinen Sinn macht.
+Wenn wir das dritte Merkmal jeweils mit dem Wortschatz und der Körpergröße betrachten
+erhalten wir die beiden folgenden Streuungsdiagramme:
+
+```{r scatter2}
+ggplot(data2, aes(Alter, Wortschatz)) +
+       geom_point(color=myPalette[1], size=3) +
+       labs(title="Wortschatz und Lebensalter")
+
+ggsave(filename="alterWortschatz.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+ggplot(data2, aes(Alter, Körpergrösse)) +
+       geom_point(color=myPalette[1], size=3) +
+       labs(title="Körpergröße und Lebensalter")
+
+ggsave(filename="alterGroesse.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Natürlich erwarten wir steigendem Lebensalter sowohl einen größeren Wortschatz und auch
+eine Körpergröße, was die beiden Streuungsdiagramme auch nahe legen. Auch 
+die Korrelationskoeffizienten haben entsprechende Werte. Der Pearson-Koeffizient
+zwischen Lebensalter und Wortschatz ist durch **`r cor(data2$Wortschatz, data2$Alter, method="pearson")`** gegeben. Der Korrelationskoeffizient zwischen Körpergröße
+und Lebensalter ist mit **`r cor(data2$Körpergrösse, data2$Alter, method="pearson")`**
+noch deutlich höher, wie auch zu erwarten war.

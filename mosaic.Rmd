@@ -1,0 +1,203 @@
+---
+title: "Mosaikplots und Kontingenztabellen"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  pdf_document: 
+    fig_caption: yes
+    highlight: tango
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Initialisierung und Farbtabellen
+Wir gehen immer davon aus, dass die R-Projekte in einem Verzeichnis zusammen gefasst sind und dass die verschiedenen Assets in entsprechenden Unterverzeichnissen zusammen gefasst wurden. Das Arbeitsverzeichnis wird von Knit auf das aktuelle
+Verzeichnis gesetzt. Die Rmd-Datei steht immer im Wurzelverzeichnis des Projekts, so dass alle weiteren Pfade relativ dazu angegeben werden können.
+
+Wie bei allen Beispielen verwenden wir eine Farbpalette, die aus ColorBrewer entnommen ist:
+```{r message=FALSE}
+library(RColorBrewer)
+myPalette <- brewer.pal(7, "Accent")
+```
+
+Farbangaben beziehen sich ab sofort auf diese Variable.
+
+# Kontingenztabellen
+In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ein Merkmal enthalten und untersuchen den Zusammenhang zwischen zwei oder mehr Merkmalen.
+
+Als Einstieg betrachten wir das Beispiel der *ohnsituation*, ein Datensatz, der Bamberg und Baur entnommen ist. Dieser Datensatz ist auf OLAT in den Kursen verfügbar und wurde manuell aus dem Buch in eine csv-Datei übertragen. Der folgende R-Code wurde von RStudio erzeugt, nach dem Auswählen der Datei und dem Ansehen
+der Daten. Wichtig ist, den Trenner auf das Semikolon zu setzen:
+```{r results='hide', message=FALSE, warning=FALSE}
+library(readr)
+wohnungen <- read_delim("data/wohnungen.csv", ";", 
+                        escape_double = FALSE, trim_ws = TRUE)
+                        
+```
+In der Variablen "wohnungen" liegen jetzt, wie auf den Vorlesungsfolien, eine
+x- und eine y-Variable. Wir geben die ersten Zeilen dieser Daten aus, um
+uns davon zu überzeugen:
+```{r  message=FALSE}
+head(wohnungen)
+```
+Wir erzeugen jetzt eine Kontingenztabelle - andere Bezeichnungen dafür sind Kreuztabellen oder in Microsoft Excel eine Pivottabelle. Dazu verwenden wir
+die Funktion **table**:
+```{r message=FALSE}
+wohnungen.table <- table(wohnungen)
+head(wohnungen.table)
+```
+Alternativen zu *table* sind die Funktionen *xtable* oder *prop.table*.
+Wir haben die Randhäufigkeiten für eine Kontingenztabelle
+eingeführt, dazu verwenden wir die Funktion *addmargins*:
+```{r message=FALSE}
+addmargins(wohnungen.table)
+```
+
+Wenn wir Prozentangaben möchten können wir das mit einer Kombination
+aus *addmargins* und *prop.table* erzeugen:
+```{r message=FALSE}
+addmargins(prop.table(wohnungen.table))
+```
+# Visualisierung von Kontingenztabellen
+Wir können ein Streuungsdiagramm für die Werte in der csv-Datei erstellen.
+Dies führen wir wie hier durch:
+```{r message=FALSE}
+plot(wohnungen, main="Wohnsituation",
+     xlab="Anzahl der Personen in der Familie", 
+     ylab="Anzahl der Zimmer in der Wohnung", col=myPalette[3], 
+     pch=20, cex=3, axes=F)
+axis(side=1, c(1,2,3,4,5))
+axis(side=2, c(1,2,3,4,5))
+```
+
+Wir könnten jetzt versuchen, die Häufigkeiten hinter den einzelnen Punkten mit Farben zu visualisieren. Aber es gibt eine Visualisierung von Kontingenztabellen,
+die diese Häufigkeiten direkt anzeigt. Und ein Mosaik-Plot, so heisst diese Visualisierung, hat den Vorteil, dass wir sogar mehr als zwei Merkmale
+damit visualisieren können. Hier konzentrieren wir uns auf die Erstellung der grafischen Ausgaben, im folgenden Abschnitt wird darauf eingegangen, wie ein Mosaikplot erstellt wird.
+
+Das plot-Kommando in R ist generisch, dies haben wir schon mehrfach verwendet. Übergeben wir plot eine Kontingenztabelle wie wohnungen.table, dann wird als Default ein Mosaikplot erstellt. Wir können wieder Überschriften, Farben und Achsen definieren und erhalten die Ausgabe.
+```{r message=FALSE}
+plot(wohnungen.table, col=myPalette[1], main="Wohnsituation")
+```
+
+Diese Visualisierung verwendet die Häufigkeiten in der Kontingenztabelle und stellt diese als Flächen dar.
+Je größer die Fläche, desto größer die Häufigkeit.
+
+In den Lehrveranstaltungen verwenden wir ein weiteres Beispiel, das ebenfalls Bamberg und Baur entnommen ist. Hier geht es um die Untersuchung, ob die Tatsache, dass man sich sportlich betätigt von der Art der beruflichen Tätigkeit abhängt. Hauptziel der Betrachtung dieses Datensatzes ist es, den Begriff der statistischen Häufigkeit zu motivieren, die wir anschließend in der Kontingenzanalyse einsetzen.
+Die Daten in diesem Datensatz liegen bereits als Kontingenztabelle vor,
+mit Hilfe von *as.matrix* wandeln wir sie nach dem Einlesen in eine Tabelle um:
+
+```{r message=FALSE}
+sporttemp <- read.csv2("data/beruf_sport.csv", sep=";", header=T)
+sport <- as.matrix(sporttemp[-1])
+rownames(sport) <- c("Arbeiter", "Angestellter", "Beamter", "Landwirt", "Freiberufler")
+```
+Wir verkürzen noch die Spaltennamen, damit die Ausgaben in der Grafik besser lesbar werden und geben den mosaicplot aus:
+```{r message=FALSE}
+# Kürzere Strings für eine bessere Ausgabe
+colnames(sport) <- c("Nie", "Gelegenl.", "Regelm.")
+# Plot
+mosaicplot(sport, col=myPalette[1], main="Sportliche Betätigung und Berufe")
+```
+
+Die Analyse kann auf das Basis dieser Visualisierung sofort beginnen - es ist offensichtlich, dass die Arbeiter, die nie Sport treiben die größte Häufigkeit aufweisen. 
+
+In der Vorlesung wird noch eine weitere Kontingenztabelle gezeigt,
+die nur aus 980 Werten besteht. Diese Daten sind als Datei
+*beruf_sport_indep.csv* verfügbar und werden genauso wie die bisher verwendeten Daten eingelesen. Geben wir anschließend die Mosaikplot aus, dann erkennen wir
+auch an der Visualisierung, dass die Häufigkeiten für das eine Merkmal nicht vom anderen Merkmal abhängen. Die folgenden Abbildung zeigt den Mosaikplot dafür:
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+rm(sporttemp, sport)
+sporttemp <- read.csv2("data/beruf_sport_indep.csv", sep=";", header=T)
+sport <- as.matrix(sporttemp[-1])
+rownames(sport) <- c("Arbeiter", "Angestellter", "Beamter", "Landwirt", 
+         "Freiberufler")
+# Kürzere Strings für besser Ausgabe
+colnames(sport) <- c("Nie", "Gelegenl.", "Regelm.")
+# Plot
+mosaicplot(sport, col=myPalette[1], main="Sportliche Betätigung und Berufe - statistisch unabhängige Werte")
+```
+
+# Konstruktion eines Mosaikplots
+wir konstruieren einen Mosaikplot in den folgenden Schritten:
+
+* Wir starten mit einer rechteckigen Fläche.
+* In Richtung der x-Achse wird die Fläche proportional zu den Häufigkeiten des ersten Merkmals unterteilt.
+* Für die Visualisierung des zweiten Merkmals werden die so entstandenen Flächen
+in Richtung der $y$-Achse unterteilt, proportional zu den H?ufigkeiten des zweiten Merkmals.
+* Weitere Merkmale werden analog eingetragen, dabei werden die x- und die y-Achse
+alternierend verwendet.
+
+Diese Visualisierung hat den offensichtlichen Vorteil, dass man auch mehr als zwei Merkmale visualisieren kann.
+
+Wir zeigen im Folgenden die Erstellung von Mosaikplots und verwenden dafür
+den Datensatz *Titanic*, der in der Default-Installation vorhanden ist.
+Wenn wir den Hilfetext mit *help(Titanic)* aufrufen erhalten wir die Information, dass der Datensatz vier Merkmale enthält.
+
+* Class: die Level 1st, 2nd, 3rd und Crew
+* Sex: Male und Female
+* Age: Child und Adult
+* Survived: No und Yes
+
+Wir konstruieren nun schrittweite Mosaikplots und beginnen damit, die Verteilung
+der Geschlechter zu visualisieren:
+``` {r message=FALSE}
+mosaicplot(~ Sex, data=Titanic, 
+           main = "Verteilung des Geschlechts innerhalb der Titanic-Passagiere",
+           col = c(myPalette[1]),
+           off = c(5, 5, 5, 5))
+```
+
+Wir sind daran interessiert, ob das Überleben vom Geschlecht abhängt. Also
+übergeben wir dies mit Hilfe einer Formel an die Funktion mosaicplot:
+``` {r message=FALSE}
+mosaicplot(~ Sex + Survived, data=Titanic, 
+         main = "Überlebende auf der Titanic",
+         col = c(myPalette[1], myPalette[3]),
+         off = c(5, 5, 5, 5))
+```
+
+Die Option *off* sorgt dafür, dass etwas mehr Zwischenräume zwischen den einzelnen Rechtecken verwendet wird.
+
+Wir könnten die gleiche Abbildung auch auf der Basis einer Kontingenztabelle
+erzeugen, die wir Hilfe von *apply* erzeugen:
+```{r message=FALSE}
+titanic.table <- apply(Titanic, c(2,4), sum)
+mosaicplot(titanic.table,  
+           main = "Überlebende auf der Titanic - mit Hilfe von apply",
+           col = c(myPalette[1], myPalette[3]),
+           off = c(5, 5, 5, 5))
+```
+
+Wir verwenden jetzt wieder die Möglichkeit, eine Formel und einen
+Datensatz anzugeben und erzeugen einen Mosaikplot mit drei Merkmalen:
+
+``` {r message=FALSE}
+titanic.table2 <- apply(Titanic, c(2,3,4), sum)
+mosaicplot(~ Sex + Age + Survived, data=Titanic, 
+          main = "Überlebende auf der Titanic",
+          col = c(myPalette[1], myPalette[3]))
+```
+
+Neben der Funktion *mosaicplot* gibt es im Package *vcd* auch die Funktion *mosaic*. Diese Funktion vertauscht Zeilen und Spalten und hat den Vorteil, dass auch eine Legende dargestellt werden kann:
+
+``` {r message=FALSE}
+library(vcd)
+mosaic(wohnungen.table, shade=TRUE, highlighting_fill=myPalette[1], highlighting = c(2), zero_shade=T)
+```
+
+In der Funktion *mosaic* wird ein Fit durchgeführt, wenn wir
+die Legende aktivieren, dann wird dargestellt, wie die vorläufigen
+Häufigkeiten mit den aus den Randhäufigkeiten berechneten
+erwarteten Häufigkeiten korrelieren, wenn die betrachteten Merkmale
+statistisch unabhängig wären:
+
+``` {r message=FALSE}
+mosaic(~ Class+Sex, data=Titanic, shade=TRUE, legend=TRUE)
+```
+
+Blau bedeutet, dass die Häufigkeiten größer sind als die erwarteten
+Häufigkeiten, rot das Gegenteil.

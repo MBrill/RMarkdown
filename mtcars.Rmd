@@ -1,0 +1,129 @@
+---
+title: "Das Beispiel cars"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Standard-Datensatz in R - mtcars mpg
+Der Datensatz enthält Angaben über PKWs, die einer Ausgabe der Zeitschrift
+*Motor Trend US* aus dem Jahr 1974 entnommen sind. Neben dem Benzin-Verbrauch
+sind noch 10 weitere Merkmale aufgeführt. Es gibt Daten über 32 Automobile
+aus dem Modelljahr 1973-1974. Die Merkmale sind
+- Name
+- mpg - Verbrauch in miles per gallon
+- Anzahl der Zylinder
+- Hubraum
+- Leistung in PS
+
+und weitere Angaben, zum Beispiel die Anzahl der Gänge oder ob es sich um ein
+Automatikgetriebe handelt. Der Datensatz kann einfach geladen werden.
+Wir müssen die Daten noch etwas bearbeiten, zum Beispiel die Anzahl der
+Zylinder in der Spalte *cyl* zu einem Faktor machen.
+
+
+```{r daten, message=FALSE, echo=FALSE}
+data(mtcars)
+mtcars$cyl <- as.factor(mtcars$cyl)
+```
+
+Der Datensatz mpg enthält ähnliche Daten über 38 Autos aus den Jahren 1999 bis 2008.
+Wir erhalten 234 Zeilen und 11 verschiedene Merkmale.
+
+# Visualisierungen
+
+## Boxplots für mtcars
+Wir verwenden den Datensatz unter Anderem als Beispiel für einen Boxplot,
+der mehrere Merkmale in einer Visualisierungen darstellt.
+Dabei gruppieren wir nach Anzahl der Zylinder und stellen mit Hilfe
+von Boxplots die Leistung in PS dar.
+
+
+```{r plotBox, message=FALSE, results='markup'}
+box1 <-ggplot(mtcars, aes(x=cyl, y=hp)) + 
+  geom_boxplot( fill=myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz mtcars", 
+    subtitle="",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="Anzahl der Zylinder",
+    y="Leistung in PS"
+  ) 
+
+box1
+
+ggsave(filename="mtcarsBoxplot.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+box1 + coord_flip()
+
+ggsave(filename="mtcarsBoxplotVert.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Boxplots für mpg
+Dieses Beispiel ist aus den Hilfeseiten zu *geom_boxplot()* entnommen.
+Wir geben den Verbrauch in mpg auf der Autobahn aus, dabei gruppieren
+wir nach der Art des Autos.
+
+```{r plotBoxMpg, message=FALSE, results='markup'}
+box2 <- ggplot(mpg, aes(x=class, y=hwy)) + 
+  geom_boxplot(fill=myPalette[3], color="black",
+              outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz mpg", 
+    subtitle="",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="Klasse",
+    y="Verbrauch auf Highway in Meilen pro Gallone"
+  ) 
+
+box2
+
+ggsave(filename="mpgBoxplot.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+box2 + coord_flip()
+
+ggsave(filename="mpgBoxplotVert.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+Der Datensatz enthält auch Angaben über den Verbrauch innerhalb einer Stadt in der Spalte cty. Wir erstellen auch dafür einen Box-Plot.
+
+```{r plotBoxMpg2, message=FALSE, results='markup'}
+box3 <- ggplot(mpg, aes(x=class, y=cty)) + 
+  geom_boxplot(fill=myPalette[3], color="black",
+              outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz mpg", 
+    subtitle="",    
+    caption="Erstellt mit ggplot2 3.1.0",
+    x="Klasse",
+    y="Verbrauch innerhalb einer Stadt in Meilen pro Gallone"
+  ) 
+
+box3 + coord_flip()
+
+ggsave(filename="mpgBoxplot2Vert.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```

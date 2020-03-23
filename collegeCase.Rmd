@@ -1,0 +1,119 @@
+---
+title: "Die Fallstudie College"
+author: "Manfred Brill"
+date: "Sommersemester 2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(ISLR)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Daten
+Der Datensatz enthält Angaben über `r nrow(College)` US-amerikanische College und stammt
+aus dem ISLR-Package und [@tibshirani_13]. Wenn wir ISLR laden stehen die Daten
+in der Variable *College* zur Verfügung.
+
+In Tabelle 1 finden wir die ersten 10 Zeilen der Daten:
+```{r tabelle, message=FALSE, results='markup', echo=FALSE}
+kable(head(College),
+        align="l",
+        caption="Tabelle 1: Datensatz College - die ersten 10 Einträge") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Wir verschaffen uns einen Überblick über die Daten:
+```{r parameter, message=FALSE, echo=TRUE, eval=FALSE}
+summary(College)
+```
+
+Im Text wird eine neue Spalte angelegt, mit der wir
+Elite-Hochschulen kennzeichnen. Wir erledigen das mit Hilfe
+von Tidyverse:
+
+```{r elite, echo=TRUE}
+College <- College %>%
+   mutate(
+     Elite = Top10perc>50
+   )
+# Wir machen die neue Spalte zu einem factor
+College$Elite <- as.factor(College$Elite)
+
+summary(College$Elite)
+```
+
+Wir sehen, dass die Mehrzahl der Einträge nicht in die Kategorie *Elite* fällt.
+
+Im Folgenden werden die Aufgaben immer mit Hilfe von plot/histogram
+und mit Hilfe von ggplot gelöst.
+
+# Analyse mit Hilfe von plot
+
+Die Ausgabe von *summary* ist ziemlich lang. Wir können
+alternativ einige Verteilungen von Merkmalen machen:
+
+```{r histogramme, results='markup'}
+par(mfrow=c(2,2))
+hist(College$Outstate, col=myPalette[2])
+hist(College$Books, col=myPalette[2])
+hist(College$Expend, col=myPalette[2])
+hist(College$Enroll, col=myPalette[2])
+```
+
+Wir erstellen eine grafische Darstellung der Verteilung
+des Merkmals *Elite*.
+
+```{r elitePlot, echo=TRUE, results='markup'}
+tab <- table(College$Elite)
+barplot(tab, main="Verteilung des Merkmals Elite", col=myPalette[1])
+```
+
+Wir können die Funktion *plot* einsetzen und einen Boxplot
+erstellen, der darstellt, wie sich die beiden Merkmale *Private*
+und *Outstate* beeinflussen.
+
+```{r boxplot1, echo=TRUE, results='markup'}
+plot(College$Outstate ~ College$Private, main="Nicht-Landeskinder und private Hochschulen", col=myPalette[1], horizontal=TRUE)
+```
+
+Man sieht deutlich, dass die *Nicht-Landeskinder* eher an private
+Hochschule gehen. Eine ähnliche Abbildung erzeugen wir, indem wir
+*Private* durch *Elite* ersetzen. Auch hier erkennt man, dass
+das Merkmal *Elite*, noch stärker als *PRIVATE*, dafür sorgt, dass mehr *Nicht-Landeskinder an einer Hochschule studieren. Dabei 
+muss bemerkt werden, dass es auch staatliche Universitäten gibt,
+die unter das Merkmal Elite fallen.
+
+
+```{r boxplot2, echo=TRUE, results='markup'}
+plot(College$Outstate ~ College$Elite, main="Nicht-Landeskinder und Elite-Hochschulen", col=myPalette[2], horizontal=TRUE)
+```
+
+Wir erstellen auch eine Scatterplot-Matrix mit *pairs*, allerdings machen wir keine großen 
+Einstellungen und verwenden die ersten 10 Merkmale.
+
+```{r splomPairs, echo=TRUE, results='markup'}
+pairs(College[,1:10])
+```
+
+# Literaturverzeichnis
+
+
+
