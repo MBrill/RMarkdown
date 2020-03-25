@@ -1,7 +1,7 @@
 ---
-title: "Die erste HTML Präsentation"
+title: "Die erste HTML Präsentation mit Slidy"
 author: "Manfred Brill"
-date: "8 Mai 2019"
+date: "Sommersemester 2020"
 output: slidy_presentation
 ---
 
@@ -10,13 +10,14 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 library(dplyr)
 
+diamonds.cut <- 2.5
 smaller <- diamonds %>%
-  filter(carat <= 2.5)
+  filter(carat <= diamonds.cut)
 ```
 
 ## R Markdown
 
-Dies ist eine [R Markdown](http://rmarkdown.rstudio.com) Präsentation. Als Option verwenden wir hier *ioslides*. Neue Folien erstellen wir
+Dies ist eine [R Markdown](http://rmarkdown.rstudio.com) Präsentation. Als Option verwenden wir hier *Slidy*. Neue Folien erstellen wir
 mit einer Überschrift der Stufe 2, also mit 
 ´## Überschrift´.
 
@@ -28,17 +29,17 @@ mit einer Überschrift der Stufe 2, also mit
 
 ## Eine Folie mit R Ausgaben
 
-```{r smaller, echo = TRUE}
+```{r smaller, echo = TRUE, warnings=TRUE}
 smaller
 ```
 
 ## Eine Folie mit einer Grafik
 
-```{r histogramm}
-  ggplot(smaller, aes(carat)) +
+```{r histogramm, echo=FALSE, warnings=TRUE}
+ggplot(smaller, aes(carat)) +
   geom_histogram(binwidth = 0.05, fill="green", color="black") +
   labs(
-    title="Datensatz diamonds - Verteilung der Karatzahlen",
+    title="Datensatz diamonds - Verteilung der Karatzahlen unterhalb 2,5 Karat",
     x = "Karat",
     y = "Absolute Häufigkeit"
   )

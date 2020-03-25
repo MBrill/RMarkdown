@@ -1,7 +1,7 @@
 ---
-title: "Die erste HTML Präsentation"
+title: "Die erste HTML Präsentation mit IOSlides"
 author: "Manfred Brill"
-date: "8 Mai 2019"
+date: "Sommersemester 2020"
 output: ioslides_presentation
 ---
 
@@ -10,8 +10,9 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 library(dplyr)
 
+diamonds.cut <- 2.5
 smaller <- diamonds %>%
-  filter(carat <= 2.5)
+  filter(carat <= diamonds.cut)
 ```
 
 ## R Markdown
@@ -38,7 +39,7 @@ smaller
   ggplot(smaller, aes(carat)) +
   geom_histogram(binwidth = 0.05, fill="green", color="black") +
   labs(
-    title="Datensatz diamonds - Verteilung der Karatzahlen",
+    title="Datensatz diamonds - Verteilung der Karatzahlen unterhalb 2,5 Karat",
     x = "Karat",
     y = "Absolute Häufigkeit"
   )

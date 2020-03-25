@@ -1,28 +1,35 @@
 ---
 title: "Die Größe von Diamanten"
 author: "Manfred Brill"
-date: "7. Mai 2019"
+date: "Sommersemester 2020"
 output: 
+   html_notebook : default
    html_document : default
-   github_document: default
 ---
-```{r setup, include = FALSE}
-library(ggplot2)
+```{r setup, , include=TRUE, echo=TRUE, message=FALSE}
 library(dplyr)
+library(ggplot2)
 
-smaller <- diamonds %>%
-  filter(carat <= 2.5)
+knitr::opts_chunk$set(eval = TRUE)
 ```
 
-Wir haben Daten über ungefähr `r nrow(diamonds)` Diamanten.
-Nur `r nrow(diamonds) - nrow(smaller)` sind größer als 2,5 Karat.
-Die Verteilung der restlichen Diamanten wird in der folgenden Abbildung dargestellt:
 
-```{r, echo = FALSE, message=FALSE, results='markup',}
-  ggplot(smaller, aes(carat)) +
+```{r action, echo=TRUE, warning=TRUE, warnings=TRUE}
+diamonds.cut <- 2.5
+smaller <- diamonds %>%
+  filter(carat <= diamonds.cut)
+```
+
+Es liegen Daten über `r tally(diamonds)$n` Diamanten vor.
+Nur `r tally(diamonds)$n - tally(smaller)$n` davon sind größer als `r diamonds.cut` Karat.
+Die Verteilung der Karatzahlen unterhalb dieser Grenze ist in der
+Abbildung zu finden.
+
+```{r plot, echo = TRUE, message=FALSE, results='markup',}
+ggplot(smaller, aes(carat)) +
   geom_histogram(binwidth = 0.05, fill="green", color="black") +
   labs(
-    title="Datensatz diamonds - Verteilung der Karatzahlen",
+    title="Datensatz diamonds - Verteilung der Karatzahlen unterhalb 2,5 Karat",
     x = "Karat",
     y = "Absolute Häufigkeit"
   )
