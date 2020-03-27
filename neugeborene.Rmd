@@ -1,7 +1,7 @@
 ---
 title: "Das Beispiel Neugeborene"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
@@ -69,9 +69,6 @@ plotAbs <- ggplot(daten) +
   ) 
 
 plotAbs
-
-ggsave(filename="neugeboreneAbsolut.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 Wir können auch ein horizontales Balkendiagramm erstellen:
@@ -79,8 +76,6 @@ Wir können auch ein horizontales Balkendiagramm erstellen:
 plotAbs + 
   coord_flip()
 
-ggsave(filename="lieferzeitenAbsolutHori.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 

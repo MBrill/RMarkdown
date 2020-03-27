@@ -13,8 +13,6 @@ library(shiny)
 
 # User Interface
 ui <- fluidPage(
-    
-    # Application title
     titlePanel("Datensatz diamonds - Verteilung der Karatzahlen"),
     
     # Das Interface legen wir in eine sidebar
@@ -39,22 +37,22 @@ ui <- fluidPage(
         )
     )
 )
-# Define server logic required to draw a histogram
+
+# Code für den Server
 server <- function(input, output) {
-    
     output$barPlot <- renderPlot({
-        # Wir filtern in Anh?ngigkeit des Werte input$cutNum aus der Sidebar
+        # Wir filtern in Anhängigkeit vom Wert input$cutNum aus der Sidebar
         smaller <- diamonds %>%
             filter(carat <= input$cutNum)
         
-            ggplot(smaller, aes(carat)) +
-                geom_histogram(binwidth = input$binWidth, 
-                               fill="green", 
-                               color="black") +
-                labs(
-                    x = "Karat",
-                    y = "Absolute Häufigkeit"
-               )
+        ggplot(smaller, aes(carat)) +
+            geom_histogram(binwidth = input$binWidth, 
+                           fill="green", 
+                           color="black") +
+                           labs(
+                             x = "Karat",
+                             y = "Absolute Häufigkeit"
+                           )
     })
 }
 

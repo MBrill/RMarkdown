@@ -1,7 +1,7 @@
 ---
 title: "Kontingenzanalyse"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
@@ -24,7 +24,7 @@ library(DescTools)
 library(knitr)
 library(kableExtra)
 library(RColorBrewer)
-myPalette <- brewer.pal(5, "Set2")
+myPalette <- brewer.pal(8, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
@@ -33,7 +33,8 @@ options(digits=3)
 Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
 
 # Daten
-Wir betrachten das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Wir lesen die Daten ein und speichern sie auf dem Objekt  *wohnungen*.
+Wir betrachten das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Da die Daten das Semikolon als Trenner verwenden
+lesen lesen mit *read_csv2* ein und speichern auf dem Objekt  *wohnungen*.
 
 ```{r lesen, results='hide', message=FALSE, echo=TRUE}
 # Trenner auf Semikolon setzen
@@ -80,12 +81,14 @@ Für die Kontingenzanalyse gibt es eine Reihe von Parametern.
 Diese beruhen alle auf dem Chi-Quadrat Parameter, der jedoch
 den Nachteil hat, dass er schwer zu interpretieren ist.
 
-In der Vorlesung führen wir den Kontingenzparameter und den korrigierten Kontingenzparameter ein. Ein weiterer normierter
-Parameter ist Cramer's V.
+Wir verwenden den Kontingenzparameter und den korrigierten Kontingenzparameter. 
+Ein weiterer normierter Parameter ist Cramer's V.
+ChiQuadrat und den korrigierten) Kontingenzkoeffizienten erhalten wir im Package *vcd* mit der Funktion *assocstats*. Wir übergeben die mit *table* erstellte 
+Kontingenztabelle.
 
-ChiQuadrat und den korrigierten) Kontingenzkoeffizienten erhalten wir im Package *vcd* mit der Funktion *assocstats*. Den Wert
-für den chi-quadrat Parameter erhalten wir in der Ausgabe
-der Funktion. Der Wert wird Pearson X^2 angegeben.
+Den Wert
+für den Chi-quadrat Parameter erhalten wir in der Ausgabe
+der Funktion, als *Pearson X2*.
 Den nicht korrigierten Kontingenzkoeffizienten C
 finden wir ebenfalls in der Ausgabe oder
 mit der Bezeichnung *cont*. Cramer's V erhalten wir
@@ -102,11 +105,12 @@ assocstats(wohnungen.table)$cramer
 Das Package
 *DescTools* enthält eine ganze Reihe von Funktionen, die 
 diese und noch weitere Parameter berechnen. Den unkorrigierten
-und den korrigierten Kontingenzkoeffizienten erhalten
+und den korrigierten Kontingenzkoeffizienten (mit dem Attribut
+*correct=TRUE*) erhalten
 wir mit der Funktion *ContCoef*, Cramer's V mit
 *CramerV*. Diese Funktionen haben den Vorteil, dass
-wir auch mit zwei Spalten eines Datensatzes arbeiten können,
-ohne vorher eine Kontingenztabelle zu bauen.
+wir direkt mit zwei Spalten eines Datensatzes arbeiten können,
+ohne vorher eine Kontingenztabelle bilden zu müssen.
 
 
 ```{r DescTools, message=FALSE}
@@ -117,16 +121,48 @@ ContCoef(wohnungen.table, correct=TRUE)
 CramerV(wohnungen.table)
 ```
 
-
 # Visualisierung von Kontingenztabellen
-Wir betrachten kurz die Visualisierung von Kontingenztabellen mit Hilfe
-von Balkendiagrammen.
+Wir betrachten hier die folgenden Möglichkeiten einer Visualisierung:
 
-```{r stackedDodged, message=FALSE, echo=TRUE}
+* Balkendiagramme
+* Streuungsdiagramme
+* Mosaikplots
+* Heatmaps
+
+## Balkendiagramme
+Es liegt nahe jedes der beiden Merkmale individuell in einem Balkendiagramm
+zu visualisieren.
+
+```{r bar, message=FALSE}
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Zimmer, fill=myPalette[1]),
+           show.legend=FALSE) + 
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Absolut Häufigkeiten"
+  ) 
+
+ggplot(data=wohnungen) +
+  geom_bar(mapping=aes(x=Personen, fill=myPalette[1]),
+           show.legend=FALSE) + 
+     labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der Personen in der Familie",
+         y="Absolut Häufigkeiten"
+  ) 
+```
+
+Wir färben die Balken für die Visualisierung der Häufigkeiten eines Merkmals
+mit Hilfe der Häufigkeiten des zweiten Merkmals. Achten Sie darauf bei solchen
+Darstellunen *immer* mit einer Legende zu arbeiten. 
+
+Hier eine Serie von Abbildungen, die die verschiedenen Möglichkeiten zeigt:
+```{r stackedDodged, message=FALSE, echo=TRUE, results='asis'}
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen))) + 
-  scale_fill_brewer(palette="Set2") +
-     labs(
+  scale_fill_brewer(palette="YlGn") +
+  labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der  Zimmer in der Wohnung",
          y="Absolut Häufigkeiten"
@@ -135,6 +171,7 @@ ggplot(data=wohnungen) +
 
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer))) + 
+  scale_fill_brewer(palette="YlGn") +  
   labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der Personen in der Familie",
@@ -145,7 +182,7 @@ ggplot(data=wohnungen) +
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen)),
            position="dodge") + 
-  scale_fill_brewer(palette="Set2") +
+  scale_fill_brewer(palette="YlGn") +
      labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der  Zimmer in der Wohnung",
@@ -154,10 +191,10 @@ ggplot(data=wohnungen) +
   guides(fill=guide_legend(title="Anzahl der Personen in der Familie"))
 
 
-
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer)),
            position="dodge") + 
+  scale_fill_brewer(palette="YlGn") +  
   labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der Personen in der Familie",
@@ -166,7 +203,117 @@ ggplot(data=wohnungen) +
   guides(fill=guide_legend(title="Anzahl der Zimmer in der Wohnung"))
 ```
 
+## Streuungsdiagramme
+Wir können ein *Streuungsdiagramm*, einen *scatter plot*, für die Werte eines Datensatzes mit zwei oder mehr Merkmalen verwenden. 
+Wir erstellen ein kartesisches Koordinatensystem und tragen die Merkmalsausprägungen für die beiden Merkmale darauf ab. 
+
+Streuungsdiagramme können wir bei sehr vielen Werten hervorragend verwenden,
+um einen Eindruck über die Verteilung der Wertepaare zu erhalten. 
+
+Jetzt erzeugen wir Streuungsdiagramme für den Datensatz Familienzimmer.
+Für jedes Paar von Merkmalsausprägungen, wie
+zum das Paar (2,2), tragen wir im Diagramm ein Symbol ein.
+Für die Paare, für die die Häufigkeit 0 ist, geben wir keinen Punkt aus.
+
+```{r scatter2, message=FALSE, results='markup', echo=FALSE}
+p <- ggplot(wohnungen, aes(x = Zimmer, y = Personen)) 
+p + geom_point(color=myPalette[5], size=3.0,
+              show.legend=FALSE) +
+   labs(
+         title="Streuungsdiagramm für die Kontingenztabelle Familienzimmer",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Anzahl der Personen in der Familie"
+  ) 
+```
+
+Hier noch eine grafische Ausgabe, die die auftretenden Häufigkeiten
+mit Hilfe der Größe der Markierungen visualisiert. 
+Dazu verwenden wir die Funktion *geom_count*.
+Möglich wäre auch die Verwendung von Farben für die Visualisierung
+der Häufigkeiten. 
+
+```{r scatter3, message=FALSE}
+p + 
+  geom_count(color=myPalette[5]) + 
+  labs(
+         title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
+         x="Anzahl der  Zimmer in der Wohnung",
+         y="Anzahl der Personen in der Familie"
+  ) +
+  guides(size=guide_legend(title="Absolute Häufigkeiten", size=2.0))
 
 
+```
+
+## Heatmaps
+Wir verwenden Farben um die Häufigkeiten zu visualisieren und erstellen eine Heatmap. 
+Damit wir dies in der dafür vorhandenen Funktion *geom_tile* zu übergeben müssen
+wir die Daten in das sogenannte *long*-Format in Tidyverse umformatieren.
+Das *long*-Format entspricht den Daten in der Datei. Wir ergänzen die Daten
+um eine Spalte, in der die Häufigkeiten für die jeweiligen Wertepaare stehen.
+
+
+```{r wohnLong, message=FALSE}
+wohnungen.long <- wohnungen %>%
+  #complete(Personen, Zimmer, fill = list(count=0)) %>%
+  group_by(Personen, Zimmer) %>%
+  mutate(value=n())
+```
+Jetzt verwenden wir dieses Format und erstellen eine Heatmap:
+
+```{r heatWohnungen, message=FALSE}
+ggplot(data=wohnungen.long) +
+  geom_tile(mapping=aes(x=Zimmer, y=Personen, fill=value)) + 
+  scale_fill_distiller(palette="YlGn", 
+                       guide="legend",
+                       limits=c(1,3),
+                       breaks=c(1,2,3),
+                       direction=1) +
+  guides(fill=guide_legend(title="Häufigkeiten")) +
+  labs(
+    title="Heatmap Wohnsituation", 
+    x="Anzahl der Zimmer in der Wohnung", 
+    y="Anzahl der Personen in der Familie"
+  )  
+```
+Es wäre möglich, die Zeilen, in denen die Häufigkeit 0 ist durch diese Zahl zu ergänzen.
+Zu diesem Fall gibt es im GitHub-Repo von *Tidyverse* eine längere Diskussion. Dazu gibt es
+die Funktion *complete*, die wir in einer Pipeline einsetzen könnten. Aber auch fehlende
+Quadrate markieren eigentlich das gleiche - Häufigkeit 0.
+
+
+## Mosaikplots
+Eine weitere Möglichkeit der Visualisierungen von Kontingenztabellen
+sind *mosaicplots*. Hier werden keine Farben für die Visualisierungen der Häufigkeiten
+eingesetzt, sondern Flächen von Rechtecken werden skaliert und aufgeteilt.
+
+Für die Arbeit mit Kontingenztabellen ist das Package *vcd*
+sehr nützlich. Dort gibt es die Funktion *mosaic*, mit der wir 
+einen solchen Plot erstellen. Wir wenden die Funktion 
+auf die Kontingenztabelle an:
+
+```{r vcd1, warning=FALSE, message=FALSE}
+mosaic(wohnungen.table, shade=TRUE, 
+       highlighting_fill=myPalette[3], 
+       highlighting = c(2), 
+       main="Familienzimmer",
+       direction=c("h", "v"),
+       spacing=spacing_equal(1.5),
+       alternate_labels=FALSE,
+       zero_shade=FALSE)
+```
+
+wir konstruieren einen Mosaikplot in den folgenden Schritten:
+
+* Wir starten mit einer rechteckigen Fläche.
+* In Richtung der x-Achse wird die Fläche proportional zu den Häufigkeiten des ersten Merkmals unterteilt.
+* Für die Visualisierung des zweiten Merkmals werden die so entstandenen Flächen
+in Richtung der y-Achse unterteilt, proportional zu den Häufigkeiten des zweiten Merkmals.
+* Weitere Merkmale werden analog eingetragen, dabei werden die x- und die y-Achse
+alternierend verwendet.
+
+Diese Visualisierung hat den offensichtlichen Vorteil, dass man auch mehr als zwei Merkmale visualisieren kann. Wobei dann auch sehr schnell die Übersichtlichkeit liedet.
+
+*ggplot* enthält keine Funktion für die Ausgabe von solchen Plots.
 
 # Literaturverzeichnis

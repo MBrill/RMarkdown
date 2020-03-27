@@ -1,30 +1,27 @@
 ---
 title: "Mosaikplots und Kontingenztabellen"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2020"
 output: 
-  pdf_document: 
+  html_document: 
     fig_caption: yes
-    highlight: tango
-    keep_tex: yes
+    highlight: pygments
     number_sections: yes
+    theme: cosmo
     toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(RColorBrewer)
+myPalette <- brewer.pal(7, "Accent")
 ```
 # Initialisierung und Farbtabellen
 Wir gehen immer davon aus, dass die R-Projekte in einem Verzeichnis zusammen gefasst sind und dass die verschiedenen Assets in entsprechenden Unterverzeichnissen zusammen gefasst wurden. Das Arbeitsverzeichnis wird von Knit auf das aktuelle
 Verzeichnis gesetzt. Die Rmd-Datei steht immer im Wurzelverzeichnis des Projekts, so dass alle weiteren Pfade relativ dazu angegeben werden können.
-
-Wie bei allen Beispielen verwenden wir eine Farbpalette, die aus ColorBrewer entnommen ist:
-```{r message=FALSE}
-library(RColorBrewer)
-myPalette <- brewer.pal(7, "Accent")
-```
-
-Farbangaben beziehen sich ab sofort auf diese Variable.
 
 # Kontingenztabellen
 In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ein Merkmal enthalten und untersuchen den Zusammenhang zwischen zwei oder mehr Merkmalen.
@@ -32,7 +29,6 @@ In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ei
 Als Einstieg betrachten wir das Beispiel der *ohnsituation*, ein Datensatz, der Bamberg und Baur entnommen ist. Dieser Datensatz ist auf OLAT in den Kursen verfügbar und wurde manuell aus dem Buch in eine csv-Datei übertragen. Der folgende R-Code wurde von RStudio erzeugt, nach dem Auswählen der Datei und dem Ansehen
 der Daten. Wichtig ist, den Trenner auf das Semikolon zu setzen:
 ```{r results='hide', message=FALSE, warning=FALSE}
-library(readr)
 wohnungen <- read_delim("data/wohnungen.csv", ";", 
                         escape_double = FALSE, trim_ws = TRUE)
                         

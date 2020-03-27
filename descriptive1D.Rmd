@@ -3,6 +3,11 @@ title: "Beschreibende Statistik mit R"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -11,11 +16,6 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
 bibliography: literatur.bib
 ---
 
@@ -166,6 +166,7 @@ kennzahlen
 Hier muss der Hinweis gegeben werden, dass R in der Funktion *sd* die korrigierte Stichprobenvarianz berechnet. In der Variablen *sd2* finden wir die empirische Varianz der Stichprobe.
 
 # Grafische Darstellungen
+## Balkendiagramme
 Häufigkeiten können wir mit Hilfe von Balkendiagrammen
 darstellen. Dazu verwenden wir die Funktion *ggplot*, die wie *read_csv2* in Tidyverse enthalten ist. Wir erstellen zuerst einen sehr einfachen Plot, und anschließend sehen Sie, wie
 wir mit *ggplot* Achsenbeschriftungen und andere Formatierungen hinzufügen können.
@@ -231,22 +232,6 @@ Dazu kennt *ggplot* die Funktion *coord_flip*, die x- und y-Achse vertauscht:
 ```{r balkenHori, message=FALSE, results='markup'}
 relPlot + 
   coord_flip()
-```
-
-Wir hatten den Begriff der empirischen Verteilungsfunktion eingeführt. Diese Funktion entsteht durch das Kumulieren der Häufigkeiten. Die Funktion *ggplot* kennt diese Funktion, sie ist
-als Funktion *stat_ecdf* verfügbar. Die Abkürzung *ecdf* steht
-für *empirical cumulative distribution function*.
-
-```{r plotecdf, message=FALSE, results='markup'}
-ggplot(liefer, aes(x=Lieferzeiten)) + 
-  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
-  labs(
-    title="Empirische Verteilungsfunktion der Lieferzeiten", 
-
-    x="Tage", 
-    y=""
-  ) 
 ```
 
 Wir haben ein anderes grafisches Primitiv verwendet, statt *geom_bar*, das Balkendiagramme
@@ -336,8 +321,133 @@ ggplot(familien) +
   ) 
 ```
 
-# Klassen und Histogramme
+## Empirische Verteilungsfunktion
 
+Wir hatten den Begriff der empirischen Verteilungsfunktion eingeführt. Diese Funktion entsteht durch das Kumulieren der Häufigkeiten. Die Funktion *ggplot* kennt diese Funktion, sie ist
+als Funktion *stat_ecdf* verfügbar. Die Abkürzung *ecdf* steht
+für *empirical cumulative distribution function*.
+
+```{r plotecdf, message=FALSE, results='markup'}
+ggplot(liefer, aes(x=Lieferzeiten)) + 
+  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Empirische Verteilungsfunktion der Lieferzeiten", 
+
+    x="Tage", 
+    y=""
+  ) 
+```
+
+## Boxplots
+Wir hatten bereits das 5-Zahlen-Maß und Streuungsparameter wie den Interquartilsabstand
+berechnet. Diese Parameter sind die Grundlage 
+für die Box-Whiskers- oder kurz Box-Plots.
+
+
+```{r plotBox, message=FALSE, results='markup'}
+box1 <- ggplot(frauen, aes(x=1, y=Koerpergroesse)) + 
+  geom_boxplot(fill=myPalette[3], color="black") +
+  scale_x_continuous(breaks=NULL) + 
+  theme(axis.title.x = element_blank())
+
+
+box1 + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="",    
+    y="Körpergröße in cm"
+  )   
+```
+
+Wir können auch hier horizontale und vertikale Box-Plots erstellen:
+
+```{r plotBoxV, message=FALSE, results='markup'}
+box1 + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="",    
+    y="Körpergröße in cm"
+  ) +
+ coord_flip()
+```
+
+Haben wir weitere ordinale oder nominale Merkmale in den Daten können wir Box-Plots danach 
+auf der x-Achse gruppieren und damit einen guten Überblick über die Verteilung der Daten
+im Datensatz erhalten.
+
+Mit Hilfe von *stat_summary* können wir auch weitere Parameter in die Grafik einbauen.
+Hier hilft es wieder, dass wir den Ausgangsplot in einer Variable gespeichert haben.
+
+```{r plotBoxMW, message=FALSE, results='markup'}
+box1 + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Blau: der Mittelwert der Daten",    
+    y="Körpergröße in cm"
+  ) +
+  stat_summary(fun.y = "mean", geom= "point", 
+               size = 3, shape = 23, fill=myPalette[5])
+```
+
+## Fehlerbalken
+Wir können analog zu Box-Plots auch die sogenannten  *Fehlerbalken* darstellen.
+Ein Fehlerbalken hat als Mittelpunkt das arithmetische Mittel der Werte, die Länge
+ist durch die Standardabweichung gegeben. Wir stellen also damit grafisch
+ein 2s-Intervall dar, das nach der  Ungleichung von Tschebyscheff mindestens 75%
+aller Merkmalsausprägungen enthält. Wir verwenden wir die Körpergrößen von Frauen
+für die Beispiele.
+
+Wir berechnen den Mittelwert und die Standardabweichung und nutzen diese Werte
+in der grafischen Ausgabe.
+
+```{r errorbar, message=FALSE, results='markup'}
+kennzahlen <- frauen %>%
+  summarize(mw = mean(Koerpergroesse), 
+            stdabw = sd(Koerpergroesse)
+            ) 
+
+ggplot(frauen, aes(x="", y=Koerpergroesse)) +
+  geom_errorbar(aes(ymin=kennzahlen$mw-kennzahlen$stdabw,
+                    ymax=kennzahlen$mw+kennzahlen$stdabw),
+                 color = myPalette[5],
+                 width=0.05,
+                 size=0.5) +  
+  stat_summary(fun.y = "mean", geom= "point", 
+               size = 3, shape = 21, fill=myPalette[5]) +
+  theme(axis.title.x = element_blank()) +
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="2s-Bereich",    
+    y="Körpergröße in cm"
+  )  
+
+```
+
+Wir können Fehlerbalken und Box-Plots auch einer Grafik zusammenfassen:
+
+
+```{r bploterrorbar, message=FALSE, results='markup'}
+ggplot(frauen, aes(x="", y=Koerpergroesse)) +
+    geom_boxplot(fill=myPalette[3], color="black") + 
+    geom_errorbar(aes(ymin=kennzahlen$mw-kennzahlen$stdabw,
+                    ymax=kennzahlen$mw+kennzahlen$stdabw),
+                 color = "red",
+                 width=0.05,
+                 size=0.75) +  
+  stat_summary(fun.y = "mean", geom= "point", 
+               size = 3, shape = 21, fill=myPalette[5]) +
+  theme(axis.title.x = element_blank()) +
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Rot: 2s Bereich, überlagert mit Box-Plot",    
+    y="Körpergröße in cm"
+  )  
+
+```
+
+
+## Histogramme
 Für dieses Thema verwenden wir den Datensatz *Körpergröße von Frauen*.
 Wir erstellen wieder Tabellen für die absolute und relative Häufigkeiten.
 

@@ -102,7 +102,7 @@ Wir betrachten aktuell die folgenden Möglichkeiten genauer:
 * Balkendiagramme
 * Streuungsdiagramme
 * Mosaikplots
-* Heatmaps angefangen, aber noch nicht korrekt
+* Heatmaps angefangen
 
 ## Balkendiagramme
 
@@ -317,9 +317,6 @@ mosaicplot(sportInd[1,], dir="h",
            main = "Sportliche Betätigung im Datensatz Beruf und Sport",
            col = c(myPalette[2]),
            off = c(10, 10, 10, 10))
-
-ggsave(filename="mosaicConstruct1.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 Wenn wir die ganze Matrix angeben erhalten wir wieder die Abbildung oben.

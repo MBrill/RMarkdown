@@ -28,3 +28,4 @@ exampleGithub_files/
 **/Example/
 # Daten ignorieren, das sind Kopien!
 data/
+.Rproj.user

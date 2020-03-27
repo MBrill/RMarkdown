@@ -1,7 +1,7 @@
 ---
 title: "Korrelation und lineare Modelle"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2020"
 output:
   html_document:
     df_print: paged
@@ -30,8 +30,7 @@ options(digits=3)
 ```
 
 # Daten
-Als Datensatz verwenden wir das Beispiel aus den Folien.  den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92]. Wir lesen die Werte mit der Funktion *read_csv2* aus dem Package *Tidyverse* ein. Zusätzlich verwenden
-wir wie in den Folien den Datensatz *Größe und Gewicht*, der Daten über die Körpergröße und das Körpergewicht enthält.
+Als Datensatz verwenden wir den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92]. Wir lesen die Werte mit der Funktion *read_csv2* aus dem Package *Tidyverse* ein.
 
 ```{r daten, echo=TRUE, message=FALSE}
 daten <- read_csv2("data/wassergehalt.csv")
@@ -44,17 +43,6 @@ kable(daten,
         bootstrap_options = c("striped", "condensed"), 
        full_width = T, 
        position = "center")
-
-grgewicht <- read_csv2("data/groesse_gewicht.csv")
-
-kable(grgewicht,
-      align="l",
-      caption="Tabelle 2: Der Datensatz Größe und Gewicht (Angaben in cm bzw. kg)",
-      col.names=c("Körpergröße", "Gewicht")) %>%
-      kable_styling(
-        bootstrap_options = c("striped", "condensed"), 
-       full_width = T, 
-       position = "center")
 ```
 
 # Kovarianz, Korrelationskoeffizient und Streuungsdiagramm
@@ -62,16 +50,15 @@ Bevor wir die Daten grafisch darstellen berechnen wir die Kovarianz und den Korr
 Funktionen *cov* und *cor*:
 
 ```{r koeffizienten, echo=TRUE, message=FALSE}
-# Korrektur
-n <- length(daten$Wassergehalt)
-((n-1)/n)*cov(daten$Luftfeuchtigkeit, daten$Wassergehalt, method="pearson")
+cov(daten$Luftfeuchtigkeit, daten$Wassergehalt, method="pearson")
 cor(daten$Luftfeuchtigkeit, daten$Wassergehalt, method="pearson")
 ```
 
-Wie schon bei der Varianz müssen wir das Ergebnis der Funktion *cov* korrigieren, denn R verwenden die korrigierte Version mit
-dem Teiler n-1.
+Wie schon bei den Streuungsmaßen verwendet R bei der Berechnung
+der Kovarianz den Faktor (n-1). 
+Wir können dies korrigieren, wir verzichten in diesem Dokument darauf.
 
-Der Korrelationskoeffizient hat mit 0.98 einen Wert der sehr nahe bei 1 liegt. Das bedeutet, dass wir einen linearen Zusammenhang mit positiver Steigung vorliegen haben.
+Der Korrelationskoeffizient hat mit 0.98 einen Wert der sehr nahe bei 1 liegt. Das bedeutet, dass mit großer Wahrscheinlichkeit ein linearer Zusammenhang mit positiver Steigung vorliegt.
 
 Da wir vermuten, dass wir ausgehend von der Luftfeuchtigkeit auf den Wassergehalt schließen können, legen wir im Streuungsdiagramm die Luftfeuchtigkeit 
 auf die x- und den Wassergehalt auf die y-Achse.
@@ -90,24 +77,13 @@ ggplot(daten) +
 
 ```
 
-Das Streuungsdiagramm bestätigt den Wert des Korrelationskoeffizienten. Man sieht gut, dass wir versuchen sollten ein lineares Modell aufzustellen.
-
-Hier noch die Berechnungen für die Werte auf den Folien
-mit dem Datensatz *Größe und Gewicht*. Auch hier müssen wir
-die Korrektur für den Faktor 1/n durchführen.
-
-```{r parameterGewicht, echo=TRUE, message=FALSE}
-n <- length(grgewicht$Gewicht)
-
-((n-1)/n)*cov(grgewicht$Groesse, grgewicht$Gewicht)
-
-cor(grgewicht$Groesse, grgewicht$Gewicht, method="pearson")
-```
+Das Streuungsdiagramm bestätigt den Wert des Korrelationskoeffizienten. Man sieht gut, dass wir versuchen können ein lineares Modell aufzustellen.
+ch hier ein Wert des Korrelationskoeffizienten, der nahe bei 1 liegt.
 
 # Berechnung eines linearen Modells
-Die Regressionsgerade, das lineare Modell für unsere Daten, berechnen wir mit Hilfe der Funktion *lm*. In der Ausgabe dieser Funktion können wir die berechnete Steigung und den Achsenabschnitt abfragen. Mit *summary(sim)*
+Die Regressionsgerade, das lineare Modell für unsere Daten, berechnen wir mit Hilfe der Funktion *lm*. In der Ausgabe dieser Funktion können wir die berechnete Steigung und den Achsenabschnitt abfragen. Mit *summary()*
 können wir auch eine Zusammenfassung der Ergebnisse abfragen. Hier finden wir
-wieder die Koeffizienten und unter *Multiple R-squared* auch den Werte des Bestimmungsmaßes. Ziehen wir aus diesem Wert erhalten wir den Korrelationskoeffizienten.
+wieder die Korrelationskoeffizienten und unter *Multiple R-squared* den Werte des Bestimmungsmaßes. Ziehen wir aus diesem Wert die Wurzel erhalten wir den Korrelationskoeffizienten.
 
 Wir berechnen jetzt das lineare Modell und geben das Ergebnis gemeinsam
 mit dem Streuungsdiagramm der Daten aus. Dazu speichern wir die Steigung und
@@ -153,7 +129,7 @@ Bei 60 Prozent Luftfeuchtigkeit sagt unser Modell einen Wassergehalt von 16.8 Pr
 
 # Residualplot
 
-In der Vorlesung hatten wir einen Residualplot erzeugt, um die Qualität des erstellten Modells einzuschätzen. Dazu verwenden wir die Funktion 
+Wir können die Qualität unseres linearen Modells mit Hilfe eines *Residualplots* visualisieren. Dazu verwenden wir die Funktion 
 *add_residuals* aus dem Package *modelr*.
 
 ```{r res, echo=TRUE}
