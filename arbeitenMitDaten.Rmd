@@ -23,8 +23,7 @@ Sie sollten den Text mit Hilfe von R nachvollziehen; entweder schon beim ersten 
 dass Sie die Videos *Arbeiten mit data.frames*, *Arbeiten mit tibbles* und *Daten importieren* kennen.
 
 Legen Sie ein neues Verzeichnis für das Projekt an. Auf der Lernplattform
-finden Sie Links auf zwei ASCII-Dateien *Auto.data* und *Auto.csv*. Speichern
-Sie diese Dateien in ihrem Projekt, zum Beispiel im Unterverzeichnis
+finden Sie Links auf zwei ASCII-Dateien *Auto.data* und *Auto.csv*. Speichern Sie diese Dateien in ihrem Projekt, zum Beispiel im Unterverzeichnis
 *data*. Ebenfalls auf der Lernplattform finden Sie einen Link
 auf die Datei *Auto.xlsx*. Wenn Sie den Import solcher Dateien nachvollziehen möchten speichern Sie diese Datei im gleichen Unterverzeichnis wie die
 ASCII-Daten.
@@ -112,16 +111,20 @@ levels(daten.vergleich) <- c("niedrig", "hoch")
 levels(daten.vergleich)
 ```
 
-## Data Frames
+## Data Frames und tibbles
 Der Datentyp *data.frame* fasst Daten zusammen. Ein *data.frame* ist eine Liste
-von Spaltenvektoren, die alle die gleiche Länge besitzen. Im folgenden Beispiel legen wir drei Vektoren an und fassen diese zu einem *data.frame* zusammen:
+von Spaltenvektoren, die alle die gleiche Länge besitzen. 
+Im Package *Tidyverse* gibt es die Weiterentwicklung *tibble*,
+die insbesondere deutlich performanter ist.
+
+Im folgenden Beispiel legen wir drei Vektoren an und fassen diese zu einem *tibble* zusammen:
 
 ```{r dataFrame, echo=TRUE}
 n <- c(2, 3, 5)
 s <- c("aa", "bb", "cc")
 b <- c(TRUE, FALSE, TRUE)
-f <- data.frame(n,s,b)
-head(f)
+f <- tibble(n,s,b)
+f
 ```
 
 Wir hatten bereits das Package MASS installiert, das solche Datensätze enthält. Der Datensatz *mtcars* ist verfügbar, ohne ein Package dafür zu laden.
@@ -164,10 +167,30 @@ head(mtcars[L, ])
 ```
 
 Eine Liste der Anzahl der Zylinder aller Autos ohne Automatikgetriebe erhalten
-wir so:
+wir dann so:
 ```{r dataFrame5, echo=TRUE}
 mtcars[L,]$cyl
 ```
+
+Wir können dies auch mit Hilfe einer *Tidyverse*-Pipeline und
+der Funktion *filter* erzielen:
+
+```{r tibble1, echo=TRUE}
+mtcars %>%
+   filter(am==0)
+ 
+```
+
+Wir können diese Pipeline erweitern und nur noch die Spalte *cyl* ausgeben.
+Dies erreichen wir mit der Funktion *select*:
+
+```{r tibble2, echo=TRUE}
+mtcars %>%
+   filter(am==0) %>%
+   select(cyl)
+ 
+```
+
 
 # Daten importieren
 
@@ -213,9 +236,6 @@ dim(car)
 Fehlende Daten oder falsche Einträge sind in der Praxis häufig ein Problem.
 Welche Strategien es dafür gibt, damit werden wir uns noch beschäftigen.
 
-
-
-
 ## Daten im csv-Format
 
 Sehr häufig arbeiten wir mit Daten im csv–Format. Dafür gibt es
@@ -240,13 +260,36 @@ jetzt auch.
 Der Funktion *read_csv* geben wir wie bei *read.table* mit, dass das Zeichen *?* fehlende Daten markiert:
 
 ```{r ascii3, echo=TRUE}
-car <- read_csv("data/Auto.csv", na= "?")
+car <- read_csv("data/Auto.csv", na= c(" ", "NA", "?"))
 car
 ```
+
+Die ersten beiden Zeichen in der Liste *na* sind der Default. wir hätten
+Sie im Beispiel auch weglassen können.
 
 Wir erhalten eine Information auf der Konsole, mit welchem Datentyp die einzelnen Spalten gelesen wurden (dies wird übrigens aus den ersten 100 Zeilen der importierten Daten geschätzt). Es wird ein *tibble* erzeugt. Geben wir den
 Namen des *tibbles* auf der Konsole aus können wir auf *head* verzichten.
 Aus der Ausgabe sehen wir auch, dass wir 397 Zeilen und 9 Spalten in der Variable gespeichert haben.
+
+Wenn wir etwas genauer hinsehen erkennen wir, dass die Fragezeichen immer in der
+Spalte *horsepower* enthalten sind. Und beim Einlesen wurde das Fragezeichen
+durch *NA* ersetze. Diese Abkürzung steht für *not available*. Wir lassen uns die
+Zeilen ausgeben, in denen *NA* enthalten ist:
+
+```{r ascii5, echo=TRUE}
+car %>%
+  summarize(count = sum(is.na(horsepower)))
+```
+
+Es gibt also insgesamt 5 Zeilen. Wir können diese Zeilen mit Hilfe der Funktion
+*is.na* filtern:
+```{r ascii6, echo=TRUE}
+car %>% 
+  filter(is.na(horsepower))
+
+car <- car %>% 
+  filter(!is.na(horsepower))
+```
 
 ## Daten im xls- und xlsx-Format
 
@@ -262,16 +305,18 @@ Es gibt die drei Funktionen *read_excel*, *read_xls* und *read_xlsx*.
 Alle drei Funktionen arbeiten direkt mit Excel zusammen.
 
 Für unser Beispiel laden wir das Package und ersetzen
-*read_csv* einfach durch *read_excel*:
+*read_csv* einfach durch *read_excel*. Und auch hier
+können wir die fünf Zeilen, die ein Fragezeichen haben wieder filtern.
 
 ```{r readxls, echo=TRUE}
 library(readxl)
-carX <- read_excel("data/Auto.xlsx", na= "?")
+carX <- read_excel("data/Auto.xlsx", na= c(" ", "NA", "?"))
 carX
+
+carX %>%
+  summarize(count = sum(is.na(horsepower)))
+
+carX <- carX %>% 
+  filter(!is.na(horsepower))
 ```
-
-
-
-
-
 

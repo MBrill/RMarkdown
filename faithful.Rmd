@@ -7,7 +7,8 @@ output:
     fig_caption: yes
     highlight: pygments
     number_sections: yes
-    theme: cosmo
+    
+    : cosmo
     toc: yes
     toc_float: yes
 bibliography: literatur.bib    
@@ -82,9 +83,6 @@ ggplot(data=faithful) +
          y="Absolute Häufigkeiten",
          subtitle="30 Klassen (Default ggplot)"
   )
-
-ggsave(filename="faithfulDefault.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 Wir verwenden in den nächsten beiden Bildern eine Klassenbreite
@@ -106,9 +104,6 @@ ggplot(data=faithful) +
          subtitle="Klassenbreite 0,5"
   )
 
-ggsave(filename="faithful05.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
-
 ggplot(data=faithful) + 
   geom_histogram(aes(x = eruptions), 
                  colour="black",
@@ -122,12 +117,10 @@ ggplot(data=faithful) +
          subtitle="Klassenbreite 0,05"
   )
 
-ggsave(filename="faithful005.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 ## Faustregel
-In der Vorlesung haben wir verchiedene Regeln für die Bilden von Klassen betrachtet. Mit
+In der Vorlesung haben wir verschiedene Regeln für die Bilden von Klassen betrachtet. Mit
 der Faustregel ziehen wir die Wurzel aus der Anzahl der Werte  `r length(faithful$eruptions)`:
 wir erhalten `r sqrt(length(faithful$eruptions))` und wählen als Wert die 16. Damit können
 wir die Klassenbreite berechnen und anschließend an ggplot übergeben. Wir berechnen die Klassenbreite
@@ -148,9 +141,6 @@ ggplot(data=faithful) +
          y="Absolute Häufigkeiten",
          subtitle="16 Klassen an Hand der Faustregel"
   )
-
-ggsave(filename="faithfulFaust.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 ## DIN-Norm
@@ -173,9 +163,6 @@ ggplot(data=faithful) +
          y="Absolute Häufigkeiten",
          subtitle="10 Klassen nach DIN-Norm"
   )
-
-ggsave(filename="faithfuldin.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 ## Regel von Scott
@@ -198,9 +185,6 @@ ggplot(data=faithful) +
          y="Absolute Häufigkeiten",
          subtitle="Klassenbreite nach Scott"
   )
-
-ggsave(filename="faithfulscott.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 ## Regel von Friedman-Diaconis
@@ -223,19 +207,15 @@ ggplot(data=faithful) +
          y="Absolute Häufigkeiten",
          subtitle="Klassenbreite nach Friedman-Diaconis"
   )
-
-ggsave(filename="faithfuldiaconis.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 ```
 
 ## Box-Plot
 Wir machen noch einen Box-Plot für die Daten.
 
 ```{r box, message=FALSE, results='markup', echo=FALSE}
-ggplot(faithful,aes(y = iris[,1:4]) + 
+ggplot(faithful,aes(y = waiting)) + 
   geom_boxplot(color="black", 
                fill=myPalette[1],
-               group=iris[,5],
                show.legend=FALSE) +
   scale_fill_brewer(palette="Set2") + 
   labs(
@@ -243,4 +223,29 @@ ggplot(faithful,aes(y = iris[,1:4]) +
          x="",
          y="Dauer der Eruption in Minuten"
   ) 
+```
+
+# Bild für die Lösung einer Übungsaufgabe (desstat5)
+```{r aufgabe, message=FALSE, results='markup', echo=TRUE}
+min = 40.0
+max = 100.0
+delta = 5.0
+
+ggplot(data=faithful) + 
+  geom_histogram(aes(x = waiting), 
+                 colour="black",
+                 fill=myPalette[1],
+                 breaks=seq(min, max, delta),
+                 show.legend=FALSE) +
+  labs(
+         title="Zeit zwischen den Eruptionen von Old Faithful", 
+         x="Zeit (Minuten)", 
+         y="Absolute Häufigkeiten",
+         subtitle="Klassenbreite 5.0"
+  )
+
+ggsave(filename="faithfulWaiting.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 ```

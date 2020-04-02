@@ -75,8 +75,8 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-ggsave(filename="wassergehaltModell3.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+#ggsave(filename="wassergehaltModell3.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
 ```
 
 Wir erstellen jetzt das lineare Modell und geben das Ergebnis gemeinsam
@@ -105,8 +105,8 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-ggsave(filename="wassergehaltModell1.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+#ggsave(filename="wassergehaltModell1.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
 
 
 ggplot(daten) +
@@ -122,8 +122,8 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+#ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
 ```
 
 Jetzt haben wir die Abbildungen und das lineare Modell erstellt, wie dies schon in den alten Folien zu diesem Thema mit Hilfe von OpenOffice durchgeführt wurde. Mit der *predict*-Funktion können wir jetzt Vorhersagen für Werte
@@ -222,8 +222,8 @@ ggplot(data=daten, aes(Luftfeuchtigkeit, Wassergehalt)) +
     y="Wassergehalt in Prozent"
   ) 
 
-ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+#ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
 
 # Wir geben die Gitterwerte noch als Tabelle aus
 kable(grid,
@@ -300,8 +300,8 @@ ggplot(daten, aes(Luftfeuchtigkeit, resid)) +
     y="Residuen"
   ) 
 
-ggsave(filename="wassergehaltResPlot.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+#ggsave(filename="wassergehaltResPlot.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
 ```
 
 # Literaturverzeichnis

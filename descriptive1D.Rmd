@@ -3,11 +3,6 @@ title: "Beschreibende Statistik mit R"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output:
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -16,6 +11,11 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
 bibliography: literatur.bib
 ---
 
@@ -26,11 +26,6 @@ library(knitr)
 library(kableExtra)
 # ggplot, Pipelines und mehr in Tidyverse
 library(tidyverse)
-# Farbpaletten
-library(RColorBrewer)
-myPalette <- brewer.pal(5, "YlGn")
-# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
-options(digits=3)
 ```
 
 # Voraussetzungen
@@ -333,7 +328,6 @@ ggplot(liefer, aes(x=Lieferzeiten)) +
   scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
   labs(
     title="Empirische Verteilungsfunktion der Lieferzeiten", 
-
     x="Tage", 
     y=""
   ) 
@@ -478,9 +472,7 @@ ggplot(frauen)  +
     title="Absolute Häufigkeiten der Körpergroße von Frauen", 
     x="Körpergröße in cm", 
     y="Häufigkeiten"
-  ) 
-           
-
+  )
 ```
 
 Wir bilden Klassen und stellen ein Histogramm dar. Dazu gibt es im Package
@@ -503,7 +495,7 @@ ggplot(frauen) +
 ```
 
 *ggplot* weißt uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders glücklich ist.
-Verwenden wir andere Klassengrenzen verwenden möchten übergeben wir diese mit
+Verwenden wir andere Klassengrenzen möchten übergeben wir diese mit
 Hilfe der Option *breaks* an *geom_historgram*. Wir erzeugen einen Vektor mit den Grenzen
 der Klassen mit *seq(152, 182, 3)*. Wir geben also den minimalen und maximalen Wert an und die Schrittweite, die gewünschte Klassenbreite.
 Wir können alternativ die Klassenbreite mit *binwidth* angeben, dann sucht
