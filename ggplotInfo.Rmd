@@ -1,7 +1,8 @@
 ---
-title: "Beschreibende Statistik mit R"
+title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
+encoding: utf-8
 output:
   html_notebook:
     highlight: pygments
@@ -38,8 +39,8 @@ Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen.
 Die Darstellung orientiert sich an [@wickham_16] und [@chang_18].
 
 Als Beispieldaten verwenden wir den Datensatz *Lieferzeiten*. Sie finden die Daten in der Lernplattform. 
-Die Daten sind [@bamberg_93] entnommen. Wir lesen die Daten mit *read_csv2* ein:
-Als Beispiel fürHistogramme in diesem Fall verwenden wir den Datensatz
+Die Daten sind [@bamberg_93] entnommen. Wir lesen die Daten mit *read_csv2* ein.
+Als Datensatz für die Histogramme  verwenden wir den Datensatz
 *Körpergröße* aus [@benesch_13], den wir ebenfalls aus einer csv-Datei einlesen.
 Für die Erstellung von Streuungsdiagrammen, scatter plots, benötigen
 wir Daten mit mindestens zwei kardinalen Merkmalen. Hier
@@ -54,14 +55,14 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 ```
 
 # Übersicht über ggplot
-Das Package *ggplot* wurden von Wickham entwickelt. Das Package verfolgt eine ganz andere Herangehensweise an die Erstellung von Grafik.
+Das Package *ggplot* wurde ursprünglich von Wickham entwickelt. Das Package verfolgt eine ganz andere Herangehensweise an die Erstellung von Grafik.
 Es wird eine *grammar of graphics* implementiert, wie sie von Leland Wilkinson in [@wilkinson_05] beschrieben wird. Das Ergebnis
 ist eine formale und strukturierte Sicht auf grafische Ausgaben.
 
 Diese formale Herangehensweise macht es zu Beginn nicht unbedingt einfach, sich mit *ggplot* anzufreunden. Aber wenn Sie sich auf die Struktur
 einlassen, dann erhalten Sie Abbildungen von einer hohen Qualität und ein sehr mächtiges Werkzeug. Und insbesondere arbeitet *ggplot* hervorragend mit *Tidyverse* zusammen. Aktuell wird *ggplot* überarbeitet, um die Entwicklungen aus den anderen *Tidyverse*-Paketen auch in *ggplot* zu finden.
  
-Eine Visualisierung ist ein Abbildung, eine Beziehung zwischen den Daten und
+Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. Daten sind qualitativ oder quantitativ, während die visuellen Eigenschaften durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben werden.
 
 Wir betrachten ein erstes Beispiel. Um *ggplot* zu verwenden müssen wir

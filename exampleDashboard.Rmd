@@ -3,12 +3,17 @@ title: "Dashboards mit flexdashboard"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output: flexdashboard::flex_dashboard
+encoding: utf-8
 ---
 
 ```{r setup, include = FALSE}
 library(ggplot2)
 library(dplyr)
 knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+
+diamonds.cut <- 2.5
+smaller <- diamonds %>%
+  filter(carat <= diamonds.cut)
 ```
 
 # Dashboards
@@ -35,12 +40,13 @@ Hier wurde eine weitere Spalte eingeführt.
 Hier können wir weiteren Text innerhalb der erzeugten Spalte darstellen.
 
 # Grafiken und Tabellen
+
 ## Spalte 1
 
 ### Karat
 
-```{r plot}
-ggplot(diamonds, aes(carat)) + 
+```{r Karat}
+ggplot(smaller, aes(carat)) + 
   geom_histogram(binwidth = 0.1, fill="green", color="black") +
   labs(
     x = "Karat",
@@ -63,7 +69,7 @@ ggplot(diamonds, aes(cut)) +
 
 ```{r farbe}
 ggplot(diamonds, aes(color)) + 
-  geom_bar( fill="yellow", color="black") +
+  geom_bar(fill="yellow", color="black") +
   labs(
     x = "Farbe",
     y = ""
