@@ -9,6 +9,7 @@ output:
     number_sections: yes
     theme: cosmo
     toc: yes
+    encoding: utf-8    
   html_document:
     df_print: paged
     toc: yes
@@ -17,6 +18,7 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
+    encoding: utf-8
 bibliography: literatur.bib
 ---
 
@@ -86,24 +88,22 @@ gemeint, auf die wir unsere Daten abbilden können. Mit *geom_bar* legen wir fes
 Daten, die in der Spalte *Lieferzeiten* im Datensatz stehen. Das Schlüsselwort
 *aes* steht für *aestethics*.
 
-Jetzt übergeben wir mit *fill* die Information, dass wir eine andere Farbe für
+Jetzt übergeben wir die Information, dass wir eine andere Farbe für
 die Balken verwenden möchten. Dazu gibt es für *geom_bar*
 das Attribut *fill*, mit dem wir die Füllfarbe der Balken festlegen.
 Wir verwenden einen  Eintrag aus der Farbpalette aus *ColorBrewer*,
-die wir zu Beginn erzeugt haben.
+die wir im Setup dieser Markdown-Datei erzeugt haben.
 
-Wir mussten für die Ausgabe der absoluten Häufigkeiten keine
-Tabelle anlegen. Die Funktion *geom_bar* nimmt die Werte entgegen
+Wir mussten für die Ausgabe der absoluten Häufigkeiten diese Werte nicht
+mit einer Funktion wie *table* berechnen. Die Funktion *geom_bar* nimmt die Werte entgegen
 und wendet Statistik-Funktionen darauf an, bevor die Abbildung erstellt wird.
 Darum müssen wir uns nicht selbst kümmern. In *ggplot* gibt es zu
 jedem *geom* eine entsprechende *stat*-Funktion. Wir können die Zuordnung
 manipulieren, aber für die grundlegenden Funktionen wie die Erstellung
 eines Balkendiagramms passen die Zuordnungen immer.
 
-Wir möchten alle Werte zwischen 1 und 7 auf der x-Achse
-sehen, dazu verwenden wir *scale_x_discrete*. Und mit *labs* legen wir einen Titel
-für das Bild und Achsenbeschriftungen fest. Und da wir jetzt gleich
-noch weitere Veränderungen an unserer Abbildung vornehmen möchten speichern
+Da wir jetzt gleich
+weitere Veränderungen an unserer Abbildung vornehmen möchten speichern
 wir die Grafik in einer Variable ab. Geben wir den Namen der abgespeicherten Grafik auf der Konsole ein erhalten wir die Ausgabe.
 
 ```{r bars2, message=FALSE, results='markup'}        
@@ -116,9 +116,9 @@ bars
 
 Wir möchten auf der x-Achse alle Werte zwischen 1 und 7 in den Daten sehen.
 Dazu verwenden wir die Funktion *scale_x_discrete*. Mit dieser Funktion
-können wir Eigenschaften auf der x-Achse verändern. Wir übergeben einen
+können wir Eigenschaften der x-Achse verändern. Wir übergeben einen
 Vektor mit allen Werten. Da wir die Abbildung auf einer Variablen
-abgespeichert haben können wir diese Variable verwenden
+abgespeichert haben, können wir diese Variable verwenden
 und weitere Zeilen hinzufügen.
 
 ```{r bars3, message=FALSE, results='markup'}        
@@ -127,10 +127,11 @@ bars +
 ```
 
 Jede Abbildung hat eine Beschriftung. Dazu verwenden wir die Funktion *labs*,
-der wir eine Überschrift und Achsenbeschriftungen übergeben.
+der wir eine Überschrift und eine Achsenbeschriftungen übergeben.
 
 ```{r bars4, message=FALSE, results='markup'}        
-bars +  
+bars + 
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
   labs(
     title="Absolute Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -170,11 +171,13 @@ Wenn wir statt einer horizontalen eine vertikale Ausgabe möchten fügen wir ein
 *coord_flip()* hinzu. Damit werden x- und y-Achsen getauscht. *ggplot* kennt
 auch weitere Koordinatensysteme wie Polarkoordinaten für die Ausgabe.
 
-# Weitere Grafiken
+# Box-Plots, Verteilungsfunktion und Histogramme
 ## Box-Plots
 Möchten wir statt einem Balkendiagramm einen Box-Plot, dann tauschen
 wir einfach das *geom* aus und verwenden *geom_boxplot*. Auch hier können
-wir ein horizontale oder vertikale Ausgabe erhalten. Natürlich ist es immer
+wir eine horizontale oder vertikale Ausgabe erhalten. 
+Dazu verwenden wir wieder *coord_flip*. 
+Natürlich ist es immer
 eine gute Idee, eine Legende hinzuzufügen. In diesem Beispiel
 verzichten wir mit *theme(legend.position="none")* allerdings darauf.
 
@@ -199,14 +202,14 @@ dargestellt. Eine empirische Verteilungsfunktion der Lieferzeiten
 können wir mit *stat_ecdf* erstellen. Dabei steht *ecdf*
 für *empirical cumulative distribution function*. 
 
-```{r plotecdf, message=FALSE, results='markup'}
+```{r ecdf, message=FALSE, results='markup'}
 ggplot(liefer, aes(x=Lieferzeiten)) + 
   stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
   scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
   labs(
     title="Empirische Verteilungsfunktion der Lieferzeiten", 
     x="Tage", 
-    y=""
+    y="Kumulierte relative Häufigkeiten"
   ) 
 ```
 
@@ -214,9 +217,13 @@ ggplot(liefer, aes(x=Lieferzeiten)) +
 Als Beispiel für Histogramme verwenden wir die Körpergrößen von Frauen.
 Das Merkmal im Datensatz hat den Namen *Koerpergroesse*. Die x-Achse ist jetzt
 kontinuierlich, deshalb verwenden wir für diese Achse die Funktion
-*scale_x_continuous(limits=c(150.0, 185.0))*. Damit legen wir den minimalen
+*scale_x_continuous(limits=c(150.0, 185.0))*. 
+Diese Werte können wir vorher mit Hilfe der Funktionen *min* und
+*max* berechnen und bei Bedarf auch auf eine Variable speichern.
+Damit legen wir den minimalen
 und maximalen Wert für die Achse in der grafischen Ausgabe fest.
-Wir erstellen zuerst ein Balkendiagramm.
+Wir erstellen zuerst ein Balkendiagrammm an, um uns zu überzeugen, dass ein Histogramm
+deutlich sinnvoller ist.
 
 ```{r FrauenBars, message=FALSE, results='markup'}
 ggplot(frauen)  +
@@ -250,7 +257,7 @@ ggplot(frauen) +
   ) 
 ```
 
-*ggplot* weißt uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders glücklich ist.
+*ggplot* weist uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders glücklich ist.
 Verwenden wir andere Klassengrenzen möchten übergeben wir diese mit
 Hilfe der Option *breaks* an *geom_historgram*. Wir erzeugen einen Vektor mit den Grenzen
 der Klassen mit *seq(152, 182, 3)*. Wir geben also den minimalen und maximalen Wert an und die Schrittweite, die gewünschte Klassenbreite.
@@ -265,7 +272,7 @@ ggplot(frauen) +
   scale_x_continuous(limits=c(150.0, 185.0)) + 
   labs(
     title="Körpergröße von Frauen", 
-    subtitle="Klassenbreite 3 zwischen 150 und 185",
+    subtitle="Verwendete Klassenbreite: 3 cm zwischen 150 cm und 185 cm",
     x="",
     y="absolute Häufigkeit"
   ) 
@@ -278,15 +285,20 @@ ggplot(frauen) +
   scale_x_continuous(limits=c(150.0, 185.0)) + 
   labs(
     title="Körpergröße von Frauen", 
-    subtitle="Klassenbreite 3",
+    subtitle="Verwendete Klassenbreite: 3 cm zwischen 150 cm und 185 cm",
     x="Körpergröße in cm",
     y="absolute Häufigkeit"
   ) 
 ```
 
 ## Streuungsdiagramme
+Als Daten für Streuungsdiagramme verwenden wir den Datensatz *Luftfeuchtigkeit*. 
+Dieser Datensatz enthält zwei kardinale Merkmale. Eines davon ist die
+Luftfeuchtigkeit, die wir auf die x-Achse legen. Das zweite Merkmal
+ist der Wassergehalt, das wir für die y-Achse verwenden.
+So erhalten wir für jedes Wertepaar einen Punkt in einem kartesischen Koordinatensystem.
 Die Wertepaare
-in einem Streuungsdiagramm geben wir mit Hilfe des *geoms* *geom_point* aus.
+in einem Streuungsdiagramm geben wir mit Hilfe von *geom_point* aus.
 
 ```{r scatter, echo=TRUE, results='markup'}
 ggplot(wassergehalt) +
@@ -298,6 +310,9 @@ ggplot(wassergehalt) +
     y="Wassergehalt in Prozent"
   ) 
 ```
+
+Wir erkennen im Streuungsdiagramm gut, dass es eine Korrelation zwischen
+der Luftfeuchtigkeit und dem Wassergehalt der Wolle gibt.
 
 # Abspeichern von Abbildungen
 Für das Abspeichern von Abbildungen gibt es zwei Möglichkeiten.
