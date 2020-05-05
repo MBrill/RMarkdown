@@ -1,0 +1,263 @@
+---
+title: "Der Datensatz autoEU"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz *autoEU*
+Dieser Datensatz ist aus dem im Package *ISLR* ([@tibshirani_13]) enthaltenen Datensatz *auto*
+entstanden. Die Null-Werte wurden entfernt und die Einheiten und Bezeichnungen
+auf unseren Sprachgebrauch angepasst.
+
+
+```{r daten, message=FALSE, echo=TRUE}
+daten <- read_csv2(file="data/AutoEU.csv")
+daten$Region <- as_factor(daten$Region)
+daten$Zylinder <- as_factor(daten$Zylinder)
+daten$Baujahr <- as_factor(daten$Baujahr)
+daten
+```
+
+# Visualisierungen
+
+## Boxplots
+Wir verwenden den Datensatz unter Anderem als Beispiel für einen Boxplot,
+der mehrere Merkmale in einer Visualisierungen darstellt.
+Dabei gruppieren wir nach Anzahl der Zylinder und stellen mit Hilfe
+von Boxplots die Leistung in PS dar.
+
+
+```{r plotBox1, message=FALSE, results='markup'}
+box <- ggplot(daten, aes(x=Region, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="",
+    x = " ",
+    y="Verbrauch in l/100 km"
+  ) 
+
+box
+
+ggsave(filename="autoEUBox1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+box + coord_flip()
+```
+
+Jetzt machen wir noch Bilder mit mehr Kategorien auf der x-Achse, wie in *Tableau*.
+
+
+```{r plotBox2, message=FALSE, results='markup'}
+ggplot(daten, aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill= myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="",
+    x = "Anzahl der Zylinder ",
+    y="Verbrauch in l/100 km"
+  ) 
+
+ggsave(filename="autoEUBox2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+```
+
+Wir fügen die Region noch für die Füllfarbe ein.Dabei verwenden wir
+*geom_boxplot* in einer Pipeline, in der wir filtern. Dabei sorgen wir mit
+*scale_y_continous* dafür, dass wir gleiche y-Achsen haben!
+
+```{r plotBox3, message=FALSE, results='markup'}
+wanted <- "Europa"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für europäische PKW",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) +
+  scale_y_continuous(limits = c(5, 30)) +
+  theme(legend.position = "none")
+
+ggsave(filename="autoEUBox4.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+wanted <- "USA"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[2], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für US-amerikanische PKW",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) +
+  scale_y_continuous(limits = c(5, 30)) +
+  theme(legend.position = "none")
+
+ggsave(filename="autoEUBox5.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## SPLOM
+Wir erstellen Scatterplot-Matrizen mit diesem Datensatz. Dabei
+verwenden wir neben *ggplot* auch noch *pairs* aus dem Default-Package *plot*.
+Im zweiten Bild wir mit *subset* die Anzahl der dargestellten Zeilen gefilter.
+Wir könnten noch eine Legende hinzufügen, was man bei *plot* aber manuell
+durchführen muss.
+
+```{r pairs, message=FALSE, results='markup'}
+png(file="images/autoEUpairs1.png",
+    units = "cm", width=16, height=9, res=300)
+pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
+      pch=21, bg = myPalette,
+      main="SPLOM mit pairs für den Datensatz autoEU", lower.panel=NULL)
+dev.off()
+
+png(file="images/autoEUpairs2.png",
+    units = "cm", width=16, height=9, res=300)
+pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
+      subset = Hubraum < 1.3,
+      pch=21, bg = myPalette,
+      main="SPLOM mit pairs für den Datensatz autoEU (Hubraum < 1300 l)",
+      lower.panel=NULL)
+dev.off()
+```
+
+In *ggplot* können wir Facets mit *facet_grid* und *facet_wrap* verwenden.
+Schon in [@chang_18] findet man die Bemerkung, dass SPLOMS in *ggplot*
+nicht gut zu machen sind.
+
+```{r facetgrid, message=FALSE, results='markup'}
+# Basisplot
+auto_plot <- ggplot(daten, aes(x = Hubraum, y = Verbrauch, color=Region)) + 
+  geom_point(shape=20, size=2.5) + 
+  scale_color_brewer(palette="Set3", aesthetics="fill")
+
+auto_plot +
+    labs(
+    title="Datensatz autoEU", 
+    subtitle="Streuungsdiagramm Hubraum ~ Verbrauch",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+
+ggsave(filename="autoEUGrid0.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Jetzt erzeugen wir einen grid
+# Zylinder erzeugt Spalten
+auto_plot + 
+  facet_grid(. ~ Zylinder, labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+
+ggsave(filename="autoEUGrid1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Zylinder erzeugt Zeilen
+auto_plot + 
+  facet_grid(Zylinder ~ ., labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )  
+
+ggsave(filename="autoEUGrid2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Beides
+auto_plot + 
+  facet_grid(Region ~ Zylinder, labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern und Region",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+
+ggsave(filename="autoEUGrid3.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+```{r facetsol, message=FALSE, results='markup'}
+wanted <- "Japan"
+daten %>%
+   group_by(Region) %>%
+   filter(
+     Region == wanted
+   ) %>%
+  ggplot(aes(x = Hubraum, y = Verbrauch, color=Region)) + 
+  geom_point(shape=20, size=2.5) + 
+  scale_color_brewer(palette="Set3", aesthetics="fill") +
+  facet_grid(Zylinder ~ ., labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Hubraum für japanische PKW",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  ) +
+    theme(legend.position = "none")
+
+ggsave(filename="autoEUSPLOMJapan.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+
+```{r facetsol1, message=FALSE, echo = FALSE, results='markup'}
+auto_plot + 
+  facet_grid(Baujahr ~ Zylinder, labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Baujahr und Region",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+```
+
+
+# Literatur

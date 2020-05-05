@@ -117,7 +117,6 @@ box3 <- ggplot(mpg, aes(x=class, y=cty)) +
   labs(
     title="Datensatz mpg", 
     subtitle="",    
-    caption="Erstellt mit ggplot2 3.1.0",
     x="Klasse",
     y="Verbrauch innerhalb einer Stadt in Meilen pro Gallone"
   ) 

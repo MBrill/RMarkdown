@@ -1,0 +1,132 @@
+---
+title: "Veränderung des Datensatz Auto"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output:
+  
+  html_notebook: 
+  html_document:
+    
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+# ISLR für die Originaldaten
+library(ISLR)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+```
+
+# Daten
+Wir betrachten den Datensatz *Auto* aus dem Package *ISLR*. 
+Die Daten stammen aus [@tibshirani_13]. Das Package wird in *setup*
+geladen, so dass die Daten zur Verfügung stehen.
+
+In diesem
+Rmd-File laden wir die Daten und verändern die Spalten mit anglo-amerikanischen Einheiten in metrische Einheiten. 
+Dazu verwenden wir *tidyverse*.
+
+# Metrische Einheiten
+Wir erzeugen mit Hilfe der Umrechnungsformeln in der Aufgabenstellung
+neue Spalten und löschen am Ende die ursprünglichen Merkmale.
+Dabei benennen wir auch Spalten, die wir nicht verändern um,
+um eine einheitliche Sprache zu verwenden (Beispiel: wir verändern den
+Namen der Spalte *cyl* zu *Zylinder*).
+
+```{r daten, message=FALSE, echo=TRUE}
+# Variablen für die Umrechnung der Einheiten
+hp2PS <- 1.0/0.986
+mpg2kmh <- 235.0
+cuin2l <- 1.0/61.0237
+lbs2kg <- 1.0/2.20423
+
+Auto <- as_tibble(Auto)
+Auto2 <- Auto %>%
+  mutate(Region = recode(origin, `1`= "USA", `2` = "Europa", `3` = "Japan"),
+         year = 1900 + year,
+         mpg = mpg2kmh/mpg,
+         displacement = cuin2l*displacement,
+         horsepower = hp2PS*horsepower,
+         weight = lbs2kg*weight/1000.0
+         ) %>%
+  dplyr::select(
+    Name = name, 
+    Region, 
+    Baujahr = year, 
+    Zylinder = cylinders, 
+    Hubraum = displacement, 
+    Gewicht = weight,  
+    Verbrauch = mpg,
+    PS = horsepower, 
+    Beschleunigung = acceleration
+  )
+
+# Faktoren bilden
+Auto2$Region <- as_factor(Auto2$Region)
+Auto2$Zylinder <- as_factor(Auto2$Zylinder)
+Auto2$Baujahr <- as_factor(Auto2$Baujahr)
+```
+
+Der überarbeitete Datensatz ist in der folgenden Tabelle zu sehen:
+
+```{r tabelle, echo='false', message=FALSE, results='asis'}
+Auto2
+```
+
+# Abspeichern des überarbeiteten Datensatzes
+Um die neuen Daten weiter zu verwenden speichern wir das tibble
+als csv-Datei ab. Spaltentrenner ist das Semikolon, als Dezimaltrenner
+wird das Komma verwendet.
+
+```{r export, echo='false', message=FALSE, results='asis'}
+write_csv2(Auto2, path="data/AutoEU.csv", col_names = TRUE, )
+```
+
+# Grafiken
+
+Wir erstellen Grafiken, um einen Eindruck über den Datensatz zu erhalten.
+
+```{r grafiken, message=FALSE, echo=TRUE}
+ggplot(Auto2, aes(x = Hubraum, y = PS, color = Region)) + 
+  geom_point() +
+  labs(
+    title="Streuungsdiagramm für den überarbeiteten Datensatz Auto",
+    x = "Hubraum in Liter",
+    y = "Leistung in PS"
+  )   
+
+#ggsave(filename="autoeu.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
+```
+
+
+```{r grafiken2, message=FALSE, echo=TRUE}
+ggplot(Auto2, aes(x = Hubraum, y = PS, color = Region, size=Baujahr)) + 
+  geom_point() +
+  labs(
+    title="Streuungsdiagramm für den überarbeiteten Datensatz Auto",
+    x = "Hubraum in Liter",
+    y = "Leistung in PS"
+  )   
+
+#ggsave(filename="autoeu2.png", plot=last_plot(), device="png",
+       #path="images/", width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis

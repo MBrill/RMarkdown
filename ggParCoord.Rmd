@@ -1,0 +1,141 @@
+---
+title: "Parallele Koordinaten mit gpglot"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Accent")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel mit standardisierten Werten
+Wir verwenden zuerst einmal die Daten aus der Folie, die in der Datei *4Dim.csv"
+abgespeichert sind. Diese Daten sind standardisiert, so dass wir die Abbildung
+auf die Achsen direkt durchführen können. Wir haben Punkte aus dem vier-dimensionalen Raum.
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read.csv2("data/4Dim.csv")
+daten
+
+# Dimension des Raums, den wir visualisieren
+# Daran denken, die Namen der Punkte nicht mit zu zählen1
+N <- ncol(daten) - 1
+
+# Anzahl der Punkte im Datensatz
+k <- nrow(daten)
+```
+
+Der Datensatz enthält `r k` Werte. Die Koordinaten stehen in `r N` Merkmalen mit den Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)[3]`*, *`r colnames(daten)[4]`* und *`r colnames(daten)[5]`*.
+
+# Vorbereitungen für die Visualisierung
+Aktuell stehen die Koordinaten in Spalten. Für die Verwendung von *geom_line*
+brauchen wir das aber im long-Format, die einzelnen Punkte müssen jeweils
+in einer Spalte stehen. Dazu verwenden wir *gather* und *spread*.
+
+```{r prepareData, message=FALSE, echo=FALSE}
+datenLF <- daten %>%
+  gather("Achse", "Koordinate", -Punkt )
+
+datenLF <- datenLF %>%
+  mutate(
+    id = seq(1, nrow(datenLF))
+  ) %>%
+  select(id, everything())
+
+datenLF
+```
+
+
+
+```{r prepare, message=FALSE, echo=FALSE}
+numberOfAxis <- N-1
+parLength <- 1.0
+
+axisX <- tibble(
+  xValues = seq(0.0, N-1, by = 1.0),
+  xNames = colnames(daten)[2:5],
+  #yValues = daten[1, 2:5]
+)
+```
+
+Wir benötigen Werte für die Ausgabe der `r N` Koordinatenachsen. 
+Der Einfachheit halber verteilen wir die Achsen im Intervall [0, `r numberOfAxis`] und
+berechnen die x-Werte der Koordinatenachsen in einem tibble.
+Wir müssen auch festlegen wie lang unsere Achsen im Bild sein sollen,
+diese Angabe speichern wir auf einer Variable *parLength*, die wir
+auf `r parLength` setzen. Das Tibble mit den x-Werten der Achsen
+nennen wir *axisX*:
+
+```{r showAxisValues, message=FALSE, echo=FALSE}
+axisX
+```
+
+Wir stellen als Test diese Achsen mit Hilfe von *geom_vline* mit *ggplot* dar:
+
+```{r plotAxis, message=FALSE, echo=TRUE, results='asis'}
+plot <- ggplot(axisX, aes(xValues, yValues)) + 
+  geom_vline(xintercept = axisX$xValues, 
+             color = myPalette[1],
+             #lineend = "butt",
+             size=1.5) +
+  scale_x_continuous(breaks = c(0:numberOfAxis),
+                     labels = axisX$xNames) +
+  labs(
+      title="Parallele Koordiantenachsen im vierdimensionalen Raum", 
+      x="", 
+      y=""
+   )   
+
+plot
+```
+
+# Unser erster Plot mit parallelen Koordinaten
+Jetzt erstellen wir ausgehend von *plot* eine erste grafische Darstellung
+und zeichnen mit *geom_line* einen Punkt mit vier
+Koordinaten in die Visualisierung.
+
+```{r firstPoint, message=FALSE, echo=TRUE, results='asis'}
+ggplot(datenLF, aes(x = Achse, y = Koordinate, group = Punkt)) +
+  geom_path(aes(color = Punkt),
+            alpha = 0.5,
+            size = 1.5,
+            lineend="round",
+  ) + 
+  scale_color_brewer(palette="Set1",
+                     breaks = c("One", "Two", "Three", "Four", "Five", "Six", "Seven")
+                     ) +
+  labs(
+      title="Parallele Koordinatenachsen im vierdimensionalen Raum", 
+      x="", 
+      y="Koordinaten"
+  ) 
+
+ggsave(filename="parCoordExample.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+# Export der veränderten Daten
+Wir exportieren die veränderten Daten, um sie auch in Tableau zu verwenden.
+
+```{r saveLF, message=FALSE, echo=TRUE}
+write_csv2(datenLF, path="data/4DimLF.csv")
+```
+

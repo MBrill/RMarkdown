@@ -1,0 +1,93 @@
+---
+title: "Visualisierung für den Iris-Datensatz"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook: 
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+# MASS für die Funktion parcoord
+library(MASS)
+myPalette <- brewer.pal(8, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz *Iris*
+Dieser Datensatz ist in R einfach verfügbar, in *datasets*. Der Datensatz enthält
+5 Spalten und 150 Zeilen. Die ersten vier Spalten enthalten die Messwerte, in Spalte
+5 finden wir die Angabe über die Spezies.
+
+```{r daten, message=FALSE, echo=TRUE}
+iris <- datasets::iris
+
+# Die Spalte mit den Spezies ausschließen
+iris2 <- iris[,-5]
+# Die Spalte 5 enthält die Information zu den Spezies,
+# wir speichern sie auf species_labels.
+species_labels <- iris[,5]
+# Drei Farben aus unserer Farbpalette für das Markieren der drei Spezies speichern
+species_col <- myPalette[as.numeric(species_labels)]
+```
+
+# SPLOM
+Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,
+dass wir Iris Setosa gut von den beiden anderen Spezies unterscheiden können.
+
+```{r splom, message=FALSE, echo=TRUE}
+# Eine Scatterplot Matrix mit Legende ausgeben
+pairs(iris2, col=species_col,
+      lower.panel = NULL,
+      cex.labels=2, pch=19)
+
+par(xpd = TRUE)
+legend(x=0.05, y=0.4, legend=as.character(levels(species_labels)),
+       fill=unique(species_col))
+```
+
+# Parallele Koordinaten mit *parcoord*
+Das Package *MASS* enthält eine Funktion für die Visualisierung mit parallelen Koordinaten. Wir verwenden diese Funktion und erstellen eine grafische Darstellung
+für den Iris-Datensatz. Auch hier ist gut zu erkennen, dass wir Iris Setosa
+gut von den anderen Spezies abtrennen können.
+
+```{r pc, message=FALSE, echo=TRUE}
+par(las = 1, mar = c(5.5, 5, 4, 2) + 0.1, cex = .8)
+parcoord(iris2, col = species_col, var.label = TRUE, lwd = 2,
+         main="Parallele Koordinaten der Iris-Daten")
+
+# Und wieder eine Legende
+par(xpd = TRUE)
+legend(x = 1.75, y = -.25, cex = 1,
+      legend = as.character(levels(species_labels)),
+      fill = unique(species_col), horiz = TRUE)
+par(xpd = NA)
+
+png(file="images/irisPC.png",
+    units = "cm", width=16, height=9, res=300)
+par(las = 1, mar = c(5.5, 5, 4, 2) + 0.1, cex = .8)
+parcoord(iris2, col = species_col, var.label = TRUE, lwd = 2,
+         main="Parallele Koordinaten der Iris-Daten")
+par(xpd = TRUE)
+legend(x = 1.75, y = -.25, cex = 1,
+      legend = as.character(levels(species_labels)),
+      fill = unique(species_col), horiz = TRUE)
+par(xpd = NA)
+dev.off()
+```
+
+

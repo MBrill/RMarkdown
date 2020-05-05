@@ -24,7 +24,7 @@ library(DescTools)
 library(knitr)
 library(kableExtra)
 library(RColorBrewer)
-myPalette <- brewer.pal(8, "YlGn")
+myPalette <- brewer.pal(8, "Greens")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
@@ -135,18 +135,20 @@ zu visualisieren.
 
 ```{r bar, message=FALSE}
 ggplot(data=wohnungen) +
-  geom_bar(mapping=aes(x=Zimmer, fill=myPalette[1]),
-           show.legend=FALSE) + 
-     labs(
+  geom_bar(mapping=aes(x=Personen, 
+                       fill=myPalette[1],
+                       show.legend=FALSE)) + 
+  labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der  Zimmer in der Wohnung",
          y="Absolut Häufigkeiten"
   ) 
 
 ggplot(data=wohnungen) +
-  geom_bar(mapping=aes(x=Personen, fill=myPalette[1]),
-           show.legend=FALSE) + 
-     labs(
+  geom_bar(mapping=aes(x=Personen, 
+                       fill=myPalette[1]),
+                       show.legend=FALSE) + 
+  labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der Personen in der Familie",
          y="Absolut Häufigkeiten"
@@ -161,7 +163,7 @@ Hier eine Serie von Abbildungen, die die verschiedenen Möglichkeiten zeigt:
 ```{r stackedDodged, message=FALSE, echo=TRUE, results='asis'}
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen))) + 
-  scale_fill_brewer(palette="YlGn") +
+  scale_fill_brewer(palette="Greens") +
   labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der  Zimmer in der Wohnung",
@@ -171,7 +173,7 @@ ggplot(data=wohnungen) +
 
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer))) + 
-  scale_fill_brewer(palette="YlGn") +  
+  scale_fill_brewer(palette="Greens") +  
   labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der Personen in der Familie",
@@ -182,7 +184,7 @@ ggplot(data=wohnungen) +
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Zimmer, fill=factor(Personen)),
            position="dodge") + 
-  scale_fill_brewer(palette="YlGn") +
+  scale_fill_brewer(palette="Greens") +
      labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der  Zimmer in der Wohnung",
@@ -194,7 +196,7 @@ ggplot(data=wohnungen) +
 ggplot(data=wohnungen) +
   geom_bar(mapping=aes(x=Personen, fill=factor(Zimmer)),
            position="dodge") + 
-  scale_fill_brewer(palette="YlGn") +  
+  scale_fill_brewer(palette="Greens") +  
   labs(
          title="Datensatz Familienzimmer mit Visualisierung der Häufigkeiten",
          x="Anzahl der Personen in der Familie",
@@ -241,13 +243,11 @@ p +
          y="Anzahl der Personen in der Familie"
   ) +
   guides(size=guide_legend(title="Absolute Häufigkeiten", size=2.0))
-
-
 ```
 
 ## Heatmaps
 Wir verwenden Farben um die Häufigkeiten zu visualisieren und erstellen eine Heatmap. 
-Damit wir dies in der dafür vorhandenen Funktion *geom_tile* zu übergeben müssen
+Damit wir dies in der dafür vorhandenen Funktion *geom_tile* übergeben können, müssen
 wir die Daten in das sogenannte *long*-Format in Tidyverse umformatieren.
 Das *long*-Format entspricht den Daten in der Datei. Wir ergänzen die Daten
 um eine Spalte, in der die Häufigkeiten für die jeweiligen Wertepaare stehen.
@@ -255,7 +255,6 @@ um eine Spalte, in der die Häufigkeiten für die jeweiligen Wertepaare stehen.
 
 ```{r wohnLong, message=FALSE}
 wohnungen.long <- wohnungen %>%
-  #complete(Personen, Zimmer, fill = list(count=0)) %>%
   group_by(Personen, Zimmer) %>%
   mutate(value=n())
 ```
@@ -264,23 +263,27 @@ Jetzt verwenden wir dieses Format und erstellen eine Heatmap:
 ```{r heatWohnungen, message=FALSE}
 ggplot(data=wohnungen.long) +
   geom_tile(mapping=aes(x=Zimmer, y=Personen, fill=value)) + 
-  scale_fill_distiller(palette="YlGn", 
+  scale_fill_distiller(palette="Greens", 
                        guide="legend",
                        limits=c(1,3),
                        breaks=c(1,2,3),
                        direction=1) +
   guides(fill=guide_legend(title="Häufigkeiten")) +
   labs(
-    title="Heatmap Wohnsituation", 
+    title="Heatmap für die Kontingenztabelle Familienzimmer", 
     x="Anzahl der Zimmer in der Wohnung", 
     y="Anzahl der Personen in der Familie"
   )  
+
+ggsave(filename="familienHeat.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 ```
 Es wäre möglich, die Zeilen, in denen die Häufigkeit 0 ist durch diese Zahl zu ergänzen.
 Zu diesem Fall gibt es im GitHub-Repo von *Tidyverse* eine längere Diskussion. Dazu gibt es
 die Funktion *complete*, die wir in einer Pipeline einsetzen könnten. Aber auch fehlende
 Quadrate markieren eigentlich das gleiche - Häufigkeit 0.
-
 
 ## Mosaikplots
 Eine weitere Möglichkeit der Visualisierungen von Kontingenztabellen

@@ -1,0 +1,220 @@
+---
+title: "Multidimensionale Daten und Visualisierungen"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  flexdashboard::flex_dashboard:
+     vertical_layout: scroll
+encoding: utf-8
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 3.5,
+                      fig.asp = 1)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+
+```{r daten, message=FALSE, echo=FALSE}
+daten <- read_csv2(file="data/AutoEU.csv")
+daten$Region <- as_factor(daten$Region)
+daten$Zylinder <- as_factor(daten$Zylinder)
+daten$Baujahr <- as_factor(daten$Baujahr)
+```
+
+# Der Datensatz AutoEU
+
+### Der Datensatz
+Dieser Datensatz ist aus dem im Package *ISLR*  enthaltenen Datensatz *auto* entstanden. Die Null-Werte wurden entfernt und die Einheiten und Bezeichnungen
+auf unseren Sprachgebrauch angepasst.
+
+### Boxplot
+
+```{r box1, message=FALSE, echo=FALSE}
+ggplot(daten, aes(x=Region, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="",
+    x = " ",
+    y="Verbrauch in l/100 km"
+  ) 
+```
+
+# Daten
+```{r tabelleAuto, echo=FALSE}
+daten %>% 
+  arrange(desc(Name)) %>% 
+  select(Name, Baujahr, Region, Hubraum, PS, Verbrauch) %>% 
+  DT::datatable(fillContainer=TRUE)
+```
+
+# Boxplots
+
+## Zusammenhänge
+
+### Zylinder
+```{r plotBox2, message=FALSE, echo=FALSE, results='markup'}
+ggplot(daten, aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill= myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) 
+```
+
+### Baujahre
+```{r plotBox3, message=FALSE, echo=FALSE, results='markup'}
+ggplot(daten, aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot( fill= myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="",
+    x = "Baujahre",
+    y="Verbrauch in l/100 km"
+  ) 
+```
+
+## Getrennt nach Regionen
+
+### Europa
+
+```{r plotBox4, message=FALSE, echo = FALSE, results='markup'}
+wanted <- "Europa"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[3], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für europäische PKW",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) +
+  scale_y_continuous(limits = c(5, 30)) +
+  theme(legend.position = "none")
+```
+
+### USA
+```{r plotBox5, message=FALSE, echo = FALSE, results='markup'}
+wanted <- "USA"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[2], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für US-amerikanische PKW",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) +
+  scale_y_continuous(limits = c(5, 30)) +
+  theme(legend.position = "none")
+```
+
+### Japan
+```{r plotBox6, message=FALSE, echo = FALSE, results='markup'}
+wanted <- "Japan"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[5], color="black",
+                outlier.colour = myPalette[5]) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für US-amerikanische PKW",
+    x = "Anzahl der Zylinder",
+    y="Verbrauch in l/100 km"
+  ) +
+  scale_y_continuous(limits = c(5, 30)) +
+  theme(legend.position = "none")
+```
+
+# Scatterplots
+
+## Streuungsdiagramme
+
+### Hubraum vs. Verbrauch
+```{r scatter0, message=FALSE, echo = FALSE, results='markup'}
+auto_plot <- ggplot(daten, aes(x = Hubraum, y = Verbrauch, color=Region)) + 
+  geom_point(shape=20, size=2.5) + 
+  scale_color_brewer(palette="Set3", aesthetics="fill")
+
+auto_plot +
+    labs(
+    title="Datensatz autoEU", 
+    subtitle="Streuungsdiagramm Hubraum ~ Verbrauch",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+```
+
+### Gewicht vs. Verbrauch
+```{r scatter1, message=FALSE, echo = FALSE, results='markup'}
+auto_plot <- ggplot(daten, aes(x = Gewicht, y = Verbrauch, color=Region)) + 
+  geom_point(shape=20, size=2.5) + 
+  scale_color_brewer(palette="Greens", aesthetics="fill")
+
+auto_plot +
+    labs(
+    title="Datensatz autoEU", 
+    subtitle="Streuungsdiagramm Gewicht ~ Verbrauch",
+    x = "Gewicht in t",
+    y="Verbrauch in l/100 km"
+  )
+```
+
+
+## SPLOMS
+
+### SPLOM Region vs. Zylinder
+```{r scatter2, message=FALSE, echo = FALSE, results='markup'}
+auto_plot + 
+  facet_grid(Region ~ Zylinder, labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern und Region",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+```
+
+### SPLOM Baujahr vs. Zylinder
+```{r scatter4, message=FALSE, echo = FALSE, results='markup'}
+auto_plot + 
+  facet_grid(Baujahr ~ Zylinder, labeller = label_both) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="SPLOM Hubraum ~ Verbrauch nach Baujahr und Region",
+    x = "Hubraum in ccm",
+    y="Verbrauch in l/100 km"
+  )
+```
+

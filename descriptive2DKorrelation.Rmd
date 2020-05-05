@@ -74,7 +74,6 @@ ggplot(daten) +
     x="Luftfeuchtigkeit in Prozent", 
     y="Wassergehalt in Prozent"
   ) 
-
 ```
 
 Das Streuungsdiagramm bestätigt den Wert des Korrelationskoeffizienten. Man sieht gut, dass wir versuchen können ein lineares Modell aufzustellen.

@@ -1,0 +1,58 @@
+---
+title: "Beispiel für die Verwendung von parallelen Koordinaten"
+subtitle: "Verwendung von parcoord"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+# MASS für die Funktion parcoord
+library(MASS)
+myPalette <- brewer.pal(8, "Set1")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz *4Dim*
+Wir verwenden einige Punkte aus einem vierdimensionalen Raum als Beispiel
+für die Verwendung von parallelen Koordinaten.
+
+```{r daten, message=FALSE, echo=TRUE}
+daten <- read_csv2(file="data/4Dim.csv")
+daten
+```
+
+# Parallele Koordinaten mit *parcoord*
+Das Package *MASS* enthält eine Funktion für die Visualisierung mit parallelen Koordinaten.
+
+```{r mass, message=FALSE, echo=TRUE}
+# Abbildung mit parcoord erzeugen, 
+# erste Spalte nicht verwenden,
+# Achsenbeschriftung anschalten, Linienstärke einstellen und
+# Überschrift erzeugen.
+#png(file="images/pc4+1.png",
+    #units = "cm", width=16, height=9, res=300)
+parcoord(daten[-1], col=myPalette, 
+         var.label=TRUE, 
+         lwd=4,
+         main="Parallele Koordinaten mit parcoord")
+#dev.off()
+# Wenn man die Zeile mit dem Aufruf von png und dev.off() dekommentiert
+# wird eine Bitmap-Datei abgespeichert.
+```

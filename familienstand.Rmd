@@ -3,6 +3,9 @@ title: "Das Beispiel Familienstand"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output: 
+  
+  html_notebook : default  
+    
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -67,7 +70,6 @@ plotOrig <- ggplot(daten) +
   labs(
     title="Familienstand", 
     subtitle="Reihenfolge im Datensatz",
-    caption="Erstellt mit ggplot2 3.1.0",
     x="",
     y="absolute Häufigkeit"
   ) 
@@ -93,7 +95,6 @@ plotAsc <- ggplot(daten) +
   labs(
     title="Familienstand", 
     subtitle="Aufsteigend sortiert nach Häufigkeit",
-    caption="Erstellt mit ggplot2 3.1.0",    
     y="absolute Häufigkeit",
     x=""
   ) 
@@ -115,7 +116,6 @@ plotDsc <- ggplot(daten) +
   labs(
     title="Familienstand", 
     subtitle="Absteigend sortiert nach Häufigkeit",
-    caption="Erstellt mit ggplot2 3.1.0",
     x="",
     y="absolute Häufigkeit"
   ) 
@@ -137,7 +137,6 @@ plotAlpha <- ggplot(daten) +
   labs(
     title="Familienstand", 
     subtitle="Alphabetische Reihenfolge",
-    caption="Erstellt mit ggplot2 3.1.0",
     x="",
     y="absolute Häufigkeit"
   ) 

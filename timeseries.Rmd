@@ -1,0 +1,85 @@
+---
+title: "Zeitreihen"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  
+  html_notebook: default
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set3")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Benesch
+Der Datensatz enthält Angaben über die Niederschlagswerte in Dakar und Wien und ist dem Buch
+von Benesch [@benesch_13] entnommen.  Der Datensatz wird zum Beispiel als Motivation für die Einführung
+von Streuungsparametern verwendet.
+
+
+```{r daten, message=FALSE, echo=TRUE}
+# Code aus RStudio <<Import Dataset>>
+daten <- read_delim("data/niederschlag.csv", 
+    ";", escape_double = FALSE, locale = locale(date_names = "de", 
+        decimal_mark = ","), trim_ws = TRUE)
+
+daten$Monat <- factor(daten$Monat)
+```
+
+Der Datensatz enthält pro Monat je einen Wert für Dakar und Wien. Die Werte sind in entsprechenden
+Spalten enthalten. Tabelle 1 zeigt die eingelesenen werte.
+```{r kableDaten, message=FALSE, echo=FALSE}
+kable(daten, align="l",
+      caption="Tabelle 1: Niederschlagswerte in den Städten Wien und Dakar in mm") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+# Visualisierung von Zeitreihen
+
+```{r timeseries, message=FALSE, results='markup', echo=TRUE}
+xV <- c(1,2,3,4,5,6,7,8,9,10,11,12)
+yV <- c(1,3,2,5,4,3,5,4,3,11,10,12)
+daten$months <- xV
+daten$yV <- yV
+ggplot(daten, aes(x=months, y= Wien )) + 
+  geom_line(size = 1.5, color=myPalette[1]) +
+  geom_point(color="black") + 
+    scale_x_continuous(breaks=1:12,
+                     labels=c("Jan", "Feb", "März", 
+                              "Apr", "Mai", "Jun",
+                              "Jul", "Aug", "Sep", 
+                              "Okt", "Nov", "Dez")) +
+  labs(
+         title="Niederschlagsmengen in Wien",
+         x = " ",
+         y="Niederschlag in mm"
+  )
+
+#ggsave(filename="timeWien.png", plot=last_plot(), 
+       #device="png",
+       #path="images/", 
+       #width=16, height=9, units="cm")
+```
+
+# Literaturverzeichnis
+
+
+

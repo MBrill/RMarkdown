@@ -512,7 +512,7 @@ ggplot(frauen) +
     subtitle="Klassenbreite 3 zwischen 150 und 185",
     x="",
     y="absolute Häufigkeit"
-  ) 
+  )
 
 ggplot(frauen) + 
   geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
