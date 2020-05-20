@@ -1,0 +1,109 @@
+---
+title: "Beispiel für die Verwendung von eurostat und NUTS"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+    encoding: utf-8  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8      
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Accent")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+
+# Packages für Eurostat
+library(eurostat)
+```
+
+
+# Quelle der Darstellung
+Diese Darstellung ist aus einem Beispiel von Leo Lahti
+entnommen, das auf 
+[https://github.com/ropengov/eurostat/blob/master/vignettes/website/maps.Rmd] zu finden ist.
+Wir verwenden den Quelltext im Abschnitt
+*Disposable income of private households by NUTS 2 regions at
+1:60mln resolution using ggplot2*. Der Quelltext ist dort im Rmd-Format
+zu finden und wurde hier für eine bessere Verständlichkeit in mehrere
+Abschnitte aufgeteilt. Die Bezeichner und auch die Kommentare wurden nicht verändert!
+Um einen Eindruck von dem Vorgehen zu haben gibt es zusätzliches Ausgaben
+der tibbles und anderer Variablen.
+
+# Daten und Kartenmaterial
+Als erstes fragen wir die statistischen Daten von Eurostat ab, die wir auf
+der Karte visualisieren möchten:
+
+```{r downloadData, include=TRUE, warning=TRUE, echo=TRUE, cache=TRUE}
+dat <- get_eurostat("tgs00026", time_format = "raw", stringsAsFactors = FALSE) %>% 
+  # subsetting to year 2014 and NUTS-2 level
+  dplyr::filter(time == 2014, nchar(geo) == 4) %>% 
+  # classifying the values the variable
+  dplyr::mutate(cat = cut_to_classes(values))
+
+dat
+```
+
+Jetzt fragen wir die NUTS-Daten für die Karten ab. Das könnte man auch lokal machen,
+aber wir verändern den Quelltext nicht. Nach dem Laden der Karten-Daten 
+wird ein *merge* der beiden Datensätze durchgeführt.
+
+```{r downloadNUTS, include=TRUE, warning=TRUE, echo=TRUE, cache=TRUE}
+# Download geospatial data from GISCO
+geodata <- get_eurostat_geospatial(resolution = "60", nuts_level = "2", year = 2013)
+
+geodata
+
+# merge with attribute data with geodata
+map_data <- inner_join(geodata, dat)
+
+map_data
+```
+
+Die Angabe zu *CRS* ist interessant. Der verwendete Code gibt an, dass wir auf die Koordinaten
+in der Karte mit Hilfe von Angaben in Grad zugreifen können.
+
+# Ausgabe der Karte mit ggplot
+Jetzt können wir die Visualisierung mit *ggplot* durchführen, wir verwenden wieder
+*geom_sf*.
+
+```{r plotMap, message=FALSE, warning=TRUE, echo=TRUE, results='asis'}
+ggplot(data=map_data) + 
+  geom_sf(aes(fill=cat),
+          color="dim grey", 
+          size=.1) + 
+  coord_sf(
+    xlim=c(-12,44), 
+    ylim=c(35,70)
+  )  +
+  scale_fill_brewer(palette = "Oranges") +
+  guides(fill = guide_legend(reverse=T, title = "Euro")) +
+  labs(title="Disposable household income in 2014",
+       subtitle="(C) EuroGeographics for the administrative boundaries",
+       caption="Map produced in R with a help from Eurostat-package <github.com/ropengov/eurostat/>") +
+  theme_light() + 
+  theme(legend.position=c(.8,.8),
+        plot.caption = element_text(hjust = 0.5, 
+                                    face = "italic")) 
+
+ggsave(filename="eurostatExample.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=16, units="cm")

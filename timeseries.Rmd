@@ -3,7 +3,7 @@ title: "Zeitreihen"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output: 
-  
+
   html_notebook: default
   html_document: 
     
@@ -13,6 +13,7 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
+    
 bibliography: literatur.bib    
 ---
 

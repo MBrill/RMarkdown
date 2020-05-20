@@ -95,7 +95,7 @@ als csv-Datei ab. Spaltentrenner ist das Semikolon, als Dezimaltrenner
 wird das Komma verwendet.
 
 ```{r export, echo='false', message=FALSE, results='asis'}
-write_csv2(Auto2, path="data/AutoEU.csv", col_names = TRUE, )
+write_csv2(Auto2, path="data/AutoEU.csv", col_names = TRUE)
 ```
 
 # Grafiken

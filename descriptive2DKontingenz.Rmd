@@ -76,7 +76,7 @@ kable(tabelle,
                 position = "center")
 ```
 
-# Kontingenzanalyse
+# Kontingenz-Analyse
 Für die Kontingenzanalyse gibt es eine Reihe von Parametern.
 Diese beruhen alle auf dem Chi-Quadrat Parameter, der jedoch
 den Nachteil hat, dass er schwer zu interpretieren ist.
@@ -106,9 +106,9 @@ Das Package
 *DescTools* enthält eine ganze Reihe von Funktionen, die 
 diese und noch weitere Parameter berechnen. Den unkorrigierten
 und den korrigierten Kontingenzkoeffizienten (mit dem Attribut
-*correct=TRUE*) erhalten
-wir mit der Funktion *ContCoef*, Cramer's V mit
-*CramerV*. Diese Funktionen haben den Vorteil, dass
+*correct=TRUE*) erhalten wir mit der Funktion *ContCoef*, Cramer's V mit
+*CramerV*. 
+Diese Funktionen haben den Vorteil, dass
 wir direkt mit zwei Spalten eines Datensatzes arbeiten können,
 ohne vorher eine Kontingenztabelle bilden zu müssen.
 
@@ -280,6 +280,7 @@ ggsave(filename="familienHeat.png", plot=last_plot(),
        path="images/", 
        width=16, height=9, units="cm")
 ```
+
 Es wäre möglich, die Zeilen, in denen die Häufigkeit 0 ist durch diese Zahl zu ergänzen.
 Zu diesem Fall gibt es im GitHub-Repo von *Tidyverse* eine längere Diskussion. Dazu gibt es
 die Funktion *complete*, die wir in einer Pipeline einsetzen könnten. Aber auch fehlende

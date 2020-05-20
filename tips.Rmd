@@ -3,48 +3,57 @@ title: "Fallstudie Tips"
 author: "Manfred Brill"
 date: "Sommersemester 2020"
 output: 
+  
   html_document: 
+    
+    
     fig_caption: yes
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_float: yes
+  html_notebook: default
 bibliography: literatur.bib    
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(kableExtra)
 library(RColorBrewer)
-myPalette <- brewer.pal(5, "Set2")
+myPalette <- brewer.pal(8, "Set3")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
+library(DescTools)
 ```
 
-# Der Datensatz "tips"
+# Der Datensatz Tips
 Der Datensatz enthält Angaben über Trinkgelder in einem US-amerikanischen Familienrestaurant aus den neunziger Jahren. Ursprünglich stammen die Daten aus [@bryant_95]. Der Datensatz wird in vielen Büchern zur Statistik und Datenanalyse. Die vorliegende Darstellung folgt [@cook_07] und [@theus_09],
 die Daten stammen von der Website zu [@cook_07].
 
 Die Daten liegen im csv-Format vor. 
 Wir lesen die Daten mit der Funktion *read_csv* aus dem Package *readr* ein.
 Da wir noch weitere Funktionen wie ggplot verwenden laden wir
-gleich das komplette Package *tidyverse*.
+im Setup das komplette Package *tidyverse*.
 
-```{r daten, message=FALSE, echo=TRUE}
+```{r daten, message=FALSE, echo=TRUE, warnings=TRUE}
 daten <- read_csv("data/tips.csv")
 
 kable(head(daten), align="l",
-      caption="Tabelle 1: Die ersten Werte im Datensatz tips.csv") %>%
+      caption="Tabelle 1: Die ersten Werte im Datensatz Tips") %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                 full_width = T, 
                 position = "center")
 ```
 
 Wir verändern die Überschriften der einzelnen Spalten zu
-deutschen Begriffen.
+deutschen Begriffen. Man könnte auch überlegen dien Dollar-Beträgen
+in Euro umzurechnen. Darauf verzichten wir aber, da wir das in Abhängigkeit
+vom Wechselkurs machen müssten.
+
 Anschließend machen wir die Spalten, die Character-Werte enthalten zu einem
 *factor*. Das hätten wir schon beim Einlesen machen können,
 aber so können wir noch gleich die entsprechenden Funktionen
@@ -52,7 +61,7 @@ sehen und wir sehen ein Beispiel für diesen speziellen Datentyp.
 Und wir lassen die erste Spalte, die nichts anderes als eine
 Nummerierung der Zeilen enthält, einfach weg.
 
-```{r faktoren, message=FALSE, echo=TRUE}
+```{r faktoren, message=FALSE, echo=TRUE, warnings=TRUE}
 # Spalten mit deutschen Überschriften
 daten <- daten %>% 
   rename(
@@ -65,8 +74,6 @@ daten <- daten %>%
     Anzahl = size
     )
 
-# Wir verändern die Faktoren und verwenden dabei
-# gleich entsprechende deutsche Begriffe
 daten$Geschlecht <- factor(daten$Geschlecht)
 levels(daten$Geschlecht) <- c("Frau", "Mann")
 
@@ -91,6 +98,9 @@ kable(head(daten), align="l",
                 position = "center")
 ```
 
+Wir könnten auch das Merkmal *Anzahl* zum Faktor machen, worauf aber verzichtet wird. Sollte dieses Merkmal
+als Faktor benötigt werden, beispielsweise in Box-Plots, dann verwenden wir *factor(Anzahl)*.
+
 # Statistische Parameter
 
 Wir können die Parameter aus der beschreibenden Statistik verwenden, um
@@ -98,7 +108,6 @@ die vorliegenden Daten zu charakterisieren. Dazu könnten wir einfach
 die Funktion *summary* aus R verwenden. Aber um eine bessere Ausgabe
 zu erhalten verwenden die *count* und *summarise* aus *tidyverse*.
 Dadurch erzeugen wir neue tibbles, die wir wieder mit *kable* ausgeben können.
-
 
 ```{r desstat, message=FALSE, echo=TRUE}
 sex.count <- daten %>%
@@ -137,7 +146,6 @@ kable(smoker.count, align="l",
                 full_width = T, 
                 position = "center")
 
-# Mittelwerte, Quantile etc für die Rechnungshöhe und das Trinkgeld
 bill.summary <- daten %>%
   summarize(
     Minimum = min(Rechnung),
@@ -173,11 +181,71 @@ kable(tips.summary, align="l",
                 position = "center")
 ```
 
+```{r rmSummaries, echo=FALSE, warnings = FALSE}
+# Aufräumen
+rm(tips.summary, bill.summary)
+```
+
+Da wir Modelle und Vorhersagen berechnen möchten macht es Sinn die verschiedenen Zusammenhangsmaße aus der
+Statistik zu berechnen. Dabei beschränken wir uns auf die numerischen Merkmale und berechnen die
+Korrelationen nach Kendall, Spearman und Pearson. Deshalb berechnen wir mit *select* ein weiteres tibble,
+das wir als Argument an die Funktion *cor* übergeben.
+
+```{r korrelationen, message=FALSE, results='markup', echo=TRUE}
+corPrep <- daten %>%
+  select(Anzahl, Rechnung, Trinkgeld)
+
+cor(corPrep, method="kendall")
+
+cor(corPrep, method="spearman")
+
+cor(corPrep, method="pearson")
+```
+
+```{r delcor, message=FALSE,warnings = FALSE, echo=FALSE}
+# Aufräumen
+rm(corPrep)
+```
+
+Alle Parameter zeigen einen relativ großen Zusammenhang zwischen den drei numerischen
+Merkmalen. Dass der Zusammenhang zwischen Rechnungshöhe und Trinkgeld stark ist überrascht nicht.
+Auch die Anzahl der Gäste am Tisch beeinflusst natürlich die Höhe der Rechnung und das Trinkgeld.
+
+Mit Hilfe des Kontingenzkoeffizienten können wir auch die qualitativen Merkmale
+in diese Analyse einbeziehen. Dazu nutzen wir die Funktion *ContCoef* 
+aus dem Package *DescTools*. Wir beginnen mit den bereits betrachteten Merkmalen.
+
+```{r kontingenz, echo=TRUE, warnings = TRUE, message=FALSE}
+cont.AnTip <- ContCoef(x = daten$Anzahl, y = daten$Trinkgeld, correct=TRUE)
+cont.AnBill <- ContCoef(x = daten$Anzahl, y = daten$Rechnung, correct=TRUE)
+
+cont.SexTip <- ContCoef(x = daten$Geschlecht, y = daten$Trinkgeld, correct=TRUE)
+cont.TageszeitTip <- ContCoef(x = daten$Tageszeit, y = daten$Trinkgeld, correct=TRUE)
+cont.TagTip <- ContCoef(x = daten$Wochentag, y = daten$Trinkgeld, correct=TRUE)
+cont.RaucherTip <- ContCoef(x = daten$Raucher, y = daten$Trinkgeld, correct=TRUE)
+```
+
+Der korrigierte Kontingenzkoeffizient zwischen der Anzahl der Gäste und der Höhe des Trinkgelds
+ist durch `r cont.AnTip` gegeben und deutet auf einen hohen Zusammenhang hin.
+Der korrigierte Kontingenzkoeffizient zwischen Anzahl der Gäste und Rechnungshöhe ist durch
+`r cont.AnBill` gegeben, auch hier ein Hinweis auf einen starken Zusammenhang.
+Wir berechnen die weiteren korrigierten Kontingenzkoeffizienten und geben
+die Ergebnisse in der folgenden Tabelle aus:
+
+| Merkmal | Korrigierter Kontingenzkoeffizienten |
+| ------- | ------ |
+| Geschlecht | `r cont.SexTip` |
+| Tageszeit | `r cont.TageszeitTip` |
+| Wochentag | `r cont.TagTip` |
+| Raucher/Nichtraucher | `r cont.RaucherTip` |
 
 # Visualisierungen
 
+wir erstellen visualisierungen der Merkmale im Datensatz mit ggplot. Eine ganze Reihe dieser Abbildungen
+wird mit *ggsave* auch gespeichert. Die Aufrufe von *ggsave* gehen davon aus, dass es im Verzeichnis in dem diese Datei liegt ein Unterverzeichnis *images* existiert, in dem die Bitmaps gesammelt werden.
+
 ## Balkendiagramme
-Wir erzeugen statt der Tabellen Balkendiagramme, um einen Überblick über den Datensatz zu bekommen.
+Wir erzeugen Balkendiagramme, um einen Überblick über den Datensatz zu bekommen.
 Dabei erzeugen wir eine Grundform und fügen sukzessive
 Features hinzu.
 
@@ -218,7 +286,6 @@ balken +
   )  +
  guides(fill=guide_legend(title="Geschlecht"))
 
-# Vertikale Balkendiagramme sind einfach ...
 balken + 
   scale_fill_brewer(palette="Set2") + 
   labs(
@@ -228,6 +295,13 @@ balken +
   )  +
  guides(fill=guide_legend(title="Geschlecht")) + 
  coord_flip()
+
+ # Dieses Bild speichern wir ab
+ ggsave(filename="tipsBarSex.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+ 
 # Und jetzt gleich noch ein ähnliches Balkendiagramm
 # für Raucher und Wochentag
 ggplot(daten) + 
@@ -238,72 +312,38 @@ ggplot(daten) +
     x="Raucher/Nichtraucher", 
     y="Absolute Häufigkeiten"
   )  +
- guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+ guides(fill=guide_legend(title="Raucher/Nichtraucher")) +
+ coord_flip()
 
+ ggsave(filename="tipsBarSmoker.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+ 
 # Wir müssen die Wochentage korrekt aufzählen,
 # obwohl wir die Faktoren schon korrekt sortiert haben
 ggplot(daten) + 
   geom_bar(mapping=aes(x=Wochentag, fill=Wochentag)) + 
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks = c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
   labs(
     title="Absolute Häufigkeiten im Merkmal Wochentag", 
     x="Wochentage", 
     y="Absolute Häufigkeiten"
   )  +
-  guides(fill=guide_legend(title="Wochentage"))
-
-# Wir färben die Tage nach Raucher
-ggplot(daten) + 
-  geom_bar(mapping=aes(x=Wochentag, fill=Raucher)) + 
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
-  labs(
-    title="Absolute Häufigkeiten im Merkmal Wochentag, gruppiert nach Raucher", 
-    x="Wochentage", 
-    y="Absolute Häufigkeiten"
-  )  +
-  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
-
-# Wir färben die Tage nach Raucher, ohne stacks
-ggplot(daten) + 
-  geom_bar(mapping=aes(x=Wochentag, fill=Raucher), position="dodge") + 
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
-  labs(
-    title="Absolute Häufigkeiten im Merkmal Wochentag, gruppiert nach Raucher", 
-    x="Wochentage", 
-    y="Absolute Häufigkeiten"
-  )  +
-  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
-
-ggsave(filename="daysStackedcolored.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
-
-# Polarkoordinaten erzeugen ein Polar Chart
-ggplot(daten) + 
-  geom_bar(mapping=aes(x=Wochentag, fill=Wochentag)) + 
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
-  scale_y_discrete(breaks=NULL) + # keine Ticks
-  labs(
-    title="Absolute Häufigkeiten im Merkmal Wochentag", 
-    x="Wochentage",
-    y = ""
-  )  +
-  guides(fill=guide_legend(title="Wochentage")) +
-  coord_polar()
+  theme(legend.position="none")
 ```
 
 Statt der absoluten Häufigkeiten können wir natürlich auch
-relative Häufigkeiten darstellen. Das Balkendiagramm
-für die relative Häufigkeiten im Merkmal Geschlecht
+relative Häufigkeiten darstellen. 
+Das Balkendiagramm für die relative Häufigkeiten im Merkmal Geschlecht
 erhalten wir so:
 
 ```{r barRel, message=FALSE, results='markup', echo=TRUE}
 balken <- ggplot(daten, aes(x=Geschlecht)) + 
   geom_bar(mapping=aes(y = (..count..)/sum(..count..), fill=Geschlecht)) +
-  scale_fill_brewer(palette="Set2") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(
     title="Relative Häufigkeiten im Merkmal Geschlecht", 
     x="Geschlecht der zahlenden Person", 
@@ -316,60 +356,149 @@ balken
 # Wir färben die Tage nach Raucher
 ggplot(daten) + 
   geom_bar(mapping=aes(x=Wochentag, y = (..count..)/sum(..count..), fill=Raucher)) + 
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
   labs(
     title="Relative Häufigkeiten im Merkmal Wochentag, gruppiert nach Raucher", 
     x="Wochentage", 
     y="Relative Häufigkeiten"
   )  +
   guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Wochentag, 
+                       y = ..prop.., 
+                       group = 1),
+           fill = myPalette[7],
+           color="black"
+           ) +
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks = c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+  labs(
+    title="Relative Häufigkeiten im Merkmal Wochentag", 
+    x="Wochentage", 
+    y="Relative Häufigkeiten"
+  )  +
+  theme(legend.position="none")
+
+ ggsave(filename="tipsBarDays.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Jetzt erstellen wir Balkendiagramme, die wir mit Hilfe eines weiteren Merkmals färben.
+
+```{r barMore , message=FALSE, results='markup', echo=TRUE}
+# Wir färben die Tage nach Raucher/Nichtraucher und erzeugen
+# einen stacked bar plot
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Wochentag, fill=Raucher)) + 
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
+  labs(
+    title="Absolute Häufigkeiten im Merkmal Wochentag, gruppiert nach Raucher", 
+    x="Wochentage", 
+    y="Absolute Häufigkeiten"
+  )  +
+  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+
+ggsave(filename="tipsDaysStackedColored.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Wir färben die Tage nach Raucher, ohne stacks
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Wochentag, fill=Raucher), position="dodge") + 
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +  
+  labs(
+    title="Absolute Häufigkeiten im Merkmal Wochentag, gruppiert nach Raucher", 
+    x="Wochentage", 
+    y="Absolute Häufigkeiten"
+  )  +
+  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+
+ggsave(filename="tipsDaysDodgedColored.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wir erstellen ein Radar-Chart für die wochentage.
+
+```{r radar, message=FALSE, results='markup', echo=TRUE}
+# Polarkoordinaten erzeugen ein Polar Chart
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Wochentag, fill=Wochentag)) + 
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+  scale_y_discrete(breaks=NULL) + # keine Ticks
+  labs(
+    title="Absolute Häufigkeiten im Merkmal Wochentag", 
+    x="Wochentage",
+    y = ""
+  )  +
+    theme(legend.position="none") +
+  coord_polar()
+
+ggsave(filename="tipsDaysRadar.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
 ```
 
 ## Histogramme
-In den Folien hatte ich direkt mit Histogrammen begonnen. Das geht
-genauso einfach, wir ersetzen *geom_bar* durch *geom_histrogram*.
-Die Klassenbreite is mit  Hilfe des Attributs *binwidth* einstellbar.
+Wir erstellen Histogramme. Wir ersetzen
+*geom_bar* durch *geom_histrogram*.
+Die Klassenbreite ist mit  Hilfe des Attributs *binwidth* einstellbar.
 
 ```{r histograms, message=FALSE, results='markup', echo=TRUE}
 # Alles als Default, ohne Farbe
 # In ggplot ist der Default der Anzahl der Klassen 30
-# Auf der Konsole kommt auch eine Warnung dazu.
+# Auf der Konsole kommt eine Warnung dazu.
 ggplot(daten) + 
   geom_histogram(mapping=aes(x=Trinkgeld)) 
  
 # Mit einer Farbe 
 # Wir schalten die Legende ab
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3]),
-                show.legend=FALSE) 
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 show.legend=FALSE) 
 
 # Farbe für das Füllen und den Rand
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = myPalette[3]),
-                 show.legend=FALSE) 
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = myPalette[7],
+                 show.legend=FALSE
+                 ) 
 
 
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = "black"),
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = "black",                 
                  show.legend=FALSE) +
   labs(
     title="Histogramm für die Trinkgelder", 
+    subtitle="Klassenbreite: Default",    
     x="Trinkgelder", 
     y="Absolute Häufigkeiten"
   )
 
+ggsave(filename="tipsHistoDefault.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = "black"),
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = "black",                    
                  binwidth=0.6,
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 60 Cent",
@@ -377,12 +506,21 @@ ggplot(daten) +
     y="Absolute Häufigkeiten"
   )
 
+ggsave(filename="tipsHisto06.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = "black"),
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = "black",                  
                  binwidth=1.0,
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +  
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 1 Dollar",
@@ -390,12 +528,21 @@ ggplot(daten) +
     y="Absolute Häufigkeiten"
   )
 
+ggsave(filename="tipsHisto10.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = "black"),
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = "black",                  
                  binwidth=0.5,
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +  
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 50 Cent",
@@ -403,18 +550,34 @@ ggplot(daten) +
     y="Absolute Häufigkeiten"
   )
 
+ggsave(filename="tipsHisto05.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten) + 
-  geom_histogram(mapping=aes(x=Trinkgeld, 
-                             fill = myPalette[3],
-                             colour = "black"),
+  geom_histogram(mapping=aes(x=Trinkgeld),
+                 fill = myPalette[7],
+                 color = "black",                  
                  binwidth=0.1,
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +  
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 10 Cent",
     x="Trinkgelder", 
     y="Absolute Häufigkeiten"
   )
+
+ggsave(filename="tipsHisto01.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 Auch hier können wir wieder die absoluten durch die relativen Häufigkeiten ersetzen:
@@ -422,10 +585,13 @@ Auch hier können wir wieder die absoluten durch die relativen Häufigkeiten ers
 ```{r histogramsRel, message=FALSE, results='markup', echo=TRUE}
 ggplot(daten) + 
   geom_histogram(mapping=aes(x=Trinkgeld, 
-                             y = (..count..)/sum(..count..),
-                             fill = myPalette[3]),
-                 binwidth=0.5,
+                             y = (..count..)/sum(..count..)),
+                 fill = myPalette[7],
+                 color = "black",                  
+                 binwidth=0.5, color="black",
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +  
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 50 Cent",
@@ -435,10 +601,13 @@ ggplot(daten) +
 
 ggplot(daten) + 
   geom_histogram(mapping=aes(x=Trinkgeld, 
-                             y = (..count..)/sum(..count..),
-                             fill = myPalette[3]),
+                             y = (..count..)/sum(..count..)),
+                 fill = myPalette[7],
+                 color = "black",                  
                  binwidth=1.0,
                  show.legend=FALSE) +
+  scale_x_discrete(limits = seq(0.0, 10.5),
+                   breaks = seq(0.0, 10.5)) +  
   labs(
     title="Histogramm für die Trinkgelder", 
     subtitle="Klassenbreite 1 Dollar",
@@ -447,9 +616,10 @@ ggplot(daten) +
   )
 ```
 
-
 ## Boxplots
-Boxplots erhalten wir mit Hilfe von *geom_boxplot*.
+Boxplots erhalten wir mit Hilfe von *geom_boxplot*. Wie bei den Balkendiagrammen beginnen
+wir mit Default-Einstellungen und fügen sukzessive weitere Attribute in die grafischen
+Darstellungen ein.
 
 ```{r box, message=FALSE, results='markup', echo=FALSE}
 # Defaults
@@ -465,9 +635,9 @@ box <- ggplot(daten,
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(
          title="Trinkgeld nach Geschlecht der zahlenden Person",
          x="Geschlecht",
@@ -478,6 +648,13 @@ box
 
 box + coord_flip()
 
+ggsave(filename="tipsBoxSex.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 # Boxplots mit Raucher/Nichtraucher
 ggplot(daten, 
       aes(x=Raucher, y=Trinkgeld, fill=Raucher)) + 
@@ -485,14 +662,22 @@ ggplot(daten,
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(
-         title="Trinkgeld und Raucher/Nichtraucher",
+         title="Trinkgeld nach Raucher/Nichtraucher",
          x="Raucher/Nichtraucher",
          y="Trinkgeld in US-Dollar"
-  )
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsBoxSmoker.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 # Wochentage und Trinkgeld
 ggplot(daten, 
@@ -501,15 +686,24 @@ ggplot(daten,
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
   labs(
          title="Trinkgeld nach Wochentag",
          x="Wochentag",
          y="Trinkgeld in US-Dollar"
-  ) 
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsBoxDays.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 # Wochentag und Höhe der Rechnung
 ggplot(daten, 
@@ -518,170 +712,429 @@ ggplot(daten,
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
-  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
   labs(
          title="Rechnungsbetrag nach Wochentag",
          x="Wochentag",
          y="Rechnungsbetrag in US-Dollar"
-  ) 
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsBoxBillDays.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 # Anzahl der Gäste und Höhe der Rechnung
 ggplot(daten, 
-       aes(x=factor(Anzahl), y=Rechnung, 
-           fill=factor(Anzahl))) + 
+       aes(x=factor(Anzahl), 
+           y=Rechnung, 
+           fill=factor(Anzahl))
+       ) + 
   geom_boxplot(color="black",
-               fill=myPalette[4],
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(
          title="Rechnungsbetrag nach Anzahl der Gäste am Tisch",
          x="Anzahl der Gäste",
          y="Rechnungsbetrag in US-Dollar"
-  ) 
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsBoxNumberBill.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 # Anzahl der Gäste und Höhe des Trinkgelds
 ggplot(daten, 
-       aes(x=factor(Anzahl), y=Trinkgeld, 
-           fill=factor(Anzahl))) + 
+       aes(x=factor(Anzahl), 
+           y=Trinkgeld, 
+           fill=factor(Anzahl))
+        ) + 
   geom_boxplot(color="black",
-               fill=myPalette[4],
                outlier.color="red",
                outlier.fill="red",
                outlier.shape=23, 
-               outlier.Anzahl=4,
+               outlier.size=1.5,
                show.legend=FALSE) +
-  scale_fill_brewer(palette="Set2") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(
-         title="Rechnungsbetrag nach Anzahl der Gäste am Tisch",
+         title="Trinkgeld nach Anzahl der Gäste am Tisch",
          x="Anzahl der Gäste",
-         y="Rechnungsbetrag in US-Dollar"
-  ) 
-```
+         y="Trinkgeld in US-Dollar"
+  ) +
+  coord_flip()
 
+ggsave(filename="tipsBoxNumber.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
 
 ## Streuungsdiagramme
 Auch dies erhalten wir mit Hilfe eines neuen geoms, in diesem Fall
-*geom_points*.
+*geom_points*. Wir bereiten dabei gleich vor, dass wir auch
+noch eine Scatterplot-Matrix mit *facet_grid* erstellen werden und
+speichern eines der Streuungsdiagramme als Variable für die Wiederverwendung ab.
 
 ```{r scatter, message=FALSE, results='markup', echo=FALSE}
 # Defaults
 ggplot(daten, 
-       aes(x=Rechnung, y=Trinkgeld)) + 
+       aes(x=Rechnung, 
+           y=Trinkgeld)
+       ) + 
   geom_point(color="black", 
              show.legend=FALSE)
 
 # Mit Titel und vielen anderen Attributen
-ggplot(daten, 
-       aes(x=Rechnung, y=Trinkgeld)) + 
-  geom_point(color=myPalette[4],
-             show.legend=FALSE) +
+scatterPlot <-  ggplot(daten, 
+       aes(x=Rechnung, 
+           y=Trinkgeld)
+       ) + 
+  geom_point(color=myPalette[6],
+             show.legend=FALSE) 
+
+scatterPlot + 
   labs(
          title="Streuungsdiagramm Rechnung und Trinkgeld",
          x="Rechnungshöhe in US-Dollar",
          y="Trinkgeld in US-Dollar"
   ) 
 
+ggsave(filename="tipsScatterBill.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
-Wir fügen jetzt eine weitere Variable zu unserem Datensatz
-hinzu, erstellen ein weiteres Streuungsdiagramm und anschließend
-ein lineares Modell.
+Wir können auch weitere Streuungsdiagramme erstellen, selbst wenn auf einer der Achsen
+ein diskretes Merkmal wie die Anzahl der Gäste zu finden ist. In diesem Fall
+ist das geom *geom_jitter* nützlich, das die x-Werte der dargestellten Punkte
+verrauscht. Dies zeigen wir am Beispiel *Anzahl ~ Trinkgeld*.
+
+```{r moreScatter, message=FALSE, results='markup', echo=FALSE}
+ggplot(daten, 
+       aes(x=Anzahl, 
+           y=Trinkgeld)
+       ) + 
+  geom_point(color=myPalette[6],
+             show.legend=FALSE) +
+  labs(
+         title="Streuungsdiagramm Anzahl der Gäste am Tisch und Trinkgeld",
+         x="Anzahl der Gäste",
+         y="Trinkgeld in US-Dollar"
+  ) 
+
+ggsave(filename="tipsScatterAnzahl.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+ggplot(daten, 
+       aes(x=Anzahl, 
+           y=Trinkgeld)
+       ) + 
+  geom_jitter(color=myPalette[6],
+              width = 0.1,
+              show.legend=FALSE) +
+  labs(
+         title="Streuungsdiagramm Anzahl der Gäste am Tisch und Trinkgeld",
+         subtitle="Verwendung von geom_jitter",
+         x="Anzahl der Gäste",
+         y="Trinkgeld in US-Dollar"
+  ) 
+
+ggsave(filename="tipsScatterAnzahlJitter.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+ggplot(daten, 
+       aes(x=Anzahl, 
+           y=Rechnung)
+       ) + 
+  geom_jitter(color=myPalette[6],
+               width = 0.1,
+               show.legend=FALSE) +
+  labs(
+         title="Streuungsdiagramm Anzahl der Gäste am Tisch und Rechnungshöhe",
+         x="Anzahl der Gäste",
+         y="Rechnungshöhe in US-Dollar"
+  ) 
+
+ggsave(filename="tipsScatterAnzahlBill.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+## SPLOM
+Wir könnten mit *pairs* eine komplette SPLOM ausgeben, worauf wir aber verzichten.
+Aber wir verwenden *facet_grid* und erstellen eine kleine Matrix mit Streuungsdiagrammen.
+
+```{r smallSPLOM, message=FALSE, results='markup', echo=FALSE}
+scatterPlot +
+    scale_color_brewer(palette="Set3", 
+                       aesthetics="fill") +
+    facet_grid(Raucher ~ Geschlecht, labeller = label_both) +
+    labs(
+         title="Streuungsdiagramm Rechnungshöhe und Trinkgeld",
+         x="Rechnungshöhe in US-Dollar",
+         y="Trinkgeld in US-Dollar"
+    ) 
+
+ggsave(filename="tipsSPLOM.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+scatterPlot +
+    scale_color_brewer(palette="Set3", 
+                       aesthetics="fill") +
+    facet_grid(Wochentag ~ Anzahl, labeller = label_both) +
+    labs(
+         title="Streuungsdiagramm Rechnungshöhe und Trinkgeld",
+         x="Rechnungshöhe in US-Dollar",
+         y="Trinkgeld in US-Dollar"
+    ) 
+
+ggsave(filename="tipsSPLOMDaysCount.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+scatterPlot +
+    scale_color_brewer(palette="Set3", 
+                       aesthetics="fill") +
+    facet_grid(~ Tageszeit, labeller = label_both) +
+    labs(
+         title="Streuungsdiagramm Rechnungshöhe und Trinkgeld",
+         x="Rechnungshöhe in US-Dollar",
+         y="Trinkgeld in US-Dollar"
+    ) 
+
+ggsave(filename="tipsSPLOMTime.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+## Heatmaps
+Eine weitere Möglichkeit, die vermuteten Zusammenhänge zu visualisieren sind Heatmaps, die wir
+mit *geom_tile* erstellen können. Die numerischen Merkmale der Rechnungshöhe und des Trinkgelds
+müssen wir dafür in Klassen einteilen, wie das bereits bei den Histogrammen erfolgt ist.
+Darauf wird hier verzichtet, wir erstellen exemplarisch eine Heatmap, die den Zusammenhang
+zwischen Geschlecht der zahlenden Person und dem Wochentag visualisiert. Dazu erzeugen wir
+ein weiteres *tibble*, das die Häufigkeiten der Kombinationen zwischen diesen beiden Merkmalen
+bestimmt und damit die Heatmap füllt.
+
+```{r heatmap, echo=TRUE, warnings = TRUE, message = TRUE}
+daten %>%
+  group_by(Geschlecht, Wochentag) %>%
+  mutate(value=n()) %>%
+  ggplot() +
+    geom_tile(mapping=aes(x=Geschlecht, y=Wochentag, fill=value)) + 
+    scale_fill_distiller(palette="Greens", 
+                        guide="legend",
+                        direction=1) +
+   guides(fill=guide_legend(title="Häufigkeiten")) +
+   labs(
+    title="Heatmap", 
+    x="Geschlecht", 
+    y="Wochentag"
+   )  
+
+ggsave(filename="tipsHeat1.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+daten %>%
+  group_by(factor(Anzahl), Wochentag) %>%
+  mutate(value=n()) %>%
+  ggplot() +
+    geom_tile(mapping=aes(x=factor(Anzahl), y=Wochentag, fill=value)) + 
+    scale_y_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                     breaks=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
+    scale_fill_distiller(palette="Greens", 
+                        guide="legend",
+                        direction=1) +
+   guides(fill=guide_legend(title="Häufigkeiten")) +
+   labs(
+    title="Zusammenhang zwischen Anzahl der Personen und Wochentag", 
+    x="Anzahl der Personen", 
+    y="Wochentag"
+   )  
+```
+
+# Erweiterungen
+Dass die Höhe des Trinkgelds von der Rechnungshöhe abhängt ist offensichtlich und auch 
+zu erwarten gewesen. Deshalb findet man in der Literatur den Vorschlag,
+das Verhältnis zwischen Höhe des Trinkgelds und der Rechnungshöhe als weitere
+Einflussvariable zu erstellen und dem Datensatz hinzuzufügen.
+Wir nennen diese Variable *Trinkgeldrate*.
+Wir fügen diese Variable mit Hilfe von *mutate* zu unserem Datensatz hinzu. 
 
 ```{r Trinkgeldrate, message=FALSE, echo=TRUE}
 daten <- daten %>%
   mutate(
-    Trinkgeldrate=Trinkgeld/Rechnung)
+    Trinkgeldrate=Trinkgeld/Rechnung) %>%
+  select(Rechnung, Trinkgeld, Trinkgeldrate, everything())
+
+kable(head(daten), align="l",
+      caption="Tabelle 9: Der Datensatz mit einem weiteren Merkmal") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
 ```
 
-Jetzt erzeugen wir ein Streuungsdiagramm mit der Anzahl der Personen
-auf der x-Achse und der Trinkgeldrate auf der y-Achse.
+Wir visualisieren die neu eingeführte Variable, um uns zu überzeugen,
+dass wir damit eine gut einsetzbare Variable erzeugt haben.
 
-```{r TrinkgeldrateScatter, message=FALSE, echo=TRUE}
+```{r rateVis, message=FALSE, echo=TRUE}
 ggplot(daten, 
-       aes(x=Anzahl, y=Trinkgeldrate)) + 
-  geom_point(color=myPalette[4],
-             show.legend=FALSE) +
+       aes(x=Wochentag, y=Trinkgeldrate, fill=Wochentag)) + 
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=1.5,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set3") + 
+  scale_x_discrete(limits=c("Donnerstag", "Freitag", "Samstag", "Sonntag"),
+                   breaks=c("Donnerstag", "Freitag", "Samstag", "Sonntag")) +
   labs(
-         title="Streuungsdiagramm Anzahl der Gäster am Tisch und Trinkgeldrate",
+         title="Trinkgeldrate nach Wochentag",
+         x="Wochentag",
+         y="Trinkgeldrate"
+  ) +
+  coord_flip()
+
+ggplot(daten, 
+       aes(x=Raucher, y=Trinkgeldrate, fill=Raucher)) + 
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=1.5,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set3") + 
+  labs(
+         title="Trinkgeldrate nach Raucher/Nichtraucher",
+         x="Raucher/Nichtraucher",
+         y="Trinkgeldrate"
+  ) +
+  coord_flip()
+
+ggplot(daten, 
+       aes(x=Tageszeit, y=Trinkgeldrate, fill=Tageszeit)) + 
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=1.5,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set3") + 
+  labs(
+         title="Trinkgeldrate nach Tageszeit",
+         x="Tageszeit",
+         y="Trinkgeldrate"
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsRateZeit.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+ggplot(daten, 
+       aes(x=Geschlecht, y=Trinkgeldrate, fill=Geschlecht)) + 
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=1.5,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set3") + 
+  labs(
+         title="Trinkgeldrate nach Geschlecht",
+         x="Geschlecht",
+         y="Trinkgeldrate"
+  ) +
+  coord_flip()
+
+ggplot(daten,
+       aes(x=factor(Anzahl), 
+           y=Trinkgeldrate, 
+           fill=factor(Anzahl))) + 
+  geom_boxplot(color="black", 
+               outlier.color="red",
+               outlier.fill="red",
+               outlier.shape=23, 
+               outlier.size=1.5,
+               show.legend=FALSE) +
+  scale_fill_brewer(palette="Set3") + 
+  labs(
+         title="Trinkgeldrate nach Anzahl der Gäste am Tisch",
          x="Anzahl der Gäste am Tisch",
          y="Trinkgeldrate"
-  ) 
-# Mit jitter
-ggplot(daten, 
-       aes(x=Anzahl, y=Trinkgeldrate)) + 
-  geom_jitter(color=myPalette[4],
-             show.legend=FALSE,
-             width=0.2,
-             height=0.0) +
-  labs(
-         title="Streuungsdiagramm Anzahl der Gäster am Tisch und Trinkgeldrate",
-         x="Anzahl der Gäste am Tisch",
-         y="Trinkgeldrate"
-  ) 
+  ) +
+  coord_flip()
+
+ggsave(filename="tipsRateAnzahl.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
-# Ein lineares Modell
-Wir können das lineare Modell außerhalb von ggplot bauen 
-und dem Streuungsdiagramm mit *geom_abline* hinzufügen.
-Oder wir können dies direkt mit einem Aufruf von ggplot
-durchführen lassen.
+Die Trinkgeldrate ist für die meisten Merkmale, sieht man von der Anzahl der Gäste am Tisch,
+ziemlich konstant. Die Streuung variiert leicht, aber das Verhältnis scheint signifikant
+nur von der Anzahl der Gäste abzuhängen.
 
-```{r abline, message=FALSE, echo=TRUE}
-ggplot(daten, 
-       aes(x=Anzahl, y=Trinkgeldrate)) + 
-  geom_abline(aes(intercept=0.18, slope=-0.01), 
-              color="black",
-              width=2) +
-  geom_jitter(color=myPalette[4],
-             show.legend=FALSE,
-             width=0.2,
-             height=0.0) +
-  labs(
-         title="Lineares Modell (m=-0.01, b=0.18)",
-         x="Anzahl der Gäste am Tisch",
-         y="Trinkgeldrate"
-  ) 
+# Abspeichern der Daten
+Wir werden auf der Basis des veränderten Datensatzes Modelle und Vorhersagen
+erstellen. Dazu speichern wir die neuen Daten in der Datei *tipsWithRate.csv"
+im Unterverzeichnis *data* ab. Spaltentrenner ist das Semikolon, als Dezimaltrenner
+wird das Komma verwendet, so dass wir diese neue Datei mit Hilfe von
+*read_csv2* einlesen können.
 
-# Mit geom_smooth
-ggplot(daten, 
-       aes(x=Anzahl, y=Trinkgeldrate)) + 
-  geom_smooth(method=lm, 
-              se=FALSE,
-              color="black",
-              width=2) +
-  geom_jitter(color=myPalette[4],
-             show.legend=FALSE) +
-  labs(
-         title="Lineares Modell (m=-0.01, b=0.18)",
-         subtitle="Berechnet mit geom_smooth(method=lm)",
-         x="Anzahl der Gäste am Tisch",
-         y="Trinkgeldrate"
-  ) 
-
-# Mit Fehler-Bereich
-ggplot(daten, 
-       aes(x=Anzahl, y=Trinkgeldrate)) + 
-  geom_smooth(method=lm, 
-              se=TRUE,
-              color="black",
-              width=2) +
-  geom_jitter(color=myPalette[4],
-             show.legend=FALSE,
-             width=0.2,
-             height=0.0) +
-  labs(
-         title="Lineares Modell (m=-0.01, b=0.18)",
-         subtitle="Berechnet mit geom_smooth(method=lm)",
-         x="Anzahl der Gäste am Tisch",
-         y="Trinkgeldrate"
-  ) 
+```{r export, echo='TRUE', message=TRUE, warnings = TRUE, results='asis'}
+write_csv2(daten, path="data/tipsWithRate.csv", col_names = TRUE)
 ```
 
 # Literatur

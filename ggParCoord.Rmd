@@ -10,6 +10,13 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
+    encoding: utf-8  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8  
 bibliography: literatur.bib    
 ---
 
@@ -27,55 +34,50 @@ options(digits=3)
 # Ein Beispiel mit standardisierten Werten
 Wir verwenden zuerst einmal die Daten aus der Folie, die in der Datei *4Dim.csv"
 abgespeichert sind. Diese Daten sind standardisiert, so dass wir die Abbildung
-auf die Achsen direkt durchführen können. Wir haben Punkte aus dem vier-dimensionalen Raum.
+auf die Achsen direkt durchführen können. Wir haben Punkte aus dem vier-dimensionalen Raum. Die Werte der Punkte stehen in entsprechenden Spalten.
 
 ```{r daten, message=FALSE, echo=FALSE}
-daten <- read.csv2("data/4Dim.csv")
+daten <- read_csv2("data/4Dim.csv")
 daten
 
 # Dimension des Raums, den wir visualisieren
-# Daran denken, die Namen der Punkte nicht mit zu zählen1
-N <- ncol(daten) - 1
-
+# Daran denken, die Namen der Punkte nicht mit zu zählen
 # Anzahl der Punkte im Datensatz
+N <- ncol(daten) - 1
+N
+
+# Dimension des Raums, den wir visualisieren
 k <- nrow(daten)
+k
 ```
 
-Der Datensatz enthält `r k` Werte. Die Koordinaten stehen in `r N` Merkmalen mit den Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)[3]`*, *`r colnames(daten)[4]`* und *`r colnames(daten)[5]`*.
-
-# Vorbereitungen für die Visualisierung
-Aktuell stehen die Koordinaten in Spalten. Für die Verwendung von *geom_line*
-brauchen wir das aber im long-Format, die einzelnen Punkte müssen jeweils
-in einer Spalte stehen. Dazu verwenden wir *gather* und *spread*.
+Wir verändern die Daten mit Hilfe von *gather* und schreiben alle Koordinaten in eine Spalte.
 
 ```{r prepareData, message=FALSE, echo=FALSE}
 datenLF <- daten %>%
-  gather("Achse", "Koordinate", -Punkt )
-
-datenLF <- datenLF %>%
-  mutate(
-    id = seq(1, nrow(datenLF))
-  ) %>%
-  select(id, everything())
+  gather("Punkt", "Koordinate", -Achse )
 
 datenLF
 ```
 
+# Vorbereitungen
+Der Datensatz enthält `r N` Punkte in einem `r k`-dimensionalen Raum. 
+Die Koordinaten stehen in den Zeilen. Es gibt eine Spalte *Achse*  mit Werten von 1 bis `r k`.
+Die Punkte haben die Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)[3]`*, *`r colnames(daten)[4]`*, *`r colnames(daten)[5]`*, *`r colnames(daten)[6]`*, *`r colnames(daten)[7]`* und *`r colnames(daten)[8]`*.
 
 
-```{r prepare, message=FALSE, echo=FALSE}
-numberOfAxis <- N-1
+```{r prepare, message=FALSE, echo=TRUE}
 parLength <- 1.0
 
 axisX <- tibble(
-  xValues = seq(0.0, N-1, by = 1.0),
-  xNames = colnames(daten)[2:5],
-  #yValues = daten[1, 2:5]
+  xValues = seq(0.0, k-1, by = 1.0),
+  xBreaks = seq(1.0, k, by = 1.0),
+  xNames = as.character(xBreaks)
 )
 ```
 
-Wir benötigen Werte für die Ausgabe der `r N` Koordinatenachsen. 
-Der Einfachheit halber verteilen wir die Achsen im Intervall [0, `r numberOfAxis`] und
+Wir benötigen Werte für die Ausgabe der `r k` Koordinatenachsen. 
+Der Einfachheit halber verteilen wir die Achsen im Intervall [0, `r k`] und
 berechnen die x-Werte der Koordinatenachsen in einem tibble.
 Wir müssen auch festlegen wie lang unsere Achsen im Bild sein sollen,
 diese Angabe speichern wir auf einer Variable *parLength*, die wir
@@ -89,26 +91,90 @@ axisX
 Wir stellen als Test diese Achsen mit Hilfe von *geom_vline* mit *ggplot* dar:
 
 ```{r plotAxis, message=FALSE, echo=TRUE, results='asis'}
-plot <- ggplot(axisX, aes(xValues, yValues)) + 
-  geom_vline(xintercept = axisX$xValues, 
+
+plot <- ggplot(axisX, aes(xValues)) + 
+  geom_vline(xintercept =  axisX$xBreaks, 
              color = myPalette[1],
-             #lineend = "butt",
              size=1.5) +
-  scale_x_continuous(breaks = c(0:numberOfAxis),
-                     labels = axisX$xNames) +
+  scale_x_continuous(breaks = axisX$xBreaks,
+                     labels = axisX$xNames)  
+
+plot +
   labs(
-      title="Parallele Koordiantenachsen im vierdimensionalen Raum", 
+      title="Parallele Koordinatenachsen im vierdimensionalen Raum", 
       x="", 
       y=""
-   )   
+   )  
 
-plot
+ggsave(filename="parCoordR4.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+In diesen Plot zeichnen wir jetzt einen Punkt wie *(0.5, 1, 0, 0.5)* ein, dazu verwenden
+wir *geom_line*.
+
+```{r plotExample, message=FALSE, echo=TRUE, results='asis'}
+point1 <- c(0, 0, 0, 0)
+point2 <- c(0.0, 1.0, 1.0, 0.0)
+point3 <- c(0.5, 1.0, 0.0, 0.5)
+
+plot  + 
+  geom_line(aes(x=xBreaks, point1),
+            color = "orange",
+            size=1.5) +
+  scale_y_continuous(limits = c(0.0, 1.0)) +
+  labs(
+      title="Parallele Koordianatenachsen im vierdimensionalen Raum", 
+      subtitle="Punkt (0, 0, 0, 0)",
+      x="", 
+      y=""
+   )  
+
+ggsave(filename="parCoordPoint1.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+plot  + 
+  geom_line(aes(x=xBreaks, point2),
+            color = "orange",
+            size=1.5) +
+    scale_y_continuous(limits = c(0.0, 1.0)) +
+  labs(
+      title="Parallele Koordianatenachsen im vierdimensionalen Raum", 
+      subtitle="Punkt (0, 1, 1, 0)",
+      x="", 
+      y=""
+   )  
+
+ggsave(filename="parCoordPoint2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+plot  + 
+  geom_line(aes(x=xBreaks, point3),
+            color = "orange",
+            size=1.5) +
+  scale_y_continuous(limits = c(0.0, 1.0)) +
+  labs(
+      title="Parallele Koordianatenachsen im vierdimensionalen Raum", 
+      subtitle="Punkt (0.5, 1, 0, 0.5)",
+      x="", 
+      y=""
+   )  
+
+ggsave(filename="parCoordPoint3.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 ```
 
 # Unser erster Plot mit parallelen Koordinaten
-Jetzt erstellen wir ausgehend von *plot* eine erste grafische Darstellung
-und zeichnen mit *geom_line* einen Punkt mit vier
-Koordinaten in die Visualisierung.
+Wir verwenden die Daten im long-Format, die wir mit *gather* erzeugt haben.
+Damit können wir alle Punkte im Datensatz in einer Grafik darstellen.
 
 ```{r firstPoint, message=FALSE, echo=TRUE, results='asis'}
 ggplot(datenLF, aes(x = Achse, y = Koordinate, group = Punkt)) +
@@ -131,11 +197,3 @@ ggsave(filename="parCoordExample.png", plot=last_plot(),
        path="images/", 
        width=16, height=9, units="cm")
 ```
-
-# Export der veränderten Daten
-Wir exportieren die veränderten Daten, um sie auch in Tableau zu verwenden.
-
-```{r saveLF, message=FALSE, echo=TRUE}
-write_csv2(datenLF, path="data/4DimLF.csv")
-```
-

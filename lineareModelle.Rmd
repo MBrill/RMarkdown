@@ -41,6 +41,7 @@ kable(daten,
        full_width = T, 
        position = "center")
 ```
+
 # Streuungsdiagramm und lineares Modell
 Bevor wir das lineare Modell erstellen zeigen wir die Daten in einem Streuungsdiagramm. Man sieht gut, dass wir versuchen sollten ein lineares Modell aufzustellen.
 

@@ -1,0 +1,773 @@
+---
+title: "Fallstudie Iris"
+author: "Manfred Brill"
+date: "Sommersemester 2020"
+output: 
+  
+  html_notebook: 
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+library(MASS)
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz *Iris*
+Dieser Datensatz ist in R einfach verfügbar, im Package *datasets*, das bereits
+beim Start geladen wird. 
+Der Datensatz ist als data.frame *iris* verfügbar. Diese Variable enthält
+150 Zeilen und 5 Spalten+. Die ersten vier Spalten enthalten die Messwerte, in Spalte
+5 finden wir die Angabe über die Spezies.
+
+```{r daten, message=FALSE, echo=TRUE}
+#iris <- as_tibble(datasets::iris)
+iris$Species <- as_factor(iris$Species)
+
+kable(head(iris), align="l",
+      caption="Tabelle 1: Die ersten Werte im Datensatz Iris") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+# Die Spalte mit den Spezies ausschließen für die Algorithmen
+irisValues <- iris[,-5]
+```
+
+# Quellen
+Die Darstellung der Verfahren orientiert sich an [@tibshirani_13] und [kabacoff_15].
+
+# Visualisierungen
+Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,
+dass wir Iris Setosa gut von den beiden anderen Spezies unterscheiden können.
+
+```{r scatterSPLOM, message=FALSE, echo=TRUE}
+# Drei Farben aus unserer Farbpalette für das Markieren der drei Spezies speichern
+species_col <- myPalette[unclass(iris$Species)]
+
+
+pairs(iris[1:4], 
+      main = "SPLOM für den Datensatz iris",
+      pch = 21, 
+      cex.labels=2,
+      bg = species_col,
+      lower.panel=NULL)
+
+par(xpd = TRUE)
+legend(x=0.05, y=0.4, 
+       legend=c("Setosa", "Versicolor", "Virginica"),
+       fill=unique(species_col))
+par(xpd = NA)
+```
+
+```{r scatter, message=FALSE, echo=TRUE}
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  labs(
+         title="Streuungsdiagramm  Datensatz Iris",
+         x = "Länge des Kelchblatts",
+         y = "Breite des Kelchblatts"
+  ) 
+
+ggsave(filename="irisScatterSepal.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+petal.Plot <- ggplot(iris) + 
+  geom_point(mapping=aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  labs(
+         title="Streuungsdiagramm Datensatz Iris",
+         x = "Länge des Kronblatts",
+         y = "Breite des Kronblatts"         
+  ) 
+
+petal.Plot
+
+ggsave(filename="irisScatterPetal.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+# Eine naive Klassifizierung
+
+In den Streuungsdiagramm und auch in den anderen Visualisierungen erkennen wir bereits, 
+dass wir die Spezies Iris Setosa mit Hilfe einer Geraden
+von den anderen beiden Spezies trennen können. Wir können
+für einen gegebenen Punkt mit Werten für das Kelchblatt entscheiden, auf welcher
+Seite der Punkt liegt und damit angeben, ob eine Exemplar von Iris Setosa oder
+eines der beiden anderen vorliegt. Wir verdeutlichen diese Aussage nochmals
+und zeichnen eine solche trennende Gerade in eines der Streuungsdiagramme ein.
+
+```{r scatterab, message=FALSE, echo=TRUE}
+petal.Plot +
+  geom_vline(xintercept=2.5, color="red")
+
+ggsave(filename="irisScatterPetalab.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+      
+```
+
+Die beiden anderen Spezies korrekt zu trennen wir deutlich schwieriger. 
+Dies ist mit ein Grund weshalb Iris einer der Datensätze ist, die man
+für Klassifizierungsverfahren verwendet um die Performanz zu evaluieren.
+
+Wir verwenden diese Beobachtung und klassifizieren den die 150 Zeilen
+des Datensatzes. Als erste Regel können wir untersuchen, ob
+Petal.Length <= 2.5 für ein Exemplar erfüllt ist oder nicht.
+Falls ja, dann sagen wir als Spezies dieses Exemplars Iris Setosa voraus.
+
+
+Wenn wir für die Exemplare mit Petal.Length > 2.5 weiter mit Petal.Length > 4.8
+unterscheiden und als Spezies Iris Versicolor setzen, wenn diese zweite Bedingung
+verletzt ist und Iris Virginica voraussagen, falls der Vergleich wahr ist,
+dann haben wir den Versuch einer Klassifizierung.
+Wir erstellen ein weiteres Streuungsdiagramm, in das wir die zweite
+Entscheidungsgrenzen ebenfalls einzeichnen.
+
+```{r scatterClassab2, message=FALSE, echo=TRUE}
+petal.Plot +
+  geom_vline(xintercept=2.5, color="red") +
+  geom_vline(xintercept=4.8, color="green")
+
+ggsave(filename="irisScatterPetalab2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+Wir schreiben R-Code für diese Überlegung und implementieren
+eine Funktion, der wir einen Index zwischen 1 und 150 übergeben,
+mit dessen Hilfe wir eine Zeile aus dem Iris-Datensatz auswählen.
+Wir schreiben noch eine weitere Funktion mit deren Hilfe wir
+überprüfen können, ob die Vorhersage korrekt ist.
+
+```{r classifyNaive, echo=TRUE, warning = TRUE}
+classifier <- function(i, barrier.Setosa = 2.5, barrier.Virginica = 4.8) {
+  
+  if (iris[i, 3] <= barrier.Setosa) {
+    return("setosa")
+  }
+  else if (iris[i, 3] <= barrier.Virginica) {
+    return("versicolor")
+  }
+  else
+    return("virginica")
+}
+
+checkPrediction <- function(i, prediction) {
+  if (prediction == iris[i, 5]) {
+    print("Vorhersage korrekt!")
+    }
+  else {
+    print("Vorhersage falsch!")
+  }  
+}
+```
+
+Wir können jetzt eine Zeile auswählen und mit der Funktion
+eine Vorhersage ausgeben. Wir wissen aus der Dokumentation, dass die ersten 50
+Zeile immer die Spezies *Setosa* enthält. Also müssen wir
+für die Werte unserer Schranken und i=2 die korrekte Vorhersage erhalten:
+
+```{r classify1, echo=TRUE, warning=TRUE}
+i <- 2
+predict <- classifier(i)
+checkPrediction(i, predict)
+```
+
+Für die Zeile 51 erhalten wir als Spezies *Versicolor*, wovon
+wir uns überzeugen können. Wir rufen unsere Funktion auf und können
+die Vorhersage mit dem korrekten Wert vergleichen:
+
+```{r classify2, echo=TRUE, warning=TRUE}
+i <- 55
+predict <- classifier(i)
+checkPrediction(i, predict)
+```
+
+Jetzt verwenden wir die Funktion *map_chr*, um in einer Schleife
+über alle indizes zwischen 1 und 150 alle Zeilen vorherzusagen.
+Anschließend vergleichen wir diese Ergebnisse mit dem korrekten 
+Ergebnis.
+Den Vergleich zwischen den korrekten Werten und der Vorhersage
+geben wir in der sogenannten *confusion matrix* aus. 
+Dazu verwenden wir die Funktion *table*.
+
+```{r classifiyAll, echo=TRUE, warning=TRUE}
+predictions <- seq(1, 150) %>%
+  map_chr(classifier)
+
+correct <- c(rep("setosa", 50), rep("versicolor", 50), rep("virginica", 50))
+
+confusion <- table(correct, predictions)
+confusion
+```
+
+In den Spalten sehen wir die Vorhersagen, in den Zeilen die korrekten Werte.
+Wären alle Vorhersagen korrekt, dann hätten wir eine Diagonalmatrix
+und immer den Wert 50 in der Diagonale. Für Iris Setosa ist dies auch
+so. Wir hatten bereits vermutet, dass wir mit dem ersten Vergleich
+in unserer Funktion immer korrekt Iris Setosa erkennen. Der zweite
+Vergleich war etwas willkürlich, schon im Streuungsdiagramm konnten
+wir erkennen, dass es Fälle geben wird, in den denen wir uns hier falsch entscheiden.
+Das zeigen uns auch die zweite und die dritte Spalte der confusion matrix.
+Die zweite Zeile sagt uns, dass es vier Exemplare Iris Versicolor
+gibt, die fälschlicher Weise als Iris Virginica klassifizert werden.
+Und es gibt 3 Exemplare der Spezies Iris Virginica, die als Iris Versicolor
+eingeteilt werden.
+
+Wir können den mittleren Fehler bei diesen 150 Tests berechnen. Dazu
+bilden wir einen Vektor, in den wir eine 1 schreiben wenn die Vorhersage
+falsch ist und 0 für eine korrekte Einteilung.
+
+```{r classError, echo=TRUE, warning=TRUE}
+naiveError <- mean(correct != predictions)
+```
+
+Für unser Ergebnis erhalten wir einen Testfehler von `r naiveError`.
+
+Die confusion matrix können wir gut als Heatmap visualisieren.
+Wenn wir ggplot verwenden möchten müssen wir die Matrix
+in das *long*-Format umwandeln und anschließend das geom *geom_tile*
+einsetzen.
+
+```{r naiveHeat1, echo=TRUE, warning=TRUE}
+# Geänderte Reihenfolge auf der y-Achse
+# quelle: https://stackoverflow.com/questions/
+# 12774210/how-do-you-specifically-order-ggplot2-x-axis-instead-of-alphabetical-order
+level_order <- c("virginica", "versicolor", "setosa")
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 50), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die naive Klassifizierung im Datensatz Iris", 
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+```
+
+Vergleicht man die Grafik mit
+der confusion matrix, verwendet die Heatmap die falsche Reihenfolge auf der y-Achse.
+Das können wir mit Hilfe von *scale_y_discrete* korrigieren.
+
+```{r naiveHeat, echo=TRUE, warning=TRUE}
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 50), 
+                       direction=1) +
+  scale_y_discrete(breaks = c("virginica", "versicolor", "setosa")) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die naive Klassifizierung im Datensatz Iris", 
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+
+ggsave(filename="irisNaiveHeat.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+
+# Klassifizierung mit dem knn-Verfahren
+Es gibt eine ganze Menge von Verfahren, die wir im machine learning für die
+Klassifizierung einsetzen können. Als erstes betrachten wir das knn-Verfahren.
+Dabei steht *knn* für *k-nearest neighbours*. Da das knn-Verfahren
+sich etwas von den anderen Verfahren unterscheidet betrachten wir die
+restlichen Verfahren im nächsten Abschnitt.
+
+Wie schon bei den linearen Modellen wählen wir einen validation set approach
+und teilen die 150 Zeilen des Iris-Datensatzes in eine Trainings- und eine
+Test-Menge ein. Das knn-Verfahren erstellt kein Modell, sondern verwendet die
+Trainings-Menge direkt, um für ein Test-Exemplar eine Entscheidung zu treffen.
+Angenommen wir haben insgesamt 75 Exemplare der Iris-Pflanzen in  unserer Trainingsmenge,
+am Besten vermutlich 25 von jeder Spezies. Für die Entscheidung, welcher Spezies ein
+weiteres Exemplar zugehört treffen wir eine Mehrheitsentscheidung.
+Wir haben vorher schon festgelegt, dass wir für die Entscheidung die k nächsten Nachbarn
+des untersuchten Exemplars verwenden. Ist k=5 dann stellen wir fest, welche 5 Exemplare
+in unserer Trainingsmenge am nächsten liegen und zählen ab, zu welcher der drei Spezies
+diese gehören. Als Entscheidung verwenden wir die Spezies, die am häufigstens auftritt.
+
+So wie das knn-Verfahren vorgeht gibt es also keinen Trainings-Fehler, sondern nur einen
+Test-Fehler. Aber das ist sowieso der interessante Fehler, den wir interpretieren möchten.
+Das Verfahren ist als Funktion *knn* im Package *class* enthalten. Wir laden dieses Package
+und verwenden jeweils 40 der drei Spezies als Trainingsmenge. 
+Dazu erzeugen wir 40 Zufallszahlen zwischen 1 und 50. Man könnte auch darauf verzichten,
+eine gleiche Anzahl von Samples aus jeder Spezies zu verwenden und einfach 120 Zeilen
+zufällig auswählen. Aber da wir uns auf der Prinzip des Verfahrens konzentrieren möchten
+verzeichten wir darauf. Für die Erzeugung der Zufallszahlen verwenden wir wieder
+einen seed-Value, um die Ergebnisse in dieser Datei reproduzierbar zu machen.
+Darauf verzichten Sie natürlich bei einer realen Anwendung.
+
+```{r KNN1, message=TRUE, warning=TRUE, echo=TRUE}
+library(class)
+train.n <- 40
+set.seed(42)
+setosa.ran <- sample(1:50, train.n)
+versicolor.ran <- setosa.ran + 50
+virginica.ran <- setosa.ran + 100
+
+train.set <- c(setosa.ran, versicolor.ran, virginica.ran)
+train <- iris[train.set, 1:4]
+# Wir benötigen die Spezies der Trainingsmenge als Vektor
+train.species <- iris[train.set, 5]
+
+test <- iris[-train.set,1:4]
+# Wir speichern auch die korrekten Spezies unserer Testmenge
+# für die Berechnung des Testfehlers
+correct <- iris[-train.set, 5]
+
+k <- 5
+predictions <- knn(train, test, train.species, k)
+
+confusion <- table(correct, predictions)
+confusion
+
+testError <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order),  
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die knn-Klassifizierung im Datensatz Iris", 
+    subtitle="k = 5",
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+
+ggsave(filename="irisknnHeat.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Für k=`r k`erhalten wir einen Testfehler von `r testError`. Die confusion matrix
+und die Heatmap können wir wie vorher erstellen. Wir wiederholen dieses Experiment
+mit neuen Werten für k. Dabei würde es nahe liege eine Funktion dafür zu schreiben,
+der wir k übergeben, worauf wir aber verzichten.
+
+```{r KNN2, message=TRUE, warning=TRUE, echo=TRUE}
+k <- 3
+
+predictions <- knn(train, test, train.species, k)
+
+confusion <- table(correct, predictions)
+confusion
+
+testError.3 <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die knn-Klassifizierung im Datensatz Iris", 
+    subtitle="k = 3",
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+ggsave(filename="irisknnHeat3.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+k <- 13
+
+predictions <- knn(train, test, train.species, k)
+
+confusion <- table(correct, predictions)
+confusion
+
+testError.13 <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die knn-Klassifizierung im Datensatz Iris", 
+    subtitle="k = 13",
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+ggsave(filename="irisknnHeat13.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Für den Wert 3 für k erhalten wir einen Testfehler von `r testError.3`. 
+Den gleichen Wert wie für k=5.
+Für den größeren Wert k=13 erhalten wir einen Testfehler von `r testError.13`.
+Es gibt eine optimale Wahl für k, meist reichen kleinere Werte wie im Beispiel
+aus. Auf jeden Fall haben wir mit Hilfe eines Verfahrens eine bessere
+Klassifizierung wie für unseren naiven Ansatz gefunden.
+
+Wir untersuchen die Qualität des knn-Verfahrens weiter und erstellen
+Streuungsdiagramme, in denen wir die Testmenge einmal mit korrekter
+Klassifizierung und mit Entscheidung aus dem Algorithmus visualiseren.
+
+```{r scatterknnTest, echo=TRUE, warning=TRUE}
+ggplot(test) + 
+  geom_point(mapping=aes(x = Petal.Length, y = Petal.Width, color = correct)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  guides(color=guide_legend(title="Korrekt")) +  
+  labs(
+         title="Streuungsdiagramm der Testmenge",
+         x = "Länge des Kronblatts",
+         y = "Breite des Kronblatts"         
+  ) 
+
+ggsave(filename="irisScatterPetalCorrect.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
+ggplot(test) + 
+  geom_point(mapping=aes(x = Petal.Length, y = Petal.Width, color = predictions)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  guides(color=guide_legend(title="Vorhersage")) +  
+  labs(
+         title="Streuungsdiagramm der Testmenge",
+         x = "Länge des Kronblatts",
+         y = "Breite des Kronblatts"         
+  ) 
+
+ggsave(filename="irisScatterPetalPred.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+# Klassifizierungsalgorithmen
+## Entscheidungsbäume
+
+Unser naiver Ansatz war durch zwei if-Anweisungen geben. Das können wir leicht
+als einen Baum visualisieren, an dessen Blätter die vorhergesagten
+Spezies zu finden sind. Genauso solche Bäume versucht der Algorithmus
+zu konstruieren, der in der Literatur unter der Bezeichnung *decision trees*
+zu finden ist.
+
+Die Bäume, die mit diesem Algorithmus erzeugt werden sind häufig zu tief.
+Deshalb verwendet man ein *pruning*, das die Bäume wieder etwas kleiner macht,
+um ein over-fitting zu vermeiden. Wir finden diesen Algorithmus
+im Package *rpart*, das wir im ersten Schritt laden.
+Die Bäume werden mit Hilfe von zufälligen Entscheidungen konstruiert,
+so dass wir hier auch wieder *set.seed* verwenden.
+
+```{r dtrees, echo=TRUE, warning=TRUE}
+library(rpart)
+set.seed(42)
+
+# Wir benötigen die Spalte 5 für glm
+train <- iris[train.set,]
+
+test <- iris[-train.set,]
+
+dtree <- rpart(Species ~ Sepal.Length+Sepal.Width+Petal.Length+Petal.Width, 
+    data = train,
+    method = "class",
+    parms=list(split="information")
+)
+
+dtree$cptable
+
+plotcp(dtree)
+
+dtree.pruned <- prune(dtree, cp = 0.01)
+
+predictions <- predict(dtree.pruned, test, type="class")
+confusion <- table(correct, predictions)
+
+confusion
+
+testError <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die Entscheidungsbaum-Klassifizierung im Datensatz Iris", 
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+```
+
+Wir erhalten einen Testfehler von `r testError` mit den Entscheidungsbäumen.
+In diesem Fall stimmt der Testfehler mit dem bei knn überein.
+
+## Random Forests
+Häufig sind die Entscheidungsbäume, die wir mit *rpart* konstruieren unhandlich
+und nicht performant. Deshalb wurd der Algorithmus *random forests* vorgeschlagen,
+In diesem Verfahren erzeugen wir eine größere Anzahl von kleineren Entscheidungsbäumen
+und bilden am Ende eine Mehrheitsentscheidung, welche Spezies wir vorhersagen.
+In der Praxis ist dieses Verfahren häufig deutlich besser als ein einzelner Entscheidungsbaum.
+Die Funktion dafür finden wir im Packate *randomForest*.
+
+```{r randomForst, echo=TRUE, warning=TRUE}
+library(randomForest)
+
+set.seed(42)
+fit.forest <- randomForest(Species ~ Sepal.Length+Sepal.Width+Petal.Length+Petal.Width, 
+    data = train,
+    na.action = na.roughfix,
+    importance = TRUE
+)
+
+predictions <- predict(fit.forest, test)
+confusion <- table(correct, predictions)
+
+confusion
+
+testError <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die Random Forest-Klassifizierung im Datensatz Iris", 
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+ggsave(filename="irisranForHeat.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Der Testfehler ist hier 0, alle Spezies werden korrekt vorhergesagt.
+
+anschließend eventuell noch lda und trees/random forests. Nicht zu lange.
+svm sollte am besten gehen ...
+
+## Support Vector Machines
+Es gibt eine ganze Reihe von Algorithmen, die versuchen eine Entscheidungsgrenze
+zwischen den Spezies zu berechnen. Dazu zählen Verfahren wie *LDA* oder *QDA*.
+Hier werfen wir noch einen schnellen Blick auf *Support Vector Machines*
+oder kurz *SVM*. Dieses Verfahren hat häufig eine sehr gute Performanz.
+Wir laden dazu das Package *e1071*, in dem die Funktion *svm* zu finden ist.
+
+```{r svm, echo=TRUE, warning=TRUE}
+library(e1071)
+
+set.seed(42)
+svm.fit <- svm(Species ~ Sepal.Length+Sepal.Width+Petal.Length+Petal.Width, 
+    data = train)
+
+predictions <- predict(fit.forest, test)
+confusion <- table(correct, predictions)
+
+confusion
+
+testError <- mean(correct != predictions)
+
+confusion %>%
+  as_tibble() %>%
+  ggplot() + 
+  geom_tile(mapping=aes(x=correct, 
+                        y=factor(predictions, level=level_order), 
+                        fill=n)) + 
+  scale_fill_distiller(palette="Greens", 
+                       guide="legend",
+                       limits = c(0, 10), 
+                       direction=1) +
+  guides(fill=guide_legend(title="Übereinstimmungen")) +
+  labs(
+    title="Heatmap für die SVM-Klassifizierung im Datensatz Iris", 
+    x="Korrekte Spezies", 
+    y="Vorhersage"
+  ) 
+
+ggsave(filename="irisSVMHeat.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Auch hier erhalten wir wie für Random Forests einen Testfehler von 0, alle Spezies werden
+korrekt vorhergesagt.
+
+# Clustering
+Clustering ist ein Verfahren aus dem unsupervised machine learning.
+Wir haben keinen y-Wert, den wir vorhersagen können oder eine Information
+über die Spezies unserer Iris-Pflanzen, sondern wir fragen uns, ob wir
+auf Grund der vorliegenden Information unsere Daten in cluster
+einteilen können.
+
+In der Literatur finden wir hier eine Menge von Algorithmen, die 
+*hierarchical clustering* durchführen*. Wir beschränken uns hier
+auf das *k-means clustering*, um die grundlegende Idee der Cluster-Verfahren 
+kennen zu lernen.
+
+## K-means Clustering
+Dieser Ansatz für die Bestimmung von Clustern geht davon aus, dass
+die Benutzer der Funktion eine Information darüber haben, wie viele
+Cluster es vermutlich gibt. Dies ist das k im Namen des Verfahrens.
+Im Verfahren werden sogenannte *Zentroide* verwendet. 
+Haben wir eine Menge von Punkten in der Ebene, dann ist das Zentroid
+einfach der Punkt, den wir erhalten, wenn wir koordinatenweise das 
+arithmetische Mittel bilden.
+
+In der Praxis sollten wir solche Verfahren immer auf standardisierte
+Daten anwenden. Damit vermeidet man, dass Merkmale mit sehr großen
+Zahlen vom Algorithmus gegenüber von Merkmalen mit relativ kleinen Werten
+bevorzugt werden. Wir können bei den Iris-Daten auf diesen Schritt verzichten.
+Aber in der Praxis hat dieser häufig als *Skalierung* bezeichnete Schritt
+oft dramatische Auswirkungen auf die Ergebnisse der Cluster-Verfahren.
+
+Der K-Means Algorithmus geht grob skizziert so vor:
+1. Wir wählen per Zufall k Punkte als Zentroide aus.
+1. Alle restlichen Punkte werden mit Hilfe eines Abstandsbegriffs einem dieser
+Zentroide zugewiesen.
+1. In jeder dieser k Gruppen von Punkten berechnen wir mit Hilfe von Mittelwertbildung
+ein neues Zentroid.
+1. Alle Punkte werden erneut einer der k Gruppen zugewiesen, auf der Basis der neu
+berechnen Zentroide.
+1. Die beiden letzten Schritte werden so lange durchgeführt, bis
+Abbruchkriterien erreicht werden, zum Beispiel die maximale Anzahl der Wiederholungen.
+
+```{r kmean, echo=TRUE, warning=TRUE}
+iris2 <- iris[,-5]
+iris.cluster <- kmeans(iris2, 3, nstart=20)
+
+table(iris.cluster$cluster)
+iris.cluster$centers
+
+table(iris[,5], iris.cluster$cluster)
+```
+
+In der Ausgabe des Verfahrens werden die gefundenen Cluster als 1, 2 und 3 gekennzeichnet.
+Mit der Eigenschaft *cluster* können wir die Zentroide der drei gefundenen Gruppen
+ausgeben lassen. Die Einteilung ist nicht sehr gut, wir wissen ja bereits,
+dass in jedem Cluster, also jeder Spezies, exakt 50 Exemplare liegen.
+Es wurde aber nur ein Cluster mit dieser Anzahl von Exemplaren vorhergesagt.
+Aus den Zentroiden und unserem Wissen über den Datensatz könnten wir auch
+vorhersagen, welche der Spezies dist ist.
+Wir können aber auch eine Häufigkeitstabelle wie die confusion matrix
+erstellen und die Anzahlen der gefundenen Cluster der Information über
+die Spezies gegenüber stellen. Fast schon wie vermutet - die Gruppe der Setosa-Pflanzen
+wurde auch hier wieder korrekt erkannt.
+
+```{r scattercluster, echo=TRUE, warning=TRUE}
+cluster.factor <- factor(iris.cluster$cluster)
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Petal.Length, 
+                         y = Petal.Width, 
+                         color = cluster.factor)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette="Set1",
+                     guide="legend") +
+  guides(color=guide_legend(title="Cluster")) +  
+  labs(
+         title="Datensatz Iris - K-Means (k=3)",
+         x = "Länge des Kronblatts",
+         y = "Breite des Kronblatts"
+  ) 
+
+ggsave(filename="irisKMScatter.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+# Literatur
+
+
