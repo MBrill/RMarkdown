@@ -4,7 +4,6 @@ author: "Manfred Brill"
 date: "Sommersemester 2020"
 output:
   
-  html_notebook: 
   html_document:
     
     df_print: paged
@@ -14,6 +13,7 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
+  html_notebook: 
 bibliography: literatur.bib 
 ---
 

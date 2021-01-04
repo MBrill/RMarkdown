@@ -1,7 +1,7 @@
 ---
 title: "Die Größe von Diamanten als GitHub-md"
 author: "Manfred Brill"
-date: "19. März 2020"
+date: "Sommersemester 2021"
 output: 
    github_document: default
 ---

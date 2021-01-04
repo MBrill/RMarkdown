@@ -1,7 +1,7 @@
 ---
 title: "Dashboards mit flexdashboard"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: flexdashboard::flex_dashboard
 encoding: utf-8
 ---

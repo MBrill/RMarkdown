@@ -1,7 +1,7 @@
 ---
 title: "Beschreibende Statistik mit R:  Parameter"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2021"
 output:
   html_document:
     df_print: paged
