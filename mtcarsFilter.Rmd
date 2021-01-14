@@ -1,0 +1,77 @@
+---
+title: "Filtern mit Parametern im Header"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+params:
+  my_class: "suv"
+  start: !r lubridate::ymd("2021-03-22")
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Standard-Datensatz in R - mpg
+Der Datensatz enthält Angaben über Verbrauchsdaten von Autos aus den Jahren  1999 bis 2008 von 38 Modellen. Wir erhalten diesen Datensatz durch
+das Laden von *ggplot2* oder von *tidyverse*.
+
+Der Datensatz mpg enthält ähnliche Daten über 38 Autos aus den Jahren 1999 bis 2008. Wir erhalten 234 Zeilen und 11 verschiedene Merkmale.
+Für das Filtern verwenden wir die Spalte mit der Bezeichnung
+*class*, in der die verschiedenen Arten der PKWs klassifiziert werden.
+
+Hier eine Liste der Ausprägungen, die in dieser Spalte enthalten sind:
+```{r classlist, message=FALSE, echo=TRUE}
+mpg$class <- as.factor(mpg$class)
+levels(mpg$class)
+
+mpgN <- nrow(mpg)
+mpgN
+```
+
+# Filtern mit dem Parameter aus dem YAML-Header
+
+Der Datensatz hat ungefilter `r mpgN` Zeilen. Jetzt filtern wir und
+erzeugen einen neuen Datensatz, in dem nur noch die
+Zeilen enthalten sind, die zu SUVs gehören. Dabei verwenden wir
+den String `r params$my_class` aus dem Header.
+
+```{r filtern, message=FALSE, echo=TRUE}
+mpgFiltered <- mpg %>%
+  filter(
+    class == params$my_class
+    )
+
+mpgNFiltered <- nrow(mpgFiltered)
+mpgNFiltered
+```
+
+Dieser neue Datensatz enthält nur noch `r mpgNFiltered` Zeilen.
+
+Wenn wir die Angabe im Header ändern, zum Beispiel auf *2seater*,
+dann ändert sich auch die Anzahl der Zeilen, die wir nach dem Filtern erhalten.
+
+# R-Code im YAML-Header
+Im Header ist neben dem Parameter, mit dem wir filtern können
+auch eine Variable enthalten, die wir mit einer R-Anweisung
+einen Wert zugewiesen haben.
+
+Der Name der Varialbe ist *start*, wir geben den Wert jetzt aus:
+
+```{r startparam, echo=TRUE, message=FALSE}
+params$start
+```
+
+

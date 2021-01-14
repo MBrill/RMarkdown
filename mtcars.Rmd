@@ -29,6 +29,7 @@ Der Datensatz enthält Angaben über PKWs, die einer Ausgabe der Zeitschrift
 *Motor Trend US* aus dem Jahr 1974 entnommen sind. Neben dem Benzin-Verbrauch
 sind noch 10 weitere Merkmale aufgeführt. Es gibt Daten über 32 Automobile
 aus dem Modelljahr 1973-1974. Die Merkmale sind
+
 - Name
 - mpg - Verbrauch in miles per gallon
 - Anzahl der Zylinder
