@@ -20,7 +20,12 @@ library(tidyverse)
 # Voraussetzungen
 
 Sie sollten den Text mit Hilfe von R nachvollziehen; entweder schon beim ersten Lesen oder anschließend. Das Dokument geht davon aus,
-dass Sie die Videos *Arbeiten mit data.frames*, *Arbeiten mit tibbles* und *Daten importieren* kennen.
+dass Sie die Videos 
+['Arbeiten mit data.frames'](https://www.youtube.com/watch?v=efP9IYVKqA0&feature=youtu.be),
+['Das tidyverse-Package in R'](https://www.youtube.com/watch?v=eNl7m9iJwSQ&feature=youtu.be)
+und 
+['Daten importieren'](https://www.youtube.com/watch?v=xJcM7ZlNFUw&feature=youtu.be)
+kennen.
 
 Legen Sie ein neues Verzeichnis für das Projekt an. Auf der Lernplattform
 finden Sie Links auf zwei ASCII-Dateien *Auto.data* und *Auto.csv*. Speichern Sie diese Dateien in ihrem Projekt, zum Beispiel im Unterverzeichnis
