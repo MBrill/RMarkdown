@@ -1,0 +1,102 @@
+---
+title: "Dashboards mit flexdashboard und htmlwidgets"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+    flexdashboard::flex_dashboard
+encoding: utf-8
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(plotly)
+library(dplyr)
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+
+diamonds.cut <- 2.5
+smaller <- diamonds %>%
+  filter(carat <= diamonds.cut)
+```
+
+# Interaktive Grafiken mit plotly
+
+### Histogramm des Merkmals Karat
+
+```{r Karat}
+cara <- ggplot(smaller, aes(carat)) + 
+  geom_histogram(binwidth = 0.1, fill="green", color="black") +
+  labs(
+    x = "Karat",
+    y = ""
+  )
+ggplotly(cara)
+```
+
+### Histogramm des Merkmals Schliff
+
+```{r schliff}
+schliff <- ggplot(diamonds, aes(cut)) + 
+  geom_bar( fill="orange", color="black") +
+  labs(
+    x = "Schliff",
+    y = ""
+  )
+ggplotly(schliff)
+```
+
+### Histogramm des Merkmals Farbe
+
+```{r farbe}
+farbe <- ggplot(diamonds, aes(color)) + 
+  geom_bar(fill="yellow", color="black") +
+  labs(
+    x = "Farbe",
+    y = ""
+  )
+ggplotly(farbe)
+```
+
+# Zeitreihen mit Dygraphs
+
+```{r timeseries}
+library(dygraphs)
+dygraph(nhtemp, main = " Temperaturen in New Haven (nhtemp") %>% 
+  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
+```
+
+
+# Tabellen mit DataTables
+
+### Tabelle der größten Diamanten
+
+```{r tabelle}
+diamonds %>% 
+  arrange(desc(carat)) %>% 
+  head(50) %>% 
+  select(carat, cut, color, price) %>% 
+  DT::datatable()
+```
+
+
+# OpenStreetMap Karten mit Leaflet
+
+```{r leaflet}
+library(leaflet)
+leaflet() %>%
+  setView(7.36, 49.262 , zoom = 15) %>% 
+  addTiles() %>%
+  addMarkers(7.3611, 49.262, popup = "Campus Zweibrücken") 
+```
+
+# Visualisierung von Graphen mit visNetwork
+
+```{r network}
+library(visNetwork)
+nodes <- data.frame(id = 1:6, title = paste("node", 1:6), 
+                    shape = c("dot", "square"),
+                    size = 10:15, color = c("blue", "red"))
+edges <- data.frame(from = 1:5, to = c(5, 4, 6, 3, 3))
+visNetwork(nodes, edges) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
+```
+

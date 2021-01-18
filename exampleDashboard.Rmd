@@ -2,7 +2,8 @@
 title: "Dashboards mit flexdashboard"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
-output: flexdashboard::flex_dashboard
+output: 
+    flexdashboard::flex_dashboard
 encoding: utf-8
 ---
 
@@ -16,7 +17,62 @@ smaller <- diamonds %>%
   filter(carat <= diamonds.cut)
 ```
 
-# Dashboards
+
+# Ein Beispiel mit dem Datensatz diamonds
+
+## Spalte 1
+
+### Die größten Diamanten
+Wir können R-Code ausführen und die Ausgaben in einem Dashboard darstellen.
+
+```{r tabelle}
+bigDiamonds <- diamonds %>% 
+  arrange(desc(carat)) %>% 
+  head(50) %>% 
+  select(carat, cut, color, price)
+
+head(bigDiamonds)
+```
+
+Ändern sich die Daten, ändert sich das Dashboard. So können wir unsere Ergebnisse
+als HTML-Seite präsentieren.
+
+## Spalte 2
+### Histogramm des Merkmals Karat
+
+```{r Karat}
+ggplot(smaller, aes(carat)) + 
+  geom_histogram(binwidth = 0.1, fill="green", color="black") +
+  labs(
+    x = "Karat",
+    y = ""
+  )
+```
+
+### Histogramm des Merkmals Schliff
+
+```{r schliff}
+ggplot(diamonds, aes(cut)) + 
+  geom_bar( fill="orange", color="black") +
+  labs(
+    x = "Schliff",
+    y = ""
+  )
+```
+
+### Histogramm des Merkmals Farbe
+
+```{r farbe}
+ggplot(diamonds, aes(color)) + 
+  geom_bar(fill="yellow", color="black") +
+  labs(
+    x = "Farbe",
+    y = ""
+  )
+```
+
+# Dashboards mit flexdashboard
+
 ## Spalte 1
 
 ### Syntax
@@ -28,7 +84,7 @@ tiefer können wir innerhalb einer Spalte wieder Zeilen erzeugen.
 
 ## Spalte 2
 
-### Weitere Spalte
+### Eine weitere Spalte
 Hier wurde eine weitere Spalte eingeführt.
 
 ### Bullet Points in einer zweiten Spalte, mit *###*
@@ -38,64 +94,3 @@ Hier wurde eine weitere Spalte eingeführt.
 
 ### Weiterer Text
 Hier können wir weiteren Text innerhalb der erzeugten Spalte darstellen.
-
-# Grafiken und Tabellen
-
-## Spalte 1
-
-### Karat
-
-```{r Karat}
-ggplot(smaller, aes(carat)) + 
-  geom_histogram(binwidth = 0.1, fill="green", color="black") +
-  labs(
-    x = "Karat",
-    y = ""
-  )
-```
-
-### Schliff
-
-```{r schliff}
-ggplot(diamonds, aes(cut)) + 
-  geom_bar( fill="orange", color="black") +
-  labs(
-    x = "Schliff",
-    y = ""
-  )
-```
-
-### Farbe
-
-```{r farbe}
-ggplot(diamonds, aes(color)) + 
-  geom_bar(fill="yellow", color="black") +
-  labs(
-    x = "Farbe",
-    y = ""
-  )
-```
-
-## Spalte 2
-
-### Die größten Diamanten
-
-```{r tabelle}
-diamonds %>% 
-  arrange(desc(carat)) %>% 
-  head(50) %>% 
-  select(carat, cut, color, price) %>% 
-  DT::datatable()
-```
-
-
-# OpenStreetMap Karten mit Leaflet
-
-```{r leaflet}
-library(leaflet)
-leaflet() %>%
-  setView(7.36, 49.262 , zoom = 15) %>% 
-  addTiles() %>%
-  addMarkers(7.3611, 49.262, popup = "Campus Zweibrücken") 
-```
-
