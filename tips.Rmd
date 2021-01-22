@@ -1,12 +1,10 @@
 ---
 title: "Fallstudie Tips"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
   
   html_document: 
-    
-    
     fig_caption: yes
     highlight: pygments
     number_sections: yes
@@ -14,7 +12,8 @@ output:
     toc: yes
     toc_float: yes
   html_notebook: default
-bibliography: literatur.bib    
+bibliography: literatur.bib
+encoding: utf-8
 ---
 
 ```{r setup, include=FALSE}

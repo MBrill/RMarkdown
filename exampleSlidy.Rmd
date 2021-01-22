@@ -1,7 +1,7 @@
 ---
 title: "Die erste HTML Präsentation mit Slidy"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: slidy_presentation
 ---
 
@@ -17,7 +17,7 @@ smaller <- diamonds %>%
 
 ## R Markdown
 
-Dies ist eine [R Markdown](http://rmarkdown.rstudio.com) Präsentation. Als Option verwenden wir hier *Slidy*. Neue Folien erstellen wir
+Dies ist eine [R Markdown](http://rmarkdown.rstudio.com) Präsentation. Als Package verwenden wir hier *Slidy*. Neue Folien erstellen wir
 mit einer Überschrift der Stufe 2, also mit 
 ´## Überschrift´.
 

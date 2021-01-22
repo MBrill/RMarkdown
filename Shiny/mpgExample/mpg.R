@@ -1,47 +1,42 @@
 #
 # Ein Beispiel aus dem Github-Repository shiny-examples
 #
-
 library(shiny)
 library(datasets)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
 
-# Data pre-processing ----
-# Tweak the "am" variable to have nicer factor labels -- since this
-# doesn't rely on any user inputs, we can do this once at startup
-# and then use the value throughout the lifetime of the app
+# Wir bereiten die Daten vor und erzeugen einen factor für das Merkmal am
 mpgData <- mtcars
 mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
 
 
-# Define UI for miles per gallon app ----
+# User Interface
 ui <- fluidPage(
     
     # App title ----
-    titlePanel("Miles Per Gallon"),
+    titlePanel("Verbrauch und Parameter im Datensatz mtcars"),
     
-    # Sidebar layout with input and output definitions ----
+    # Sidebar layout
     sidebarLayout(
         
-        # Sidebar panel for inputs ----
         sidebarPanel(
+            # HTML-Ausgabe
+            htmlOutput("textbody"),
             
-            # Input: Selector for variable to plot against mpg ----
+            # Input: Pulldown für untersuchte Variable
             selectInput("variable", "Variable:",
-                        c("Cylinders" = "cyl",
-                          "Transmission" = "am",
-                          "Gears" = "gear")),
+                        c("Zylinder" = "cyl",
+                          "Getriebe" = "am",
+                          "Gänge" = "gear")),
             
-            # Input: Checkbox for whether outliers should be included ----
-            checkboxInput("outliers", "Show outliers", TRUE)
+            # Input: Checkbox für die Anzeige von Ausreißern ----
+            checkboxInput("outliers", "Ausreißer anzeigen?", TRUE)
             
         ),
         
         # Main panel for displaying outputs ----
         mainPanel(
-            
-            # Output: Formatted text for caption ----
-            h3(textOutput("caption")),
-            
             # Output: Plot of the requested variable against mpg ----
             plotOutput("mpgPlot")
             
@@ -49,28 +44,27 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic to plot various variables against mpg ----
+# Logik auf dem Server
 server <- function(input, output) {
     
-    # Compute the formula text ----
-    # This is in a reactive expression since it is shared by the
-    # output$caption and output$mpgPlot functions
+    # String für Funktion boxplot erzeugen
     formulaText <- reactive({
         paste("mpg ~", input$variable)
     })
     
-    # Return the formula text for printing as a caption ----
-    output$caption <- renderText({
-        formulaText()
-    })
-    
-    # Generate a plot of the requested variable against mpg ----
-    # and only exclude outliers if requested
+    # Boxplot erzeugen
     output$mpgPlot <- renderPlot({
         boxplot(as.formula(formulaText()),
-                data = mpgData,
-                outline = input$outliers,
-                col = "#75AADB", pch = 19)
+               data = mpgData,
+               outline = input$outliers,
+               col = myPalette[1], 
+               pch = 19)
+        
+    # Text ausgeben
+    output$textbody <- renderUI({
+        HTML("<p>Wie hängt der Verbrauch von verschiedenen Parametern ab?</p>
+             <p>Verwenden Sie das Pulldown um verschiedene Box-Plots zu sehen!</p>")
+        })
     })
     
 }

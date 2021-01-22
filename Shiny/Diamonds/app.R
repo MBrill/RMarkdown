@@ -19,32 +19,38 @@ ui <- fluidPage(
     # Die minimalen und maximalen Werte wurden vorher in R bestimmt.
     sidebarLayout(
         sidebarPanel(
+            h2("Einstellungen"),
+            p("Verwenden Sie die Slider für die Veränderung des Histogramms!"),
             sliderInput("cutNum",
-                        "Obergrenze",
-                        min = 0.2,
+                        "Dargestellter Bereich der Karatzahlen",
+                        min = 0.0,
                         max = 5.0,
-                        value = 2.5),
+                        step = 0.1,
+                        value = c(1.0, 2.0)),
             sliderInput("binWidth",
-                        "Klassenbreite",
-                        min = 0.001,
-                        max = 0.3,
-                        value = 0.05)            
+                        "Klassenbreite für das Histogramm",
+                        min = 0.05,
+                        max = 0.5,
+                        step = 0.01,
+                        value = 0.1)            
         ),
         
         # Im Hauptpanel die Grafik ausgeben
         mainPanel(
-            plotOutput("barPlot")
+            h2("Histogramm ", align="center"),
+            plotOutput("histo")
         )
     )
 )
 
 # Code für den Server
 server <- function(input, output) {
-    output$barPlot <- renderPlot({
-        # Wir filtern in Anhängigkeit vom Wert input$cutNum aus der Sidebar
+    
+    output$histo <- renderPlot({
+        # Daten filtern, wie im Slider definiert.
         smaller <- diamonds %>%
-            filter(carat <= input$cutNum)
-        
+            filter(carat <= input$cutNum[2] & carat >= input$cutNum[1])
+        # Grafik erstellen
         ggplot(smaller, aes(carat)) +
             geom_histogram(binwidth = input$binWidth, 
                            fill="green", 

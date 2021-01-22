@@ -4,6 +4,12 @@ author: "Manfred Brill"
 date: "Sommersemester 2020"
 encoding: utf-8
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8    
   html_document:
     df_print: paged
     toc: yes
@@ -13,12 +19,6 @@ output:
     theme: cosmo
     number_sections: yes
     encoding: utf-8
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8    
 bibliography: literatur.bib
 ---
 

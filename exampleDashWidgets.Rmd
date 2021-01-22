@@ -1,5 +1,5 @@
 ---
-title: "Dashboards mit flexdashboard und htmlwidgets"
+title: "Interaktive Dokumente und Anwendungen mit htmlwidgets"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
@@ -8,9 +8,10 @@ encoding: utf-8
 ---
 
 ```{r setup, include = FALSE}
+library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 library(ggplot2)
 library(plotly)
-library(dplyr)
 knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
 
 diamonds.cut <- 2.5
@@ -18,23 +19,9 @@ smaller <- diamonds %>%
   filter(carat <= diamonds.cut)
 ```
 
-# Interaktive Grafiken mit plotly
+# Histogramm
 
-### Histogramm des Merkmals Karat
-
-```{r Karat}
-cara <- ggplot(smaller, aes(carat)) + 
-  geom_histogram(binwidth = 0.1, fill="green", color="black") +
-  labs(
-    x = "Karat",
-    y = ""
-  )
-ggplotly(cara)
-```
-
-### Histogramm des Merkmals Schliff
-
-```{r schliff}
+```{r schliff, message=TRUE, warning=TRUE}
 schliff <- ggplot(diamonds, aes(cut)) + 
   geom_bar( fill="orange", color="black") +
   labs(
@@ -44,39 +31,24 @@ schliff <- ggplot(diamonds, aes(cut)) +
 ggplotly(schliff)
 ```
 
-### Histogramm des Merkmals Farbe
-
-```{r farbe}
-farbe <- ggplot(diamonds, aes(color)) + 
-  geom_bar(fill="yellow", color="black") +
-  labs(
-    x = "Farbe",
-    y = ""
-  )
-ggplotly(farbe)
-```
-
 # Zeitreihen mit Dygraphs
 
-```{r timeseries}
+```{r timeseries, results='markup'}
 library(dygraphs)
-dygraph(nhtemp, main = " Temperaturen in New Haven (nhtemp") %>% 
+dygraph(nhtemp, main = "Temperaturen in New Haven (nhtemp)") %>% 
   dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
 ```
 
+# Tabelle der größten Diamanten
 
-# Tabellen mit DataTables
-
-### Tabelle der größten Diamanten
-
-```{r tabelle}
+```{r tabelle, results='markup'}
+library(DT)
 diamonds %>% 
   arrange(desc(carat)) %>% 
   head(50) %>% 
   select(carat, cut, color, price) %>% 
-  DT::datatable()
+  datatable()
 ```
-
 
 # OpenStreetMap Karten mit Leaflet
 
@@ -90,13 +62,25 @@ leaflet() %>%
 
 # Visualisierung von Graphen mit visNetwork
 
-```{r network}
+```{r network, message=TRUE, warning=TRUE, results='markup'}
 library(visNetwork)
-nodes <- data.frame(id = 1:6, title = paste("node", 1:6), 
-                    shape = c("dot", "square"),
-                    size = 10:15, color = c("blue", "red"))
-edges <- data.frame(from = 1:5, to = c(5, 4, 6, 3, 3))
-visNetwork(nodes, edges) %>%
-  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
-```
+nodes <- data.frame(id = 0:4,
+                    shape = c("dot"),
+                    size = 5,
+                    title = paste0("<b>Knoten ", 0:4,"</b>"),
+                    color = c("green"))
 
+edges <- data.frame(from = c(0, 0, 1, 2, 2, 3), 
+                    to = c(1, 2, 3, 3, 4, 4),
+                    title = paste0("Kante ", 0:5))
+
+visNetwork(nodes, edges) %>%
+  visOptions(highlightNearest = TRUE, 
+             width = "100%") %>%
+    visInteraction(dragNodes = TRUE, 
+                   dragView = TRUE, 
+                   zoomView = FALSE,
+                   keyboard = TRUE,
+                   navigationButtons = TRUE) %>%
+  visLayout(randomSeed = 42)
+```
