@@ -1,8 +1,13 @@
 ---
 title: "Korrelation und lineare Modelle"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -96,6 +101,18 @@ summary(sim)
 mbSim <- coef(sim)
 ```
 
+Die Ausgabe von *summary* gibt uns die Details über das berechnete
+lineare Modell. In den Zeilen unterhalb von
+*Coefficients* finden wir die Werte für den Achsenabschnitt und Steigung. 
+Der Achsenabschnitt, englisch *Intercept*, hat hier einen Wert von 2.6551. Die Steigung,
+also der Koeffizient, mit dem wir den Wert der Luftfeuchtigkeit multiplizieren, finden wir
+unter *Luftfeuchtigkeit*, er hat einen Wert
+von 0.2358. Die restlichen Angaben in diesen beiden Zeilen betrachten wir später. Wichtig sind die Wahrscheinlichkeiten, die sogenannten p-values, in der letzten Spalte. Sie sind kleiner
+als 0.05, deshalb finden wir auch die drei Sterne als *Significance codes*. Dies deutet darauf hin,
+dass das lineare Modell die Daten gub beschreibt.
+In der vorletzten Zeile finden wir das Bestimmtheitsmaß bei *Multiple R-squared*, hier finden wir einen Wert von 0.96, was ebenfalls auf einen hohen Erklärungswert des Modells hinweist. Das angegebene Bestimmtheitsmaß ist das Quadat des
+Korrelationskoeffizienten, den wir oben bereits as ungefähr 0.98 berechnet hatten.
+
 Wir fügen dem Streuungsdiagramm die berechnete Gerade mit Hilfe der Funktion
 *geom_abline* hinzu. Die berechneten Werte für die Steigung und den Achsenabschnitt fügen wir der Beschriftung der Grafik hinzu.
 
@@ -105,9 +122,9 @@ ggplot(daten) +
              color="blue") +
   geom_abline(intercept=mbSim[1], slope=mbSim[2], color="red") +
   labs(
-    title="Lineares Modell Luftfeuchtigkeit und Wassergehalt", 
+    title="Lineares Modell für Luftfeuchtigkeit und Wassergehalt", 
     subtitle=paste("m = ", format(mbSim[2], digits=2), 
-                   " b = ", format(mbSim[1], digits=2)),
+                   ", b = ", format(mbSim[1], digits=2)),
     x="Luftfeuchtigkeit in Prozent", 
     y="Wassergehalt in Prozent"
   ) 
@@ -144,7 +161,7 @@ ggplot(daten, aes(Luftfeuchtigkeit, resid)) +
   geom_ref_line(h=0) + 
   geom_point(size=2.0, color="orange") +
   labs(
-    title="Residualplot für den Wassergehalt", 
+    title="Residualplot für das lineare Modell Luftfeuchtigkeit ~ Wassergehalt", 
     x="Luftfeuchtigkeit in Prozent", 
     y="Residuen"
   ) 

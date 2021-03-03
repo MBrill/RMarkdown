@@ -1,8 +1,13 @@
 ---
 title: "Kontingenzanalyse"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -34,7 +39,7 @@ Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen.
 
 # Daten
 Wir betrachten das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Da die Daten das Semikolon als Trenner verwenden
-lesen lesen mit *read_csv2* ein und speichern auf dem Objekt  *wohnungen*.
+lesen wir sie mit *read_csv2* ein und speichern sie auf dem Objekt  *wohnungen*.
 
 ```{r lesen, results='hide', message=FALSE, echo=TRUE}
 # Trenner auf Semikolon setzen
