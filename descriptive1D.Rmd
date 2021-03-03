@@ -3,6 +3,11 @@ title: "Beschreibende Statistik mit R"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -11,11 +16,6 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
 bibliography: literatur.bib
 ---
 
