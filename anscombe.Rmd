@@ -1,0 +1,252 @@
+---
+title: "Das Anscombe Quartett"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+
+encoding: utf-8
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(modelr)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Die Daten
+Das Anscombe-Quartett enthält vier Datensätze in den Spalten X1, Y1 bis X4, Y4.
+Sieht man sich die statistischen Parameter an, dann scheinen die vier Datensätze
+sehr ähnlich zu sein. Schaut man auf das Streuungsdiagramm, dann sind sie doch 
+grundverschieden. Interessant ist auch dass wir für alle vier Datensätze
+die identische Regressionsgerade erhalten.
+
+Wir lesen die Daten aus der csv-Datei ein. Trenner ist das Semikolon. Wir geben die Daten mit *glimpse* zur Kontrolle aus und verteilen die vier Datensätze
+auf vier tibbles, um besser damit arbeiten zu können.
+
+```{r daten, message=FALSE, echo=TRUE}
+anscombe <- read_csv2("data/anscombe.csv")
+
+one <- tibble(X = anscombe$X1, Y = anscombe$Y1)
+glimpse(one)
+
+two <- tibble(X = anscombe$X2, Y = anscombe$Y2)
+glimpse(two)
+
+three <- tibble(X = anscombe$X3, Y = anscombe$Y3)
+glimpse(three)
+
+four <- tibble(X = anscombe$X4, Y = anscombe$Y4)
+glimpse(four)
+```
+
+Jetzt berechnen wir die statistischen Parameter wie arithmetisches Mittel, Standardabweichung, Median und die Kovarianz bzw. den Korrelationskoeffizienten.
+
+```{r statistik, echo=TRUE, warnings=TRUE, message=FALSE}
+kennzahlen <- function(data) {
+  result <- summarize(one,
+            mean_x = mean(X),
+            sd_x   = sd(Y),
+            mean_y = mean(Y), 
+            sd_y = sd(Y),
+            cov = cov(X, Y),
+            cor = cor(method="pearson", X, Y)
+  )
+return(result)
+}
+
+one_kennzahlen <- kennzahlen(one)
+two_kennzahlen <- kennzahlen(two)
+three_kennzahlen <- kennzahlen(three)
+four_kennzahlen <- kennzahlen(four)
+
+glimpse(one_kennzahlen)
+glimpse(two_kennzahlen)
+glimpse(three_kennzahlen)
+glimpse(four_kennzahlen)
+```
+
+Wie bereits in der Literatur angegeben erhalten wir für alle vier Datensätze die identischen statistischen Kennzahlen. Also könnte man davon ausgehen, dass die Daten sehr ähnlich sind. 
+
+# Lineare Modelle
+Da insbesondere der Korrelationskoeffizient für alle vier Datensätze identisch durch
+`r four_kennzahlen$cor` gegeben ist erwarten wir auch, dass die mit
+*lm* berechneten linearen Modelle identisch sind, was wir jetzt überprüfen.
+
+```{r lineareModelle, echo=TRUE, warnings=TRUE, message=FALSE}
+one_model = lm(Y ~ X, one)
+one_coeff <- coef(one_model)
+one_coeff
+
+two_model = lm(Y ~ X, two)
+two_coeff <- coef(two_model)
+two_coeff
+
+three_model = lm(Y ~ X, three)
+three_coeff <- coef(three_model)
+three_coeff
+
+four_model = lm(Y ~ X, four)
+four_coeff <- coef(four_model)
+four_coeff
+```
+
+Unsere Vermutung bestätigt sich, alle vier mit *lm* berechneten linearen Modell haben den identischen Achsenabschnitt `r one_coeff[1]` und die identische Steigung `r one_coeff[2]`.
+
+Wir geben im nächsten Code-Abschnitt mit *summary* die Details
+über die lineare Modelle aus:
+
+```{r lmsummaries, echo=TRUE, warnings=TRUE, message=FALSE}
+summary(one_model)
+summary(two_model)
+summary(three_model)
+summary(four_model)
+```
+Selbst die p-values oder die Werte der t-Verteilung sind bis auf
+geringfügige Abweichungen in Nachkommastellen identisch.
+
+# Visualisierungen
+Wir erstellen jetzt vier Streuungsdiagramme und zeichnen die
+berechneten Regressionsgeraden ein.
+
+```{r scatter, echo=TRUE, results='markup'}
+ggplot(one) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  geom_abline(intercept=one_coeff[1], slope=one_coeff[2], color="red") +
+  labs(
+    title="Lineares Modell für die Spalten X1 und Y1 im Anscombe-Quartett", 
+    subtitle=paste("m = ", format(one_coeff[2], digits=2), 
+                   ", b = ", format(one_coeff[1], digits=2)),
+    x="X1", 
+    y="Y1"
+  )
+
+ggsave(filename="anscombe1.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(two) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  geom_abline(intercept=one_coeff[1], slope=one_coeff[2], color="red") +
+  labs(
+    title="Lineares Modell für die Spalten X2 und Y2 im Anscombe-Quartett", 
+    subtitle=paste("m = ", format(one_coeff[2], digits=2), 
+                   ", b = ", format(one_coeff[1], digits=2)),
+    x="X1", 
+    y="Y1"
+  )
+
+ggsave(filename="anscombe2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(three) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  geom_abline(intercept=one_coeff[1], slope=one_coeff[2], color="red") +
+  labs(
+    title="Lineares Modell für die Spalten X3 und Y3 im Anscombe-Quartett", 
+    subtitle=paste("m = ", format(one_coeff[2], digits=2), 
+                   ", b = ", format(one_coeff[1], digits=2)),
+    x="X1", 
+    y="Y1"
+  )
+
+ggsave(filename="anscombe3.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(four) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  geom_abline(intercept=one_coeff[1], slope=one_coeff[2], color="red") +
+  labs(
+    title="Lineares Modell für die Spalten X4 und Y4 im Anscombe-Quartett", 
+    subtitle=paste("m = ", format(one_coeff[2], digits=2), 
+                   ", b = ", format(one_coeff[1], digits=2)),
+    x="X1", 
+    y="Y1"
+  )
+
+ggsave(filename="anscombe4.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+
+# Residualplots
+Interessant ist natürlich auch wie die Residualplots aussehen, das sagt ja etwas über die Qualität des Modell aus. Immer daran denken, das Bestimmtheitsmaß ist für alle vier Modelle identisch!
+
+```{r resplots, echo=TRUE, warnings=TRUE, message=FALSE}
+one <- one %>%
+  add_residuals(one_model)
+two <- two %>%
+  add_residuals(two_model)
+three <- three %>%
+  add_residuals(three_model)
+four <- four %>%
+  add_residuals(four_model)
+
+ggplot(one, aes(X, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color=myPalette[1]) +
+  labs(
+    title="Residualplot für das lineare Modell X1 ~ Y1 im Anscombe Quartett", 
+    x="X1", 
+    y="Y1"
+  ) 
+
+ggsave(filename="anscomberes1.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(two, aes(X, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(data = one, size=2.0, aes(color='1')) +
+  geom_point(data = two, size=2.0, aes(color='2')) +
+  geom_point(data = three, size=2.0, aes(color='3')) +
+  geom_point(data = four, size=2.0, aes(color='4')) +
+  scale_color_manual(name="Wertepaar", 
+                     values=c('1'=myPalette[1], '2' = myPalette[2],
+                              '3'=myPalette[3], '4'=myPalette[4])) +
+  labs(
+    title="Residualplot für die linearen Modell Xi ~ Yi im Anscombe Quartett", 
+    x="X", 
+    y="Residuen"
+  )
+
+ggsave(filename="anscomberesids.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+
+
