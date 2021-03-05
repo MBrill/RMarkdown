@@ -127,7 +127,7 @@ wir die Klassenbreite berechnen und anschließend an ggplot übergeben. Wir bere
 und erzeugen dann die Teilungen des Werte-Intervalls mit Hilfe der Funktion *seq*.
 
 ```{r faustregel, message=FALSE, results='markup', echo=TRUE}
-width=spannbreite/16
+width=spannbreite/16.0
 
 ggplot(data=faithful) + 
   geom_histogram(aes(x = eruptions), 
