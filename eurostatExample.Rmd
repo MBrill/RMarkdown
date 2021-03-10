@@ -1,7 +1,7 @@
 ---
 title: "Beispiel für die Verwendung von eurostat und NUTS"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -24,6 +24,7 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(RColorBrewer)
 myPalette <- brewer.pal(8, "Accent")
@@ -58,7 +59,7 @@ dat <- get_eurostat("tgs00026", time_format = "raw", stringsAsFactors = FALSE) %
   # classifying the values the variable
   dplyr::mutate(cat = cut_to_classes(values))
 
-dat
+glimpse(dat)
 ```
 
 Jetzt fragen wir die NUTS-Daten für die Karten ab. Das könnte man auch lokal machen,
@@ -81,10 +82,9 @@ Die Angabe zu *CRS* ist interessant. Der verwendete Code gibt an, dass wir auf d
 in der Karte mit Hilfe von Angaben in Grad zugreifen können.
 
 # Ausgabe der Karte mit ggplot
-Jetzt können wir die Visualisierung mit *ggplot* durchführen, wir verwenden wieder
-*geom_sf*.
+Jetzt können wir die Visualisierung mit *ggplot* durchführen, wir verwenden *geom_sf*.
 
-```{r plotMap, message=FALSE, warning=TRUE, echo=TRUE, results='asis'}
+```{r plotMap, message=TRUE, warning=TRUE, echo=TRUE}
 ggplot(data=map_data) + 
   geom_sf(aes(fill=cat),
           color="dim grey", 

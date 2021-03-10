@@ -1,8 +1,10 @@
 ---
-title: "Der Datensatz autoEU"
+title: "Visualisierung mit ggplot"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -10,8 +12,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook:
-    
 bibliography: literatur.bib    
 ---
 
@@ -19,6 +19,7 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
@@ -27,9 +28,13 @@ options(digits=3)
 ```
 
 # Der Datensatz *autoEU*
+Als Beispiel-Datensatz verwenden wir *autoEU*.
 Dieser Datensatz ist aus dem im Package *ISLR* ([@tibshirani_13]) enthaltenen Datensatz *auto*
 entstanden. Die Null-Werte wurden entfernt und die Einheiten und Bezeichnungen
 auf unseren Sprachgebrauch angepasst.
+Nach dem Einlesen stellen wir mit *as_factor* sicher, dass einige Merkmale
+korrekt als Faktoren interpretiert werden, was für die Visualisierung mit
+*ggplot* sehr hilfreich ist.
 
 
 ```{r daten, message=FALSE, echo=TRUE}
@@ -37,7 +42,7 @@ daten <- read_csv2(file="data/AutoEU.csv")
 daten$Region <- as_factor(daten$Region)
 daten$Zylinder <- as_factor(daten$Zylinder)
 daten$Baujahr <- as_factor(daten$Baujahr)
-daten
+glimpse(daten)
 ```
 
 # Visualisierungen
@@ -57,7 +62,7 @@ box <- ggplot(daten, aes(x=Region, y=Verbrauch)) +
     title="Datensatz autoEU", 
     subtitle="",
     x = " ",
-    y="Verbrauch in l/100 km"
+    y = "Verbrauch in l/100 km"
   ) 
 
 box
@@ -68,7 +73,8 @@ ggsave(filename="autoEUBox1.png", plot=last_plot(), device="png",
 box + coord_flip()
 ```
 
-Jetzt machen wir noch Bilder mit mehr Kategorien auf der x-Achse, wie in *Tableau*.
+Wir können die Kategorien auf der x-Achse auch verändern, indem wir
+zum Beispiel *x=Zylinder* zuweisen.
 
 
 ```{r plotBox2, message=FALSE, results='markup'}
@@ -79,7 +85,7 @@ ggplot(daten, aes(x=Zylinder, y=Verbrauch)) +
     title="Datensatz autoEU", 
     subtitle="",
     x = "Anzahl der Zylinder ",
-    y="Verbrauch in l/100 km"
+    y = "Verbrauch in l/100 km"
   ) 
 
 ggsave(filename="autoEUBox2.png", plot=last_plot(), device="png",
@@ -87,9 +93,11 @@ ggsave(filename="autoEUBox2.png", plot=last_plot(), device="png",
 
 ```
 
-Wir fügen die Region noch für die Füllfarbe ein.Dabei verwenden wir
-*geom_boxplot* in einer Pipeline, in der wir filtern. Dabei sorgen wir mit
-*scale_y_continous* dafür, dass wir gleiche y-Achsen haben!
+Wir fügen die Region noch für die Füllfarbe ein. Dabei verwenden wir
+*geom_boxplot* in einer Pipeline, in der wir filtern. Zusätzlich sorgen wir mit
+*scale_y_continous* dafür, dass wir gleiche y-Achsen haben! Achten Sie bei solchen
+Darstellungen immer auf korrekte Skalierungen auf den Achsen. 
+Sonst können wir die grafischen Darstellungen nur sehr schwer interpretieren!
 
 ```{r plotBox3, message=FALSE, results='markup'}
 wanted <- "Europa"
@@ -106,7 +114,7 @@ daten %>%
     title="Datensatz autoEU", 
     subtitle="Verbrauch für europäische PKW",
     x = "Anzahl der Zylinder",
-    y="Verbrauch in l/100 km"
+    y = "Verbrauch in l/100 km"
   ) +
   scale_y_continuous(limits = c(5, 30)) +
   theme(legend.position = "none")
@@ -128,7 +136,7 @@ daten %>%
     title="Datensatz autoEU", 
     subtitle="Verbrauch für US-amerikanische PKW",
     x = "Anzahl der Zylinder",
-    y="Verbrauch in l/100 km"
+    y = "Verbrauch in l/100 km"
   ) +
   scale_y_continuous(limits = c(5, 30)) +
   theme(legend.position = "none")
@@ -139,18 +147,30 @@ ggsave(filename="autoEUBox5.png", plot=last_plot(), device="png",
 
 ## SPLOM
 Wir erstellen Scatterplot-Matrizen mit diesem Datensatz. Dabei
-verwenden wir neben *ggplot* auch noch *pairs* aus dem Default-Package *plot*.
-Im zweiten Bild wir mit *subset* die Anzahl der dargestellten Zeilen gefilter.
+verwenden wir neben *ggplot* auch *pairs* aus dem Default-Package *plot*.
+Im zweiten Bild filtern wir mit *subset* die Anzahl der dargestellten Zeilen.
 Wir könnten noch eine Legende hinzufügen, was man bei *plot* aber manuell
-durchführen muss.
+durchführen muss, weshalb wir darauf verzichten.
+Wir rufen *pairs* zweimal auf. Einmal für die Ausgabe im Markdown
+und ein zweites Mal für das Speichern in einem png-File.
 
 ```{r pairs, message=FALSE, results='markup'}
-png(file="images/autoEUpairs1.png",
-    units = "cm", width=16, height=9, res=300)
-pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
+pairs(data = daten,  ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
       pch=21, bg = myPalette,
       main="SPLOM mit pairs für den Datensatz autoEU", lower.panel=NULL)
-dev.off()
+
+pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
+      subset = Hubraum < 1.3,
+      pch=21, bg = myPalette,
+      main="SPLOM mit pairs für den Datensatz autoEU (Hubraum < 1300 l)",
+      lower.panel=NULL)
+
+png(file="images/autoEUpairs1.png",
+    units = "cm", width=16, height=9, res=300)
+pairs(data = daten,  ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
+      pch=21, bg = myPalette,
+      main="SPLOM mit pairs für den Datensatz autoEU", lower.panel=NULL)
+
 
 png(file="images/autoEUpairs2.png",
     units = "cm", width=16, height=9, res=300)
@@ -162,7 +182,7 @@ pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung,
 dev.off()
 ```
 
-In *ggplot* können wir Facets mit *facet_grid* und *facet_wrap* verwenden.
+In *ggplot* können wir sogenannte Facets mit *facet_grid* und *facet_wrap* verwenden.
 Schon in [@chang_18] findet man die Bemerkung, dass SPLOMS in *ggplot*
 nicht gut zu machen sind.
 

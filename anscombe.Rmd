@@ -249,4 +249,3 @@ ggsave(filename="anscomberesids.png", plot=last_plot(),
 ```
 
 
-

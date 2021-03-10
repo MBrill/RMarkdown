@@ -33,3 +33,6 @@ exampleGithub_files/
 # Daten ignorieren, das sind Kopien!
 data/
 .Rproj.user
+
+# Cache für eurostat
+eurostat*_cache/*

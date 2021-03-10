@@ -1,9 +1,13 @@
 ---
-title: "Visualisierung für den Iris-Datensatz"
+title: "Visualisierungen für den Iris-Datensatz"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
-  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -11,7 +15,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook: 
 bibliography: literatur.bib    
 ---
 
@@ -70,7 +73,15 @@ par(las = 1, mar = c(5.5, 5, 4, 2) + 0.1, cex = .8)
 parcoord(iris2, col = species_col, var.label = TRUE, lwd = 2,
          main="Parallele Koordinaten der Iris-Daten")
 
-# Und wieder eine Legende
+# Eine Legende
+par(xpd = TRUE)
+legend(x = 1.75, y = -.25, cex = 1,
+      legend = as.character(levels(species_labels)),
+      fill = unique(species_col), horiz = TRUE)
+par(xpd = NA)
+
+parcoord(iris2, col = species_col, var.label = TRUE, lwd = 2,
+         main="Parallele Koordinaten der Iris-Daten")
 par(xpd = TRUE)
 legend(x = 1.75, y = -.25, cex = 1,
       legend = as.character(levels(species_labels)),
