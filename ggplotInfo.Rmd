@@ -1,15 +1,9 @@
 ---
 title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 encoding: utf-8
 output:
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8    
   html_document:
     df_print: paged
     toc: yes
@@ -19,6 +13,12 @@ output:
     theme: cosmo
     number_sections: yes
     encoding: utf-8
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8    
 bibliography: literatur.bib
 ---
 
@@ -57,7 +57,7 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 ```
 
 # Übersicht über ggplot
-Das Package *ggplot* wurde ursprünglich von Wickham entwickelt. Das Package verfolgt eine ganz andere Herangehensweise an die Erstellung von Grafik.
+Das Package *ggplot* wurde ursprünglich von Wickham entwickelt. Das Package verfolgt eine ganz andere Herangehensweise an die Erstellung von Grafik als das in R enthaltene *plot*-Paket.
 Es wird eine *grammar of graphics* implementiert, wie sie von Leland Wilkinson in [@wilkinson_05] beschrieben wird. Das Ergebnis
 ist eine formale und strukturierte Sicht auf grafische Ausgaben.
 

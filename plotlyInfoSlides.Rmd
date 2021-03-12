@@ -1,0 +1,274 @@
+---
+title: "Visualisierungen mit plotly"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+encoding: utf-8
+output: 
+   slidy_presentation:
+      highlight: pygments
+      footer: "Datenanalyse mit R und RStudio --- Visualisierungen mit plotly"
+
+bibliography: literatur.bib
+---
+
+```{r setup, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Rmd bearbeiten
+library(knitr)
+library(kableExtra)
+# Pipelines und mehr in Tidyverse
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+# plotly
+library(plotly)
+# Farbpaletten
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+
+```{r daten, message=FALSE, echo=FALSE}
+liefer <- read_csv2("data/lieferzeiten.csv")
+
+frauen <- read_csv2("data/koerpergroesse_frauen.csv")
+
+wassergehalt <- read_csv2("data/wassergehalt.csv")
+```
+
+# Übersicht über plotly
+- plotly implementiert wie ggplot die *grammar of graphics* [@wilkinson_05]. 
+- Wir können entweder direkt die Funktion *plot_ly* verwenden.
+- Oder wir erstellen mit *ggplot* eine Abbildung und verwenden *ggplotly*.
+- plotly verwendet das Package *htmlwidgets*.
+- Gute Einführung: [@sievert_19]
+
+# Bemerkung
+Auf den folgenden Folien ist immer ein Layout mit einer Angabe für die Größe der Abbildung zu sehen. Dies dient nur der besseren Dartellung auf den Folien und könnte auch weggelassen werden.
+
+# ggplot und ggplotly
+
+```{r first, message=FALSE, echo=TRUE, warning=FALSE}
+plot <- ggplot(liefer) + 
+    geom_bar(mapping=aes(x=Lieferzeiten))
+
+ggplotly(plot) %>%
+  layout(autosize=FALSE, width=400, height=400)
+```
+
+# Ein weiteres Beispiel für ggplot und ggplotly
+
+```{r bars5, message=FALSE, results='markup', warning=FALSE}
+plot <- ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(title="Relative Häufigkeiten der Lieferzeiten", x="Tage", y="Anteile") +
+  coord_flip()
+
+ggplotly(plot, width=400, height=400)
+```
+
+
+# Balkendiagramme
+
+```{r liefer1, , message=FALSE, results='markup'}
+plot_ly(liefer, x = ~Lieferzeiten, width=400, height=400) 
+```
+
+# Veränderung der Abbildung
+
+```{r liefer2, message=FALSE, results='markup', warning=FALSE}
+plot_ly(liefer, x = ~Lieferzeiten, color=myPalette[2],  width=400, height=400)
+```
+
+
+# Füllfarbe und Umriss
+
+```{r liefer3, message=FALSE, results='markup', warning=FALSE}
+plot_ly(
+  liefer, 
+  x = ~Lieferzeiten, 
+  color=myPalette[2],
+  stroke = I("black"),
+  width=400, height=400)
+```
+
+
+# Titel mit der Funktion layout
+
+```{r liefer4, message=FALSE, results='markup', warning=FALSE}
+layout(
+  plot_ly(
+    liefer, 
+    x = ~Lieferzeiten, 
+    color=myPalette[2],
+    stroke = I("black"), width=400, height=400),
+  title = "Der Datensatz Lieferzeiten"
+)
+```
+
+# Die Funktion plot_ly in einer Pipeline
+
+```{r liefer5, message=FALSE, results='markup', warning=FALSE}
+liefer %>%
+  plot_ly(
+    x = ~Lieferzeiten, 
+    color=myPalette[2],
+    stroke = I("black"),  width=400, height=400
+  ) %>%
+  layout(title="Der Datensatz Lieferzeiten")
+```
+
+# Hinzufügen von Layer zu einer Abbildung
+
+```{r liefer6, message=FALSE, results='markup', warning=FALSE}
+liefer %>%
+  count(Lieferzeiten) %>%
+  plot_ly(width=400, height=400) %>%
+  add_bars(
+    x = ~Lieferzeiten, y = ~n,
+    color=myPalette[2], stroke = I("black")
+  ) 
+```
+
+Im Gegensatz zu *ggplot* führt die Funktion *add_bars* keine statistische Funktion
+durch, wir müssen die Häufigkeiten vorher mit *count* in der Pipeline
+berechnen.
+
+# Der Datensatz *Körpergröße von Frauen*
+
+```{r FrauenBars, message=FALSE, results='markup', warning=FALSE}
+frauen %>%
+  count(Koerpergroesse) %>%
+  plot_ly(width=500, height=400) %>%
+  add_bars(
+    x = ~Koerpergroesse, y = ~n,
+    color=myPalette[3], stroke = I("black")
+  ) %>%
+  layout(title="Absolute Häufigkeiten der Körpergroße von Frauen")
+```
+
+# Histogramme mit plotly
+
+```{r FrauenHisto, message=FALSE, results='markup', warning=FALSE}
+frauen %>%
+  plot_ly(width=500, height=400) %>%
+  add_histogram(
+    x = ~Koerpergroesse,
+    color=myPalette[3],
+    stroke = I("black"),  width=400, height=400
+  ) %>%
+  layout(title="Absolute Häufigkeiten der Körpergroße von Frauen")
+```
+*ploty* verwendet eine Default-Einteilung in Klassen. Wenn wir eigene Intervalle
+verwenden möchten setzen wir die Funktion *hist* ein und übergeben das Ergebnis
+an *plot_ly*.
+
+# Alternative Klassen für ein Histogramm
+
+```{r FrauenHisto2, message=FALSE, results='markup', warning=FALSE}
+h <- hist(frauen$Koerpergroesse, breaks="FD", plot=FALSE)
+plot_ly(x = h$mids, y = h$counts, width=400, height=400) %>%
+  add_bars(
+    name = "FD",
+    color=myPalette[3],
+    stroke = I("black"),
+  ) %>%
+  layout(title="Klassenbreiten nach Freedman-Diaconis")
+```
+
+# Box-Plots
+
+```{r box, message=FALSE, results='markup', warning=FALSE}  
+liefer %>%
+  plot_ly(width=400, height=400) %>%
+  add_boxplot(
+    y = ~Lieferzeiten,
+    color=I("lightgreen"), stroke = I("black"), name="Lieferzeiten"
+  ) %>%
+  layout(
+    title="Box-Plot für den Datensatz Lieferzeiten"
+  )
+```
+
+# Vertikaler Box-Plot
+
+```{r boxVert, message=FALSE, results='markup', warning=FALSE}
+
+liefer %>%
+  plot_ly(width=400, height=400) %>%
+  add_boxplot(
+    x = ~Lieferzeiten,
+    color=I("lightgreen"), stroke = I("black"), name="Lieferzeiten"
+  ) %>%
+  layout(
+    title="Box-Plot für den Datensatz Lieferzeiten"
+  )
+```
+
+
+```{r outlier, echo=FALSE, results='markup', warning=FALSE}
+y1 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
+       8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
+y2 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
+        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
+y3 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
+        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
+y4 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
+        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
+
+fig <- plot_ly(type = 'box')
+fig <- fig %>% add_boxplot(y = y1, jitter = 0.3, pointpos = -1.8, boxpoints = 'all',
+              marker = list(color = 'rgb(7,40,89)'),
+              line = list(color = 'rgb(7,40,89)'),
+              name = "All Points")
+fig <- fig %>% add_boxplot(y = y2, name = "Only Whiskers", boxpoints = FALSE,
+              marker = list(color = 'rgb(9,56,125)'),
+              line = list(color = 'rgb(9,56,125)'))
+fig <- fig %>% add_boxplot(y = y3, name = "Suspected Outlier", boxpoints = 'suspectedoutliers',
+              marker = list(color = 'rgb(8,81,156)',
+                            outliercolor = 'rgba(219, 64, 82, 0.6)',
+                            line = list(outliercolor = 'rgba(219, 64, 82, 1.0)',
+                                        outlierwidth = 2)),
+              line = list(color = 'rgb(8,81,156)'))
+fig <- fig %>% add_boxplot(y = y4, name = "Whiskers and Outliers", boxpoints = 'outliers',
+              marker = list(color = 'rgb(107,174,214)'),
+              line = list(color = 'rgb(107,174,214)'))
+fig <- fig %>% layout(title = "Box Plot Styling Outliers")
+```
+
+# Einstellungen für Box-Plots
+
+```{r outlierFigure, echo=FALSE, results='markup', warning=FALSE}
+fig
+```
+
+
+
+# Streuungsdiagramme
+
+```{r scatter, echo=TRUE, results='markup', warning=FALSE}
+plot_ly(wassergehalt,
+        x = ~Luftfeuchtigkeit, 
+        y = ~Wassergehalt,
+        color = myPalette[2], width=600, height=400,
+        mode="markers", type="scatter"
+       ) %>%
+     layout(title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit")
+```
+
+# Weitere Einstellungen für Streuungsdiagramme
+
+```{r scatter2, echo=TRUE, results='markup', warning=FALSE}
+p <- plot_ly(mpg, x = ~cty, y = ~hwy, alpha = 0.5, width=600, height=400)
+subplot(
+  add_markers(p, color = ~cyl, showlegend = FALSE) %>% 
+    colorbar(title = "Zylinder"),
+  add_markers(p, color = ~factor(cyl))
+)
+```
+
+
+# Literaturverzeichnis
