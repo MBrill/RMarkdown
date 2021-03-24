@@ -147,7 +147,7 @@ frauen %>%
     x = ~Koerpergroesse, y = ~n,
     color=myPalette[3], stroke = I("black")
   ) %>%
-  layout(title="Absolute Häufigkeiten der Körpergroße von Frauen")
+  layout(title="Absolute Häufigkeiten der Körpergröße von Frauen")
 ```
 
 # Histogramme mit plotly
@@ -160,7 +160,7 @@ frauen %>%
     color=myPalette[3],
     stroke = I("black"),  width=400, height=400
   ) %>%
-  layout(title="Absolute Häufigkeiten der Körpergroße von Frauen")
+  layout(title="Absolute Häufigkeiten der Körpergröße von Frauen")
 ```
 *ploty* verwendet eine Default-Einteilung in Klassen. Wenn wir eigene Intervalle
 verwenden möchten setzen wir die Funktion *hist* ein und übergeben das Ergebnis
@@ -250,25 +250,58 @@ fig
 # Streuungsdiagramme
 
 ```{r scatter, echo=TRUE, results='markup', warning=FALSE}
-plot_ly(wassergehalt,
-        x = ~Luftfeuchtigkeit, 
-        y = ~Wassergehalt,
-        color = myPalette[2], width=600, height=400,
-        mode="markers", type="scatter"
+wassergehalt %>% 
+  plot_ly(width=600, height=400,
+          x = ~Luftfeuchtigkeit, 
+          y = ~Wassergehalt,
+          color = myPalette[2], 
+          mode="markers", 
+          type="scatter"
        ) %>%
-     layout(title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit")
+  layout(title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit")
 ```
 
 # Weitere Einstellungen für Streuungsdiagramme
 
 ```{r scatter2, echo=TRUE, results='markup', warning=FALSE}
-p <- plot_ly(mpg, x = ~cty, y = ~hwy, alpha = 0.5, width=600, height=400)
-subplot(
-  add_markers(p, color = ~cyl, showlegend = FALSE) %>% 
-    colorbar(title = "Zylinder"),
-  add_markers(p, color = ~factor(cyl))
-)
+mpg %>%
+  plot_ly(x = ~cty, y = ~hwy,
+          width=600, height=400 ) %>%
+  add_markers(color = ~factor(cyl), 
+              showlegend = TRUE) %>%
+  layout(title= "Streuungsdiagramm", 
+         xaxis = list(title = "Stadt"),
+         yaxis = list(title = "Highway")
+         )
 ```
 
+# Dreidimensionale Streuungsdiagramme
+
+Bei 3D-Darstellungen ist *plotly* in der Lage ohne Mehraufwand interaktive
+Darstellungen zu erzeugen. Wieder verwenden wir den Datensatz *mpg*
+und weisen den drei Achsen, vollkommen analog zum zweidimensionalen Fall,
+die Spalten hinzu. Statt wie im letzten Beispiel ein Merkmal für die
+Farben einzusetzen verwenden wir *cyl* als z-Koordinate.
+
+
+```{r scatter3d, echo=TRUE, results='markup', warning=FALSE}
+legendtitle <- list(x=1.1, y=1.05, 
+                    text="Zylinder",
+                    showarrow=FALSE)
+fig <- plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
+            add_markers(color= ~factor(cyl),
+                        showlegend = TRUE) %>%
+            layout(title= "3D Scatter Plot", annotations=legendtitle,
+                  scene = list(
+                  xaxis = list(title = "Stadt"),
+                  yaxis = list(title = "Highway"),
+                  zaxis = list(title = "Zylinder")
+                  ))
+```
+
+# Das Ergebnis 
+```{r scatter3dbild, echo=FALSE, results='markup', warning=FALSE}
+fig
+```
 
 # Literaturverzeichnis

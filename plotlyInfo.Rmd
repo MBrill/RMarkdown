@@ -4,11 +4,6 @@ author: "Manfred Brill"
 date: "Sommersemester 2021"
 encoding: utf-8
 output:
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -18,6 +13,11 @@ output:
     theme: cosmo
     number_sections: yes
     encoding: utf-8
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
 bibliography: literatur.bib
 ---
 
@@ -48,7 +48,8 @@ Als Datensatz für die Histogramme  verwenden wir den Datensatz
 *Körpergröße* aus [@benesch_13], den wir ebenfalls aus einer csv-Datei einlesen.
 Für die Erstellung von Streuungsdiagrammen, scatter plots, benötigen
 wir Daten mit mindestens zwei kardinalen Merkmalen. Hier
-verwenden wir den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92].
+verwenden wir den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92]. Zusätzlich verwenden wir den Datensatz *mpg*,
+der in der R-Installation als Default vorhanden ist.
 
 ```{r daten, message=FALSE, echo=TRUE}
 liefer <- read_csv2("data/lieferzeiten.csv")
@@ -185,8 +186,7 @@ liefer %>%
   ) 
 ```
 
-Im Gegensatz zu *ggplot* führt die Funktion *add_bars* keine statistische Funktion
-durch, wir müssen die Häufigkeiten vorher mit *count* in der Pipeline
+Im Gegensatz zu *ggplot* führt die Funktion *add_bars* keine statistische Funktion durch, wir müssen die Häufigkeiten vorher mit *count* in der Pipeline
 berechnen.
 
 ## Histogramme
@@ -244,8 +244,7 @@ Die *hist*-Funktion bietet die Möglichkeit wie gezeigt Klassenbreiten aus der L
 
 Möchten wir statt einem Balkendiagramm einen Box-Plot, dann verwenden wir
 die Funktion *add_boxplot*. Ob wir einen vertikalen oder horizontalen Box-Plot
-erhalten steuern wir damit, ob wir das Merkmal in *add_boxplot* der x- oder der y-Achse
-zuordnen.
+erhalten steuern wir damit, ob wir das Merkmal in *add_boxplot* der x- oder der y-Achse zuordnen.
 
 ```{r box, message=FALSE, results='markup', warning=FALSE}  
 liefer %>%
@@ -345,14 +344,42 @@ mit *add_markers* ein, die Legende erhalten wir mit Hilfe der Funktion *colorbar
 Als Datensatz verwenden wir hier *mpg*.
 
 ```{r scatter2, echo=TRUE, results='markup', warning=FALSE}
-p <- plot_ly(mpg, x = ~cty, y = ~hwy, alpha = 0.5)
-subplot(
-  add_markers(p, color = ~cyl, showlegend = FALSE) %>% 
-    colorbar(title = "Zylinder"),
-  add_markers(p, color = ~factor(cyl))
-)
+mpg %>%
+  plot_ly(x = ~cty, y = ~hwy,
+          width=600, height=400 ) %>%
+  add_markers(color = ~factor(cyl), 
+              showlegend = TRUE) %>%
+  layout(title= "Streuungsdiagramm", 
+         xaxis = list(title = "Stadt"),
+         yaxis = list(title = "Highway")
+         )
 ```
 
+# Dreidimensionale Streuungsdiagramme
+
+Bei 3D-Darstellungen ist *plotly* in der Lage ohne Mehraufwand interaktive
+Darstellungen zu erzeugen. Wieder verwenden wir den Datensatz *mpg*
+und weisen den drei Achsen, vollkommen analog zum zweidimensionalen Fall,
+die Spalten hinzu. Statt wie im letzten Beispiel ein Merkmal für die
+Farben einzusetzen verwenden wir *cyl* als z-Koordinate.
+
+
+```{r scatter3d, echo=TRUE, results='markup', warning=FALSE}
+legendtitle <- list(x=1.1, y=1.05, 
+                    text="Zylinder",
+                    showarrow=FALSE)
+fig <- plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
+       add_markers(color= ~factor(cyl),
+                   showlegend = TRUE) %>%
+       layout(title= "3D Scatter Plot", annotations=legendtitle,
+              scene = list(
+                xaxis = list(title = "Stadt"),
+                yaxis = list(title = "Highway"),
+                zaxis = list(title = "Zylinder")
+              ))
+
+fig
+```
 
 
 # Literaturverzeichnis
