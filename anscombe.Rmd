@@ -3,14 +3,16 @@ title: "Das Anscombe Quartett"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output:
+  html_document:
+    toc: yes
+    df_print: paged
   html_notebook:
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
-
 encoding: utf-8
-bibliography: literatur.bib    
+bibliography: literatur.bib
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
@@ -151,8 +153,8 @@ ggplot(two) +
     title="Lineares Modell für die Spalten X2 und Y2 im Anscombe-Quartett", 
     subtitle=paste("m = ", format(one_coeff[2], digits=2), 
                    ", b = ", format(one_coeff[1], digits=2)),
-    x="X1", 
-    y="Y1"
+    x="X2", 
+    y="Y2"
   )
 
 ggsave(filename="anscombe2.png", plot=last_plot(), 
@@ -170,8 +172,8 @@ ggplot(three) +
     title="Lineares Modell für die Spalten X3 und Y3 im Anscombe-Quartett", 
     subtitle=paste("m = ", format(one_coeff[2], digits=2), 
                    ", b = ", format(one_coeff[1], digits=2)),
-    x="X1", 
-    y="Y1"
+    x="X3", 
+    y="Y3"
   )
 
 ggsave(filename="anscombe3.png", plot=last_plot(), 
@@ -189,8 +191,8 @@ ggplot(four) +
     title="Lineares Modell für die Spalten X4 und Y4 im Anscombe-Quartett", 
     subtitle=paste("m = ", format(one_coeff[2], digits=2), 
                    ", b = ", format(one_coeff[1], digits=2)),
-    x="X1", 
-    y="Y1"
+    x="X4", 
+    y="Y4"
   )
 
 ggsave(filename="anscombe4.png", plot=last_plot(), 
