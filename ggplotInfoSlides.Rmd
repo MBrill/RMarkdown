@@ -3,7 +3,11 @@ title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 encoding: utf-8
-output: slidy_presentation
+output: 
+   slidy_presentation:
+      highlight: pygments
+      footer: "Datenanalyse mit R und RStudio --- Visualisierungen mit ggplot"
+
 bibliography: literatur.bib
 ---
 
@@ -13,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
 # ggplot, Pipelines und mehr in Tidyverse
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 # Farbpaletten
 library(RColorBrewer)
@@ -29,15 +34,13 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 
 # Übersicht über ggplot
 
-- ggplot implementiert die *grammar of graphics* ( [@wilkinson_05]). 
+- ggplot implementiert die *grammar of graphics* [@wilkinson_05]. 
 - Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. 
 - Daten sind qualitativ oder quantitativ, 
-- die visuellen Eigenschaften der Daten werden durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben.
+- Die visuellen Eigenschaften der Daten werden durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben.
 
 # Ein erstes Beispiel
-
-
 
 ```{r first, echo=TRUE, fig.height=4, message=FALSE}
 ggplot(liefer) + 
@@ -49,22 +52,32 @@ dass jede Zeile ein Individuum beschreibt, mit den Merkmalen als Spalte. Dies is
 in unserem kleinen Beispielen der Lieferzeiten der Fall, so dass wir
 *ggplot* direkt anwenden können.
 
-# Veränderungen
+# Vorbereitungen
 
-```{r bars2, message=FALSE, results='markup', fig.height=5}        
-bars <- ggplot(liefer) + 
+```{r barPrep, message=FALSE, results='markup', fig.height=5}        
+bars <-ggplot(liefer) + 
            geom_bar(mapping=aes(x=Lieferzeiten),
                     fill=myPalette[3])
+```
 
+Wir können eine mit *ggplot* dargestellte Grafik abspeichern und weitere Features hinzufügen. Das bereiten wir jetzt vor und speichern auf der Variable *bars*.
+
+# Farben verwenden
+
+
+```{r bars2, fig.height=5, message=FALSE, warning=FALSE, results='markup'}
 bars
 ```
+
+Wir haben in der Grafik das Attribut *fill* verwendet und damit die Füllfarbe der Balken verändert.
 
 # Formatierung der x-Achse
 
 ```{r bars3, fig.height=5, message=FALSE, warning=FALSE, results='markup'}
-bars +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7))
+bars + scale_x_discrete(limits=c(1,2,3,4,5,6,7))
 ```
+
+Wir verwenden *scale_x_discrete* und formatieren damit die x-Achse.
 
 # Beschriftungen
 
@@ -78,7 +91,7 @@ bars +
   ) 
 ```
 
-# Relative Häufigkeiten
+# Relative Häufigkeiten mit *y = ..prop..
 
 ```{r bars5, message=FALSE, results='markup', warning=FALSE, fig.height=4}
 ggplot(liefer) +
@@ -92,12 +105,11 @@ ggplot(liefer) +
   ) 
 ```
 
+
 # Vertikale und horizontale Ausgaben
 
-- Vertikale und horizontale Ausgaben erzeugen wir mit *coord_flip()*.
-
-```{r bars5a, message=FALSE, echo=FALSE, results='markup', fig.height=6 , warning=FALSE }
-ggplot(liefer) +
+```{r bars5a, message=FALSE, echo=TRUE, results='markup', fig.height=6 , warning=FALSE}
+barVert <- ggplot(liefer) +
   geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
            fill=myPalette[3]) +
   scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
@@ -109,6 +121,15 @@ ggplot(liefer) +
   coord_flip()
 ```
 
+Wir können mit *coord_flip()* die Achsen vertauschen!
+
+# Vertikales Balkendiagramm
+
+```{r barsVert, message=FALSE, echo=TRUE, results='markup', fig.height=6 , warning=FALSE}
+barVert
+```
+
+Vertikale und horizontale Ausgaben erzeugen wir mit *coord_flip()*.
 
 # Box-Plots
 
@@ -124,7 +145,7 @@ ggplot(liefer)  +
   theme(legend.position = "none")
 ```
 
-# Verteilungsfunktionen
+# Empirische Verteilungsfunktionen mit *stat_ecdf*
  
 ```{r ecdf, message=FALSE, warning=FALSE, results='markup', fig.height=4}
 ggplot(liefer, aes(x=Lieferzeiten)) + 
@@ -141,8 +162,7 @@ ggplot(liefer, aes(x=Lieferzeiten)) +
  
 ```{r FrauenBars, message=FALSE, results='markup', warning=FALSE, fig.height=4}
 ggplot(frauen)  +
-  geom_bar(mapping=aes(x=Koerpergroesse),
-           fill=myPalette[3]) +
+  geom_bar(mapping=aes(x=Koerpergroesse), fill=myPalette[3]) +
   scale_x_continuous(limits=c(150.0, 185.0)) +
   labs(
     title="Absolute Häufigkeiten der Körpergroße von Frauen", 
@@ -151,7 +171,7 @@ ggplot(frauen)  +
   )
 ```
 
-# Histogramm
+# Histogramme
 
 ```{r FrauenHisto1, message=TRUE, results='markup', warning=FALSE, fig.height=2.5}
 ggplot(frauen) + 
@@ -166,7 +186,7 @@ ggplot(frauen) +
   ) 
 ```
 
-# Bessere Wahl der Klassenbreite
+# Bessere Wahl der Klassenbreite durch *breaks*
 
 ```{r FrauenHisto2, message=FALSE, results='markup', warning=FALSE, fig.height=3}
 ggplot(frauen) + 
@@ -217,7 +237,9 @@ ggsave(filename="saveExample.png", plot=last_plot(),
        width=16, height=9, units="cm")
 ```
 
-# Fragen?
+# Unklarheiten? Fragen? Bemerkungen?
+
+![image info](./images/bigdata.png)
 
 # Literaturverzeichnis
 
