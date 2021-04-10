@@ -2,12 +2,13 @@
 title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
+output:
+  slidy_presentation:
+    highlight: pygments
+    footer: Datenanalyse mit R und RStudio --- Visualisierungen mit ggplot
+  ioslides_presentation:
+    highlight: pygments
 encoding: utf-8
-output: 
-   slidy_presentation:
-      highlight: pygments
-      footer: "Datenanalyse mit R und RStudio --- Visualisierungen mit ggplot"
-
 bibliography: literatur.bib
 ---
 
@@ -37,7 +38,7 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 - ggplot implementiert die *grammar of graphics* [@wilkinson_05]. 
 - Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. 
-- Daten sind qualitativ oder quantitativ, 
+- Daten sind qualitativ oder quantitativ. 
 - Die visuellen Eigenschaften der Daten werden durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben.
 
 # Ein erstes Beispiel
@@ -91,7 +92,7 @@ bars +
   ) 
 ```
 
-# Relative Häufigkeiten mit *y = ..prop..
+# Relative Häufigkeiten mit *y = ..prop..*
 
 ```{r bars5, message=FALSE, results='markup', warning=FALSE, fig.height=4}
 ggplot(liefer) +
