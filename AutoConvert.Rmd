@@ -1,11 +1,9 @@
 ---
 title: "Veränderung des Datensatz Auto"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output:
-  
   html_document:
-    
     df_print: paged
     toc: yes
     toc_float: yes
@@ -14,6 +12,7 @@ output:
     theme: cosmo
     number_sections: yes
   html_notebook: 
+
 bibliography: literatur.bib 
 ---
 

@@ -3,14 +3,16 @@ title: "Das Anscombe Quartett"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output:
-  html_document:
-    toc: yes
-    df_print: paged
   html_notebook:
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    theme: cosmo
 encoding: utf-8
 bibliography: literatur.bib
 ---
@@ -138,6 +140,22 @@ ggplot(one) +
     y="Y1"
   )
 
+ggsave(filename="anscombe1Reg.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(one) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  labs(
+    title="Die Spalten X1 und Y1 im Anscombe-Quartett", 
+    x="X1", 
+    y="Y1"
+  )
+
 ggsave(filename="anscombe1.png", plot=last_plot(), 
        device="png",
        path="images/", 
@@ -153,6 +171,22 @@ ggplot(two) +
     title="Lineares Modell für die Spalten X2 und Y2 im Anscombe-Quartett", 
     subtitle=paste("m = ", format(one_coeff[2], digits=2), 
                    ", b = ", format(one_coeff[1], digits=2)),
+    x="X2", 
+    y="Y2"
+  )
+
+ggsave(filename="anscombe2Reg.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(two) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  labs(
+    title="Die Spalten X2 und Y2 im Anscombe-Quartett", 
     x="X2", 
     y="Y2"
   )
@@ -176,6 +210,22 @@ ggplot(three) +
     y="Y3"
   )
 
+ggsave(filename="anscombe3Reg.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(three) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  labs(
+    title="Die Spalten X3 und Y3 im Anscombe-Quartett", 
+    x="X3", 
+    y="Y3"
+  )
+
 ggsave(filename="anscombe3.png", plot=last_plot(), 
        device="png",
        path="images/", 
@@ -191,6 +241,22 @@ ggplot(four) +
     title="Lineares Modell für die Spalten X4 und Y4 im Anscombe-Quartett", 
     subtitle=paste("m = ", format(one_coeff[2], digits=2), 
                    ", b = ", format(one_coeff[1], digits=2)),
+    x="X4", 
+    y="Y4"
+  )
+
+ggsave(filename="anscombe4Reg.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(four) +
+  geom_point(mapping=aes(x=X, y=Y), 
+             color="darkgreen") +
+  xlim(0.0, 20.0) +
+  ylim(0.0, 14.0) +
+  labs(
+    title="Die Spalten X4 und Y4 im Anscombe-Quartett", 
     x="X4", 
     y="Y4"
   )
