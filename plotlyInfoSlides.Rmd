@@ -158,10 +158,11 @@ frauen %>%
   add_histogram(
     x = ~Koerpergroesse,
     color=myPalette[3],
-    stroke = I("black"),  width=400, height=400
+    stroke = I("black"),
   ) %>%
   layout(title="Absolute Häufigkeiten der Körpergröße von Frauen")
 ```
+
 *ploty* verwendet eine Default-Einteilung in Klassen. Wenn wir eigene Intervalle
 verwenden möchten setzen wir die Funktion *hist* ein und übergeben das Ergebnis
 an *plot_ly*.
@@ -170,6 +171,7 @@ an *plot_ly*.
 
 ```{r FrauenHisto2, message=FALSE, results='markup', warning=FALSE}
 h <- hist(frauen$Koerpergroesse, breaks="FD", plot=FALSE)
+
 plot_ly(x = h$mids, y = h$counts, width=400, height=400) %>%
   add_bars(
     name = "FD",
@@ -196,7 +198,6 @@ liefer %>%
 # Vertikaler Box-Plot
 
 ```{r boxVert, message=FALSE, results='markup', warning=FALSE}
-
 liefer %>%
   plot_ly(width=400, height=400) %>%
   add_boxplot(
@@ -224,6 +225,7 @@ fig <- fig %>% add_boxplot(y = y1, jitter = 0.3, pointpos = -1.8, boxpoints = 'a
               marker = list(color = 'rgb(7,40,89)'),
               line = list(color = 'rgb(7,40,89)'),
               name = "All Points")
+
 fig <- fig %>% add_boxplot(y = y2, name = "Only Whiskers", boxpoints = FALSE,
               marker = list(color = 'rgb(9,56,125)'),
               line = list(color = 'rgb(9,56,125)'))
@@ -233,6 +235,7 @@ fig <- fig %>% add_boxplot(y = y3, name = "Suspected Outlier", boxpoints = 'susp
                             line = list(outliercolor = 'rgba(219, 64, 82, 1.0)',
                                         outlierwidth = 2)),
               line = list(color = 'rgb(8,81,156)'))
+
 fig <- fig %>% add_boxplot(y = y4, name = "Whiskers and Outliers", boxpoints = 'outliers',
               marker = list(color = 'rgb(107,174,214)'),
               line = list(color = 'rgb(107,174,214)'))

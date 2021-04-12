@@ -1,0 +1,107 @@
+---
+title: "Lösung der Aufgabe plot7 und plot13"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+library(ISLR)
+library(plotly)
+myPalette <- brewer.pal(8, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Box-Plots mit ggplot und plotly
+
+## ggplot
+
+```{r ggbox, message=FALSE, echo=TRUE}
+ggplot(Auto, aes(group=cylinders, x=cylinders, y=mpg)) +
+    geom_boxplot(outlier.color = myPalette[5],
+        fill = myPalette[2],
+       color = "black") +
+  labs(
+      title="Boxplot für den Datensatz Auto",
+       x = "Anzahl der Zylinder",
+       y = "Verbrauch (mpg)"
+ )
+
+ggsave(filename="boxplotCar2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+# ggplotly
+
+```{r ggpbox, message=FALSE, echo=TRUE}
+autogg <- ggplot(Auto, aes(group=cylinders, x=cylinders, y=mpg)) +
+    geom_boxplot(outlier.color = myPalette[5],
+        fill = myPalette[2],
+       color = "black") +
+  labs(
+      title="Boxplot für den Datensatz Auto",
+       x = "Anzahl der Zylinder",
+       y = "Verbrauch (mpg)"
+ )
+
+ggplotly(autogg)
+```
+
+# plot_ly
+
+## Box-Plot
+
+```{r plboxH, message=FALSE, results='markup', warning=FALSE}  
+Auto %>%
+  plot_ly %>%
+  add_boxplot(
+    x = ~cylinders,
+    y = ~mpg,
+    color = myPalette[5], 
+    stroke = I("black"), 
+    name = "Boxplot"
+  ) %>%
+  layout(
+    title="Box-Plot für den Datensatz Auto",
+    xaxis = list(title = "Anzahl der Zylinder"),
+    yaxis = list(title = "Verbrauch (mpg)")
+  )
+```
+
+## Mit allen Punkten
+
+```{r boxAll, message=FALSE, results='markup', warning=FALSE}  
+Auto %>%
+  plot_ly %>%
+  add_boxplot(
+    x = ~cylinders,
+    y = ~mpg, 
+    jitter = 0.3, 
+    pointpos = -1.8, 
+    boxpoints = 'all',
+    color = myPalette[5], 
+    stroke = I("black"), 
+    name = "Boxplot"
+    ) %>%
+  layout(
+    title="Box-Plot für den Datensatz Auto - alle Punkte",
+    xaxis = list(title = "Anzahl der Zylinder"),
+    yaxis = list(title = "Verbrauch (mpg)")
+  )
+```

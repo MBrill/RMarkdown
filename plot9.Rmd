@@ -1,0 +1,140 @@
+---
+title: "Lösung der Aufgabe plot9 und plot14"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+library(ISLR)
+library(plotly)
+myPalette <- brewer.pal(5, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Histogramme mit ggplot und plotly
+
+## ggplot
+
+```{r gghisto, message=FALSE, echo=TRUE}
+ggplot(Auto) +
+     geom_histogram(mapping = aes(x = mpg),
+                    color = "black",
+                    fill=myPalette[2],
+                    breaks = seq(5.0, 50.0, 5.0)
+                    ) +
+     labs(
+           title="Histogramm des Merkmals mpg im Datensatz Auto",
+           x = "Miles per Gallon",
+           y = "Absolute Klassenhäufigkeiten",
+           subtitle = "Klassenbreite: 5,0"
+     )
+
+ggsave(filename="histCar2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+# ggplotly
+
+## Ohne Untertitel
+
+Das Vorgehen ist wie bisher, aber die Funktion **ggplotly** verschluckt
+den Untertitel in *subtitle*. Um das zu korrigieren muss sowohl
+Titel als auch Untertitel mit *layout* nach *ggplotly* hinzugefügt werden.
+Wenigstens ist das die Lösung, die man im WWW findet.
+
+```{r ggphisto, message=FALSE, echo=TRUE}
+autogg <- ggplot(Auto) +
+     geom_histogram(mapping = aes(x = mpg),
+                    color = "black",
+                    fill=myPalette[2],
+                    breaks = seq(5.0, 50.0, 5.0)
+                    ) +
+     labs(
+           title="Histogramm des Merkmals mpg im Datensatz Auto",
+           x = "Miles per Gallon",
+           y = "Absolute Klassenhäufigkeiten",
+           subtitle = "Klassenbreite: 5,0"
+     )
+
+ggplotly(autogg)
+```
+
+## Mit Untertitel
+
+Hier die Version mit Titel und Untertitel:
+
+```{r ggphisto2, message=FALSE, echo=TRUE}
+autogg <- ggplot(Auto) +
+              geom_histogram(mapping = aes(x = mpg),
+                    color = "black",
+                    fill=myPalette[2],
+                    breaks = seq(5.0, 50.0, 5.0)
+              ) +
+        labs(
+           x = "Miles per Gallon",
+           y = "Absolute Klassenhäufigkeiten"
+        )
+
+ggplotly(autogg) %>%
+        layout(title = list(text = 
+                              paste0("Histogramm des Merkmals mpg im Datensatz Auto",                  
+                                     "<br>",
+                                     "<sup>",
+                                     "Klassenbreite: 5,0",
+                                     "</sup>")
+                              )
+                      )
+```
+
+# plot_ly
+
+plot_ly verwendet eine Default-Klassenbreite, bietet aber auch die Möglichkeit mehrere aus der
+Literatur bekannten Verfahren für die Klassenbreite einzusetzen. Und wir können die 
+gewünschte Klassenbreite übergeben.
+
+```{r plhisto, message=FALSE, results='markup', warning=FALSE}  
+Auto %>%
+  plot_ly %>%
+  add_histogram(
+    x = ~mpg,
+    color=myPalette[3],
+    stroke = I("black")
+  ) %>%
+  layout(title="Histogramm des Merkmals mpg im Datensatz Auto")
+```
+
+Wenn wir eigene Intervalle
+verwenden möchten setzen wir die Funktion *hist* ein und übergeben das Ergebnis
+an *plot_ly*. Wir können auch eine der Optionen wie *FD* angeben, dann wird der
+Algorithmus von Freedman und Diaconis eingesetzt. Eine weitere Möglichkeit ist es,
+mit *nbinsx"* die gewünschte Anzahl der Klassen zu übergeben, was wir jetzt anwenden:
+
+```{r plhisto2, message=FALSE, results='markup', warning=FALSE}  
+Auto %>%
+  plot_ly %>%
+  add_histogram(
+    x = ~mpg,
+    nbinsx = 9,
+    color=myPalette[3],
+    stroke = I("black")
+  ) %>%
+  layout(title="Histogramm des Merkmals mpg im Datensatz Auto mit 9 Klassen")
+```
+

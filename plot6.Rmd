@@ -1,5 +1,5 @@
 ---
-title: "Lösung der Aufgabe plot6"
+title: "Lösung der Aufgabe plot6 und plot12"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
@@ -26,9 +26,9 @@ myPalette <- brewer.pal(8, "Set2")
 options(digits=3)
 ```
 
-# ggplot
+# Streuungsdiagramme mit ggplot und plotly
 
-## Streuungsdiagramm
+## ggplot
 
 ```{r ggscatter, message=FALSE, echo=TRUE}
 ggplot(Auto) +
@@ -46,9 +46,8 @@ ggsave(filename="scatterCar2.png", plot=last_plot(),
        width=16, height=9, units="cm")
 ```
 
-# plotly
 
-## ggplotly-Version
+## ggplotly
 
 ```{r ggpscatter, message=FALSE, echo=TRUE}
 autogg <- ggplot(Auto) +
@@ -63,7 +62,7 @@ autogg <- ggplot(Auto) +
 ggplotly(autogg)
 ```
 
-## Mit Hilfe von plot_ly
+## plot_ly
 
 ```{r plscatter, echo=TRUE, results='markup', warning=FALSE}
 Auto %>% 
