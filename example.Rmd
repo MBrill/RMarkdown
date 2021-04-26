@@ -6,7 +6,7 @@ output:
    html_notebook : default
    html_document : default
 ---
-```{r setup, , include=TRUE, echo=TRUE, message=FALSE}
+```{r setup, include=TRUE, echo=TRUE, message=FALSE}
 library(dplyr)
 library(ggplot2)
 

@@ -1,7 +1,7 @@
 ---
-title: "Parallele Koordinaten mit gpglot"
+title: "Parallele Koordinaten mit ggglot"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -24,9 +24,11 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(RColorBrewer)
 myPalette <- brewer.pal(8, "Accent")
+library(plotly)
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
@@ -60,7 +62,8 @@ datenLF <- daten %>%
 datenLF
 ```
 
-# Vorbereitungen
+# Ein einführendes Beispiel
+
 Der Datensatz enthält `r N` Punkte in einem `r k`-dimensionalen Raum. 
 Die Koordinaten stehen in den Zeilen. Es gibt eine Spalte *Achse*  mit Werten von 1 bis `r k`.
 Die Punkte haben die Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)[3]`*, *`r colnames(daten)[4]`*, *`r colnames(daten)[5]`*, *`r colnames(daten)[6]`*, *`r colnames(daten)[7]`* und *`r colnames(daten)[8]`*.
@@ -112,8 +115,7 @@ ggsave(filename="parCoordR4.png", plot=last_plot(),
        width=16, height=9, units="cm")
 ```
 
-In diesen Plot zeichnen wir jetzt einen Punkt wie *(0.5, 1, 0, 0.5)* ein, dazu verwenden
-wir *geom_line*.
+In diesen Plot zeichnen wir jetzt einen Punkt wie *(0.5, 1, 0, 0.5)* ein, dazu verwenden wir *geom_line*.
 
 ```{r plotExample, message=FALSE, echo=TRUE, results='asis'}
 point1 <- c(0, 0, 0, 0)

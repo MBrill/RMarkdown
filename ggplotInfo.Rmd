@@ -28,6 +28,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
 # ggplot, Pipelines und mehr in Tidyverse
+suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 # Farbpaletten
 library(RColorBrewer)
