@@ -3,19 +3,19 @@ title: "Beschreibende Statistik mit R"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output:
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
   html_document:
     df_print: paged
     toc: yes
     toc_float: yes
     fig_caption: yes
-    highligh: pygments
+    highligt: pygments
     theme: cosmo
     number_sections: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
 bibliography: literatur.bib
 ---
 
@@ -29,28 +29,41 @@ suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 ```
 
-# Voraussetzungen
-Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
-
-Wir verwenden in den Grafiken eine Farbpalette aus ColorBrewer und stellen ein, dass die double-Werte mit zwei Stellen hinter dem Komman ausgegeben werden:
-
-```{r ini, include=TRUE, echo=TRUE, message=FALSE}
+```{r ini, include=FALSE, echo=FALSE, message=FALSE}
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
 
+# Einleitung
+Sie haben sicher bereits eine Lehrveranstaltung zum Thema Wahrscheinlichkeitsrechnung und Statistik in ihrem Studium gehört. Dieses Dokument ist kein Ersatz für diese Lehrveranstaltungen, sondern hat das
+Ziel die in einer solchen Lehrveranstaltung eingeführten Begriffe und Techniken nochmals in Erinnerung zu rufen, in einer einheitlichen Notation zu beschreiben und zu zeigen, wie wir diese Konzepte mit Hilfe R einsetzen können.
+
+Merkmale, Merkmalsträger, Stichproben, Skalen.
+
 # Daten
-Als Beispieldaten verwenden wir den Datensatz *Lieferzeiten*. Sie finden die Daten in der Lernplattform. Die R-Anweisungen in diesem Text gehen davon aus,
-dass die *csv*-Datei im Unterverzeichnis *data* liegt.
-Die Daten sind [@bamberg_93] entnommen. 
+Als Beispieldaten verwenden wir einige der Literatur entnommenen
+Daten. Sie finden die Daten in der Lernplattform OLAT und können so
+die Anweisungen in R selbst nochmals durchführen. 
+Die R-Anweisungen in diesem Text gehen davon aus,
+dass die *csv*-Dateien im Unterverzeichnis *data* liegen.
+
+## Lieferzeiten
+Diese Daten sind [@bamberg_93] entnommen. Sie wurden aus dem Buch
+abgetippt und als csv abgespeichert. Der Datensatz enthält
+eine Spalte mit kardinalen Daten.
+
+## Familienstand
 Als Beispiel für nominale Daten betrachten wir den Datensatz
-*Familienstand*, der [@benesch_13] entnommen ist. 
+*Familienstand*, der [@benesch_13] entnommen ist.
+
+## Körpergrößen von Frauen
 Liegen die meisten Merkmalsausprägungen nur mit geringen Häufigkeiten vor und ist die Skala kardinal, dann bilden wir Klassen und stellen Histogramme dar.
 Als Beispiel in diesem Fall verwenden wir den Datensatz
 *Körpergröße* aus [@benesch_13], den wir ebenfalls aus einer csv-Datei einlesen.
 
+## Import der Daten in R
 Wir lesen die Daten mit Hilfe der Funktion *read_csv2*
 aus dem Tidyverse-Package ein. Wir geben alle drei Tibbles aus,
 um uns einen Überblick zu geben.
@@ -65,10 +78,10 @@ frauen <- read_csv2("data/koerpergroesse_frauen.csv")
 
 Anschließend überprüfen wir,
 ob die Daten korrekt eingelesen wurden. Wir müssen bei den Lieferzeiten
-50 Werte erhalten haben.
+50 Werte eingelesen haben.
 Der Datensatz *frauen* muss 24 Werte enthalten. Für die Ausgabe
 verwenden wir *glimpse*. Möglich wäre auch *print*, dort können wir die
-Anzahl der Zeilen die ausgegeben werden sollen mit angeben.
+Anzahl der Zeilen, die ausgegeben werden sollen, mit angeben.
 
 ```{r check, message=FALSE, echo=TRUE}
 glimpse(liefer)

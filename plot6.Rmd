@@ -1,0 +1,80 @@
+---
+title: "Lösung der Aufgabe plot6 und plot12"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+library(ISLR)
+library(plotly)
+myPalette <- brewer.pal(8, "Set2")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Streuungsdiagramme mit ggplot und plotly
+
+## ggplot
+
+```{r ggscatter, message=FALSE, echo=TRUE}
+ggplot(Auto) +
+  geom_point(mapping = aes(x=cylinders, y = mpg, color=myPalette[3])) +
+  labs(
+  title="Streuungsdiagramm der Merkmale Zylinder und mpg im Datensatz Auto",
+  x = "Anzahl der Zylinder",
+  y = "mpg"
+  ) +
+  theme(legend.position="none")
+
+ggsave(filename="scatterCar2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+
+## ggplotly
+
+```{r ggpscatter, message=FALSE, echo=TRUE}
+autogg <- ggplot(Auto) +
+  geom_point(mapping = aes(x=cylinders, y = mpg, color=myPalette[3])) +
+  labs(
+  title="Streuungsdiagramm der Merkmale Zylinder und mpg im Datensatz Auto",
+  x = "Anzahl der Zylinder",
+  y = "mpg"
+  ) +
+  theme(legend.position="none")
+
+ggplotly(autogg)
+```
+
+## plot_ly
+
+```{r plscatter, echo=TRUE, results='markup', warning=FALSE}
+Auto %>% 
+  plot_ly(x = ~cylinders, 
+          y = ~mpg,
+          color = myPalette[3], 
+          mode="markers", 
+          type="scatter"
+       ) %>%
+  layout(
+    title="Streuungsdiagramm der Merkmale Zylinder und mpg im Datensatz Auto",
+    xaxis = list(title = "Anzahl der Zylinder"),
+    yaxis = list(title = "mpg")
+  )
+```
