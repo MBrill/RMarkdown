@@ -4,6 +4,7 @@ author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
   
+  html_notebook: default
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -11,7 +12,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook: default
 bibliography: literatur.bib
 encoding: utf-8
 ---
@@ -1133,7 +1133,7 @@ wird das Komma verwendet, so dass wir diese neue Datei mit Hilfe von
 *read_csv2* einlesen können.
 
 ```{r export, echo='TRUE', message=TRUE, warnings = TRUE, results='asis'}
-write_csv2(daten, path="data/tipsWithRate.csv", col_names = TRUE)
+write_csv2(daten, file="data/tipsWithRate.csv", col_names = TRUE)
 ```
 
 # Literatur
