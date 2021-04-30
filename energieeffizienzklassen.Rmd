@@ -111,6 +111,7 @@ ggsave(filename="effizienz6.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 
 ```
+
 # Literaturverzeichnis
 
 

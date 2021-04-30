@@ -1,7 +1,7 @@
 ---
 title: "Grafische Ausgabe der von stetigen Verteilungen - Normalverteilung"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
+date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -257,5 +257,52 @@ ksigma2Plot +
               fill=myPalette[1])
 
 ggsave(filename="ksigmaNormal.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Konfidenzintervalle
+
+Wir wiederholen diese Ausgaben und erstellen eine grafische Darstellung
+eines 95%-Konfidenzintervalls. Diese Abbildung verwenden wir beim Thema
+Berechnung von Intervallschätzungen.
+
+```{r 95ProzentArea, echo=TRUE}
+# Polygonwerte für den gefüllten Bereich
+mu <- 0
+sd <- 1
+qu <- 0.975
+ql <- 1.0-qu
+
+# Wie viele Punkte verwenden wir für die Glockenkurve
+l <- 1000
+# Unterer und oberer x-Wert mit qnorm berechnen
+ub <- qnorm(qu)
+lb <- qnorm(ql)
+pmin <- lb
+pmax <- ub
+
+# x-Werte für das Polygon besetzen
+px <- seq(pmin, pmax, length=l)*sd + mu
+# Funktionswerte berechnen mit dnorm
+py <- dnorm(px, mu, sd)
+
+polygonValues <- tibble(px, py)
+
+PerPlot <- ggplot() +
+  stat_function(data = daten, aes(x), 
+                fun = dnorm, n = 1001, args = list(mean = 0, sd = 1),
+                colour=myPalette[3], size=1.5) +  
+  geom_vline(xintercept=pmax) +
+  geom_vline(xintercept=pmin) +
+  labs(
+    title= "Standardnormalverteilung - 95% Konfidenzintervall",
+    y=""
+  ) 
+
+PerPlot +
+    geom_area(data=polygonValues, mapping=aes(x=px, y=py),
+              fill=myPalette[1])
+
+ggsave(filename="konfidenzNormal.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```

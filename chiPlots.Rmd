@@ -1,0 +1,185 @@
+---
+title: "Grafische Ausgabe der von stetigen Verteilungen - die Chi-Quadrat-Verteilung"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+```
+
+# Daten
+Wir definieren einen x-Bereich, die Dichte geben wir mit Hilfe einer
+*stat_function* in ggplot aus.
+
+```{r daten, echo=TRUE}
+xmax <- 8.0
+
+daten <- tribble(
+  ~x,
+  0.0,
+  xmax
+)
+```
+
+# Die Dichte und Verteilung der Chi-Verteilung
+
+```{r tglocke, echo=TRUE}
+chiGlocke <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = dchisq, n = 1001, args = list(df=2),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Dichte der Chi-Quadrat-Verteilung mit n=2",
+    y=""
+  ) 
+
+chiGlocke
+
+ggsave(filename="chiGlocke.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Mit Hilfe der Funktion *pt* erhalten wir eine grafische Ausgabe
+der Verteilungsfunktion:
+
+```{r verteilung, echo=TRUE}
+stdV <- ggplot(data = daten, aes(x)) +
+  stat_function(fun = pchisq, n = 1001, args = list(df=2),
+                colour="orange", size=1.5) +  
+  labs(
+    title="Verteilung der Chi-Quadrat-Verteilung mit n=2",
+    y=""
+  ) 
+
+stdV
+
+ggsave(filename="chiV.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Chi-Verteilungen mit verschiedenen Freiheitsgraden
+
+Wir erstellen eine Abbildung der Dichte einer Normalverteilung.
+```{r tDichte, echo=TRUE}
+ggplot(data = daten, aes(x)) +
+  stat_function(fun = dt, n = 1001, args = list(df=8),
+                color="orange", size=1.5) +  
+  labs(
+    title="Dichte der Chi-Quadrat-Verteilung mit n=8",
+    y=""
+  ) 
+
+ggsave(filename="chiNormal8.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+Zusätzlich erstellen wir noch eine grafische Ausgabe mit drei
+Verteilungsfunktionen mit verschiedenen Werten für die Anzahl
+der Freiheitsgrade.
+
+```{r mehreredf, echo=TRUE}
+ggplot(data = daten, aes(x)) +
+  stat_function(fun = dchisq, n = 1001, args = list(df=2),
+                color="red", size=1.5) +  
+  stat_function(fun = dchisq, n = 1001, args = list(df=4),
+                color="green", size=1.5) + 
+  stat_function(fun = dchisq, n = 1001, args = list(df=8),
+                color="blue", size=1.5) + 
+  labs(
+    title="Dichtefunktionen der Chi-Quadrat-Verteilung",
+    subtitle="Rot: n=2, Grün: n=44, Blau: n=8",
+    y=""
+  ) 
+
+ggsave(filename="chiDensities.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```
+
+
+```{r mehrereV, echo=TRUE}
+ggplot(data = daten, aes(x)) +
+  stat_function(fun = pchisq, n = 1001, args = list(df = 2),
+                color="red", size=1.5) +  
+  stat_function(fun = pchisq, n = 1001, args = list(df = 4),
+                color="green", size=1.5) + 
+  stat_function(fun = pchisq, n = 1001, args = list(df = 8),
+                color="blue", size=1.5) + 
+  labs(
+    title="Verteilungsfunktionen der Chi-Quadrat-Verteilung",
+    subtitle="Rot: n=1, Grün: n=4, Blau: n=32",
+    y=""
+  ) 
+
+ggsave(filename="chiDistris.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+# Konfidenzintervalle
+
+Wir erstellen eine grafische Darstellung
+eines 95%-Konfidenzintervalls einer t-Verteilung mit 4 Freiheitsgraden. Diese Abbildung verwenden wir beim Thema
+Berechnung von Intervallschätzungen.
+
+```{r 95ProzentArea, echo=TRUE}
+# Polygonwerte für den gefüllten Bereich
+df <- 4
+qu <- 0.975
+ql <- 1.0-qu
+
+# Wie viele Punkte verwenden wir für die Glockenkurve
+l <- 1000
+# Unterer und oberer x-Wert mit qnorm berechnen
+ub <- qchisq(qu, df=df)
+lb <- qchisq(ql, df=df)
+pmin <- lb
+pmax <- ub
+
+# x-Werte für das Polygon besetzen
+px <- seq(pmin, pmax, length=l)
+# Funktionswerte berechnen mit dnorm
+py <- dt(px,df=df)
+
+polygonValues <- tibble(px, py)
+
+PerPlot <- ggplot() +
+  stat_function(data = daten, aes(x), 
+                fun = dt, n = 1001, args = list(df=df),
+                colour=myPalette[3], size=1.5) +  
+  geom_vline(xintercept=pmax) +
+  geom_vline(xintercept=pmin) +
+  labs(
+    title= "Chi-Quadrat-Verteilung mit 4 Freiheitsgraden - 95% Konfidenzintervall",
+    y=""
+  ) 
+
+PerPlot +
+    geom_area(data=polygonValues, mapping=aes(x=px, y=py),
+              fill=myPalette[1])
+
+ggsave(filename="konfidenzChi.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+```

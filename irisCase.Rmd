@@ -3,10 +3,13 @@ title: "Fallstudie Iris"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
-  
-  html_notebook: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8   
   html_document: 
-    
     fig_caption: yes
     highlight: pygments
     number_sections: yes
