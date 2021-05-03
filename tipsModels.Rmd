@@ -1,9 +1,10 @@
 ---
 title: "Fallstudie Tips - Vorhersagen mit linearen Modellen"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
+date: "Sommersemester 2021"
 output: 
   
+  html_notebook: default
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -11,7 +12,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook: default
 bibliography: literatur.bib    
 ---
 
