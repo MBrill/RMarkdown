@@ -308,10 +308,10 @@ ggplot(daten) +
   scale_fill_brewer(palette="Set2") + 
   labs(
     title="Absolute Häufigkeiten im Merkmal Raucher/Nichtraucher", 
-    x="Raucher/Nichtraucher", 
+    x="Raucher", 
     y="Absolute Häufigkeiten"
   )  +
- guides(fill=guide_legend(title="Raucher/Nichtraucher")) +
+ guides(fill=guide_legend(title="Raucher")) +
  coord_flip()
 
  ggsave(filename="tipsBarSmoker.png", plot=last_plot(), 
@@ -363,7 +363,7 @@ ggplot(daten) +
     x="Wochentage", 
     y="Relative Häufigkeiten"
   )  +
-  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+  guides(fill=guide_legend(title="Raucher"))
 
 ggplot(daten) + 
   geom_bar(mapping=aes(x=Wochentag, 
@@ -401,7 +401,7 @@ ggplot(daten) +
     x="Wochentage", 
     y="Absolute Häufigkeiten"
   )  +
-  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+  guides(fill=guide_legend(title="Raucher"))
 
 ggsave(filename="tipsDaysStackedColored.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
@@ -416,7 +416,7 @@ ggplot(daten) +
     x="Wochentage", 
     y="Absolute Häufigkeiten"
   )  +
-  guides(fill=guide_legend(title="Raucher/Nichtraucher"))
+  guides(fill=guide_legend(title="Raucher"))
 
 ggsave(filename="tipsDaysDodgedColored.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
