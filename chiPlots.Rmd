@@ -105,7 +105,7 @@ ggplot(data = daten, aes(x)) +
                 color="blue", size=1.5) + 
   labs(
     title="Dichtefunktionen der Chi-Quadrat-Verteilung",
-    subtitle="Rot: n=2, Grün: n=44, Blau: n=8",
+    subtitle="Rot: n=2, Grün: n=4, Blau: n=8",
     y=""
   ) 
 
@@ -127,7 +127,7 @@ ggplot(data = daten, aes(x)) +
                 color="blue", size=1.5) + 
   labs(
     title="Verteilungsfunktionen der Chi-Quadrat-Verteilung",
-    subtitle="Rot: n=1, Grün: n=4, Blau: n=32",
+    subtitle="Rot: n=2, Grün: n=4, Blau: n=8",
     y=""
   ) 
 

@@ -352,7 +352,7 @@ a <- (n-1)/lb * var_est
 b <- (n-1)/ub * var_est
 
 # Intervall
-prognose <-  c(a, b)
+prognose <- c(a, b)
 ```
 Das Prognose-Intervall mit Irrtumswahrscheinlichkeit `r alpha`, zum Niveau `r 1 - alpha`, für die Varianz ist gegeben als
 [ `r prognose` ].
