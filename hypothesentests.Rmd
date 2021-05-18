@@ -3,21 +3,20 @@ title: "Hypothesentests mit einer Stichprobe"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
-
-  html_document: 
-    fig_caption: yes
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    toc_float: yes  
-    
   html_notebook:
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
     encoding: utf-8   
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes  
 ---
 
 ```{r setup, include=FALSE}
@@ -215,6 +214,8 @@ Hier erhalten wir für p den Wert `r p`.
 
 # Hypothesentest mit unbekannter Standardabweichung
 
+## t-Tests
+
 In der Praxis werden wir die Standardabweichung für die Grundgesamtheit
 häufig nicht kennen. In diesem Fall führen wir einen sogenannten t-Test
 durch. Der Ablauf ist genauso wie oben, außer dass wir jetzt zwei
@@ -267,6 +268,83 @@ Auch für diesen Fall können wir p-Werte berechnen, wir verwenden hier
 die Funktion *tnorm* für die t-Verteilung. Und auch einseitige Hypothesentests
 verlaufen analog wie bisher.
 
+## Hypothesentests für binomialverteilte Größen
+
+Die Binomialverteilung wird sehr häufig in der Qualitätssicherung
+oder allgemein für die Modellierung von Anteilen in einer Grundgesamtheit eingesetzt. 
+
+```{r binomData,  message=FALSE, echo=FALSE, warnings=FALSE}
+p0 <- 0.03
+n <- 500
+alpha <- 0.05
+
+p <- 20/n
+``` 
+
+Als Beispiel betrachten wir einen Hersteller von Bauteilen,
+der angibt, dass der Anteil fehlerhafter Stücke in seiner Produktion
+höchstens 3% beträgt. Wir ziehen eine Stichprobe, um diese Angabe
+zu prüfen und entnehmen der Produktion `r n` Bauteile.
+Die Nullhypothese ist jetzt, dass der Parameter p der binomialverteilten Zufallsvariable, die die Anzahl der defekten
+Bauteile modelliert durch p=`r p0` gegeben ist.
+Die Gegenhypothese lautet, dass p ungleich `r p0`ist.
+Wir legen eine Irrtumswahrscheinlichkeit von `r alpha` fest.
+Wenn wir wie schon in der Wahrscheinlichkeitsrechnung
+eine Zählvariable verwenden, dann berechnen wir mit dem
+arithmeischen Mittel über diese Zählvariable eine Punktschätzung
+für p. Ist n groß genug, dann können wir die Binomialverteilung
+durch eine Normalverteilung ersetzen.
+
+Bevor wir dies durchführen rufen wir uns in Erinnerung:
+\[
+E(X) = n \cdot p, \sigma^2 = \frac{p(1-p)}{n}.
+\]
+Mit dem arithmetischen Mittel berechnen wir eine Schätzung
+p, , die Standardabweichung können wir mit der in der Nullhypothese
+angegebenen Anteil berechnen und führen anschließend eine Gauß-Test
+für diese Statistik durch:
+\[
+H_0: p = p_0, H_1: p \neq p_0.
+\]
+Wir berechnen die folgende standardnormalverteilte Statistik:
+\[
+z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
+\]
+Da z standardnormalverteilt ist können wir die Quantile der Standardnormalverteilung verwenden um den Annahmebereich zu berechnen
+und den Hypothesentest durchzuführen.
+
+Für die Durchführung des Hypothesentests gehen wir davon aus,
+dass wir in der Stichprobe mit n=`r n` Bauteilen
+20 defekte Bauteile gefunden haben. Dann ist der Punktschätzer
+als `r p` gegeben.
+
+```{r binomtest,  message=FALSE, echo=TRUE, warnings=FALSE}
+sigma <- sqrt((p0*(1-p0))/n)
+
+z <- (p-p0)/sigma
+
+# Grenzen
+qu <- 1.0 - alpha/2
+b <- qnorm(qu)
+a <- -b
+
+# Intervall
+prognose <- c(a, b)
+``` 
+
+Für die Statistik z erhalten wir den Wert `r z`, der Annahmebereich
+ist als [`r prognose`] gegeben. Wir verwerfen die Nullhypothese nicht.
+
+Wie bereits bei den Gauß- und t-Tests können wir auch den p-Wert
+für die Statistik berechnen. Dazu verwenden wir die Funktion *pnorm*:
+
+```{r binompv,  message=FALSE, echo=TRUE, warnings=FALSE}
+pval <- 2.0*pnorm(z, lower.tail=FALSE)
+``` 
+
+Der p-Wert ist `r pval` und damit größer als die
+vorgegebene Irrtumswahrscheinlichkeit von 0.05. 
+
 # Hypothesentests in R
 
 ## Der Gauß-Test mit der Funktion *z.test*
@@ -284,9 +362,9 @@ und verwenden anschließend die Ergebnisse dieser Funktion.
 library(TeachingDemos)
 
 sigma_0 <- 5.0
-
+alpha <- 0.05
 res <- z.test(festigkeit, mu=100, sigma_0, 
-              conf.level=0.95)
+              conf.level=1-alpha)
 
 res
 ``` 
@@ -308,29 +386,29 @@ der Annahmebereich durch `r ci`.
 
 
 ```{r reissgauss99,  message=FALSE, echo=TRUE, warnings=FALSE}
+alpha <- 0.01
 res <- z.test(festigkeit, mu=100, sigma_0, 
-              conf.level=0.99)
+              conf.level=1-alpha)
 pv <- res$p.value
 statistic <- res$estimate
 ci <- res$conf.int
 ``` 
 
-wir wiederholen den Test, allerdings verwenden wir dieses Mal
+Wir wiederholen den Test, allerdings verwenden wir dieses Mal
 das Niveau 99%. 
 Als p-Wert erhalten wir wieder `r pv`.
 Der berechnete Wert der Statistik ist immer noch durch `r statistic` gegeben,
 der Annahmebereich durch [`r ci`]. Wir verwerfen auch mit diesem Niveau
 die Nullhypothese nicht.
 
-Mit der Funktion können wir auch einseitige Hypothesentests durchführen.
-Das müssen wir beim Aufruf der Funktion nur übergeben.
+Mit der Funktion können wir auch einseitige Hypothesentests durchführen. Das müssen wir beim Aufruf der Funktion nur übergeben.
 
 
 ```{r reissgaussos,  message=FALSE, echo=TRUE, warnings=FALSE}
+alpha <- 0.05
 res <- z.test(festigkeit, mu=100, sigma_0, 
               alternative="less",
-              conf.level=0.95)
-
+              conf.level=1-alpha)
 res
 ``` 
 
@@ -345,8 +423,9 @@ so dass wir sofort den t-Test für unsere Reißfestigkeit durchführen können.
 
 
 ```{r reissstudent,  message=FALSE, echo=TRUE, warnings=FALSE}
+alpha <- 0.05
 res <- t.test(festigkeit, mu=100, 
-              conf.level=0.95)
+              conf.level=1-alpha)
 
 res
 
@@ -365,9 +444,38 @@ Wiederum können wir auch einen einseitigen Test durchführen:
 ```{r reissstudentos,  message=FALSE, echo=TRUE, warnings=FALSE}
 res <- t.test(festigkeit, mu=100,
               alternative="less",
-              conf.level=0.95)
+              conf.level=1-alpha)
 
 res
 ``` 
 
 Wir verwerfen die Nullhypothese nicht.
+
+## Tests für binomialverteilte Zufallsvariablen
+
+Wir hatten das Beispiel einer binomailverteilten Zufallsvariable
+betrachtet, für die wir einen Hypothesentest für den Anteil p
+der defekten Bauteile durchgeführt haben. In R gibt es für diese
+Tests die Funktion *prop.test*, die wir nun durchführen.
+
+```{r binomRtest,  message=FALSE, echo=TRUE, warnings=FALSE}
+p0 <- 0.03
+n <- 500
+alpha <- 0.05
+p <- 20
+
+res <- prop.test(x=20, n, p=0.03, 
+                 conf.level=1-alpha, 
+                 correct=TRUE)
+res
+``` 
+
+Auch hier verwerfen wir die Nullhypothese nicht. Wir können wie schon
+bei den Gauß- und t-Tests die einzelnen Ausgaben in der Variable 
+*res* abfragen. Als Wert für die Statistik erhalten wir
+`r res$estimate`, und als Annahmebereich das Intervall
+[`r res$conf.int`]. Auch der berechnete p-Wert von `r res$p.value`
+spricht dafür, die Nullhypothese nicht zu verwerfen.
+
+Der Parameter *correct* kann verwendet werden, um zu steuern,
+ob bei der Durchführung des Tests eine Stetigkeitskorrektur durchgeführt wird. 
