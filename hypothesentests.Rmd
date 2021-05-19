@@ -3,12 +3,6 @@ title: "Hypothesentests mit einer Stichprobe"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8   
   html_document: 
     
     fig_caption: yes
@@ -17,6 +11,12 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8   
 ---
 
 ```{r setup, include=FALSE}
@@ -36,7 +36,7 @@ options(digits=4)
 
 ## Zweiseitige Hypothesentests
 
-```{r stichprobe, include=FALSE, echo=FALSE}
+```{r stichprobe, include=TRUE, echo=TRUE}
 mu_h0 <- 500.0
 n <- 25
 mu_est <- 499.28
@@ -143,21 +143,19 @@ wir 5%.
 alpha <- 0.05
 
 qu <- 1.0 - alpha
-
 ub <- qnorm(qu)
 
-# Grenze
+# Obere Grenze des Annahmebereichs
 b <- ub * sem
 
 # Intervall
-prognose <- mu_est - b
+prognose <- mu_est + b
 ```
 
 Wir erhalten als rechte Grenze des Annahmebereichs den Wert
-`r prognose`. Als Punktschätzer verwenden wir immer noch das arithmetische
-Mittel der Stichprobe, der durch `r mu_est` gegeben war.
+`r prognose`. 
 Mit dem Niveau `r 1 - alpha` verwerfen wir die Nullhypothese und
-nehmend die Gegenhypothese an, dass die Füllhöhe mindestens 500 beträgt.
+nehmend die Gegenhypothese an, dass die Füllhöhe weniger als 500 beträgt.
 
 Bemerkung: wenn wir für die Irrtumswahrscheinlichkeit 1% verwenden
 wird auch für dieses Niveau die Nullhypothese verworfen!
@@ -412,8 +410,8 @@ res <- z.test(festigkeit, mu=100, sigma_0,
 res
 ``` 
 
-Mit den Ausgaben der Funktion erkennen wir, dass auch hier die Nullhypthese
-nicht verworfen wird.
+Mit den Ausgaben der Funktion erkennen wir, dass wir die Nullhypthese
+nicht verwerfen.
 
 ## Der t-Test mit der Funktion *t.test*
 

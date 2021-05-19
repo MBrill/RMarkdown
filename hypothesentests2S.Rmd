@@ -48,7 +48,7 @@ Wir werden bei diesem Thema sehr schnell bemerken, dass wir Beziehungen zur Vers
 
 Die Darstellung folgt den Darstellungen in [@kabacoff_15] und [@mcclave_91]. 
 
-Als Beispiel betrachten wir das Beispiel einer Supermarktkette, die eine neue Filiale öffnen möchte. Zur Diskussion stehen zwei Standorte.
+Als Beispiel betrachten wir eine Supermarkt-Kette, die eine neue Filiale öffnen möchte. Zur Diskussion stehen zwei Standorte.
 Deshalb werden in der Nähe beider Standorte Stichproben über die Einkommen der dortigen Bewohner gezogen. Dabei gehen wir davon aus,
 dass diese Einkommen homogen sind, sich also nicht sehr stark unterscheiden und dass wir eine Normalverteilung in beiden Standorten voraussetzen können.
 
@@ -172,7 +172,7 @@ Der Default-Wert für diesen Parameter ist 0.
 
 ## Der Datensatz *UScrime*
 Im Folgenden verwenden wir wie in [@kabacoff_15] den Datensatz *UScrime*, der im Package *MASS* enthalten ist.
-Dieser Datensatz enthält DAten über die Strafverfolgung
+Dieser Datensatz enthält Daten über die Strafverfolgung
 in den U.S.A. und Kriminalitätsraten, aus 47 US-Bundesstaaten aus dem 
 Jahr 1960. Wir untersuchen insbesondere die Merkmale
 
@@ -217,7 +217,7 @@ Schon der ausgegebene p-Wert von `r result$p.value` sagt uns,
 dass wir die Nullhypothese verwerfen. 
 Mit Hilfe des Prognoseintervalls [`r result$conf.int`]
 erkennen wir, dass mit dieser Wahrscheinlichkeit die Inhaftierungsquote
-im Süden größer ist
+im Süden größer ist. Wir verwerfen die Nullhypothese!
 
 ## Abhängige Stichproben
 Als nächsten Hypothesentest untersuchen wir, ob die Arbeitslosenquoten
@@ -237,7 +237,7 @@ result
 ```
 
 Wir erhalten nur eine Ausgabe bei der Schätzung der Differenz.
-Diest ist mit `r result$estimate` auch so groß, dass wir die Nullhypothese der gleichen Arbeitslosenquoten verwerfen.
+Diese ist mit `r result$estimate` auch so groß, dass wir die Nullhypothese der gleichen Arbeitslosenquoten verwerfen.
 Der angegebene p-Wert ist extrem klein.
 
 
@@ -280,7 +280,13 @@ t.test(restaurant1, restaurant2,
 
 Der p-Wert bleibt unverändert und sehr hoch. Das Prognose-Intervall ist immer noch sehr groß. Wir würden also immer noch die Nullhypothese nicht verwerfen.
 
-Wenn wir die Daten nochmals ausgeben, dann erkennen wir, dass die Umsätze in Restaurant 1 an jedem der Tage. Deshalb sollte es uns eigentlich schwer fallen den Ergebnissen der beiden Tests zu glauben.
+Wenn wir die Daten nochmals ausgeben, dann erkennen wir, dass die Umsätze in Restaurant 1 an jedem der Tage größer ist als in Restaurant 2. Davon können wir uns mit einem Vergleich in R auch überzeugen:
+
+```{r crestaurantvergleich, include=TRUE, echo=TRUE}
+restaurant1 > restaurant2
+```
+
+Deshalb sollte es uns eigentlich schwer fallen den Ergebnissen der beiden Tests zu glauben.
 Das liegt daran, dass wir nicht davon ausgehen sollten, dass die beiden Stichproben unabhängig sind. Da wir für jeden Tag immer die Umsätze haben sollten wir einen gepaarten t-Test durchführen.
 
 
@@ -292,7 +298,7 @@ result <- t.test(restaurant1, restaurant2,
 result
 ```
 
-Mit diesen Ergebnissen verwerfen wir unsere Nullhypothse. Der p-Wert ist extrem klein, und sowohl die Schätzung für die Differenz (`r result$estimate`) als auch das Prognose-Intervall für die Differenz
+Mit diesen Ergebnissen verwerfen wir unsere Nullhypothese. Der p-Wert ist extrem klein, und sowohl die Schätzung für die Differenz (`r result$estimate`) als auch das Prognose-Intervall für die Differenz
 ([`r result$conf.int`]) sprechen dafür, dass der Umsatz im Restaurant 1
 höher ist als der im Restaurant 2, mit Wahrscheinlichkeit 95%.
 
