@@ -1,8 +1,14 @@
 ---
-title: "Hypothesentests mit zwei Stichprobe"
+title: "Hypothesentests mit zwei Stichproben"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -11,12 +17,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
