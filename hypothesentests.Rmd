@@ -65,7 +65,7 @@ von `r sigma2`, also einer Standardabweichung von `r sigma_0`.
 sem <- sigma_0/sqrt(n)
 alpha <- 0.01
 
-qu <- 1.0 - alpha/2
+qu <- 1.0 - alpha/2.0
 ql <- alpha/2.0
 
 ub <- qnorm(qu)

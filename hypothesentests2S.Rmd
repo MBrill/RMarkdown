@@ -1,0 +1,299 @@
+---
+title: "Hypothesentests mit zwei Stichprobe"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+# MASS für den Datensatz UScrime
+library(MASS)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=4)
+```
+
+# Motivation
+
+Schon bei der Einführung in die statistische Versuchsplanung hatten
+wir eine Abbildung betrachtet, in der wir zwei Stichproben verglichen hatten und die Frage gestellt hatten, ob die beiden Mittelwerte
+der Stichproben sich signifikant unterscheiden. Diese Frage können wir 
+mit Hilfe von Hypothesentests, in der wir zwei Stichproben
+untersuchen, jetzt weiter nachgehen.
+
+Wir werden bei diesem Thema sehr schnell bemerken, dass wir Beziehungen zur Versuchsplanung beobachten können. Das ist nicht sehr überraschend.
+
+Die Darstellung folgt den Darstellungen in [@kabacoff_15] und [@mcclave_91]. 
+
+Als Beispiel betrachten wir das Beispiel einer Supermarktkette, die eine neue Filiale öffnen möchte. Zur Diskussion stehen zwei Standorte.
+Deshalb werden in der Nähe beider Standorte Stichproben über die Einkommen der dortigen Bewohner gezogen. Dabei gehen wir davon aus,
+dass diese Einkommen homogen sind, sich also nicht sehr stark unterscheiden und dass wir eine Normalverteilung in beiden Standorten voraussetzen können.
+
+Um beide Standorte zu vergleichen betrachten wir die Differenz zwischen den Erwartungswerten der Verteilungen der Einkommen in den beiden Standorten, also die Differenz
+\[
+\mu_1 - \mu_2.
+\]
+Wir führen für diese Differenz einen Hypothesentest durch. Wenn wir die Varianz der beiden Verteilungen der Einkommen kennen können wir auch für die Differenz der Erwartungswerte die Varianz berechnen und damit ein Prognose-Intervall berechnen.
+
+Als Nullhypothese verwendet man hier meist
+\[
+\mu_1 - \mu_2 = D_0.
+\]
+Häufig ist der Wert der Differenz in dieser Hypothese 0. Wieder können 
+wir zweiseitige und einseitige Hypothesentests durchführen.
+
+Mit n$_1$ und n$_2$ bezeichnen wir jetzt den Umfang der Stichproben in beiden Standorten, $\sigma_1$ und $\sigma_2$ sollen die Standardabweichungen in beiden Stichproben sein. Dann können wir
+für die Differenz der Erwartungswerte die Standardabweichung berechnen:
+\[
+\sigma_D = \sqrt{\frac{\sigma_1^2}{n_1} + \sigma_2^2}{n_2}}.
+\]
+Jetzt haben wir, wenn wir ein Signifikanzniveau festlegen, alles um
+ein Prognose-Intervall zu berechnen und anschließend einen Gauß-Test durchzuführen.
+
+Als Punktschätzer verwenden wir die Differenz der arithmetischen Mittel der Stichproben. Da wir die Standardabweichung kennen verwenden wir die Quantile der Normalverteilung für die berechnung des Prognose-Intervalls als Annahmebereich. Dieser Bereich ist gegeben als
+
+\begin{equation*}
+(x_1 - x_2) \pm z_{\alpha/2} \sigma_D
+\end{equation*}
+
+Wir führen einen zweiseitigen Test durch, das ist gut an den Grenzen 
+des Prognose-Intervalls zu erkennen.
+
+Sind die beiden Stichproben groß genug verwenden wir die Standardabweichungen der Stichproben als Schätzer für die Standardabweichungen.
+
+Wir setzen konkrete Werte ein
+und führen den Test in R durch:
+
+```{r supermarkt, include=TRUE, echo=TRUE}
+alpha <- 0.05
+
+n_1 <- 100
+n_2 <- 100
+
+xbar_1 <- 38750.0
+xbar_2 <- 35150.0
+
+s_1 <- 3200.0
+s_2 <- 2700.0
+
+sigma_D <- sqrt(s_1^2/n_1 + s_2^2/n_2)
+x_D <- xbar_1 - xbar_2
+
+qu <- 1.0 - alpha/2.0
+ql <- alpha/2.0
+ub <- qnorm(qu)
+lb <- qnorm(ql)
+
+# Grenzen
+b <- ub * sigma_D
+a <- lb * sigma_D
+# Annahmebereich
+prognose <- x_D + c(a, b)
+```
+
+Als Prognose-Intervall für die Differenz der Mittelwerte der beiden
+Standorte, mit Irrtumswahrscheinlichkeit `r alpha`, erhalten wir
+das Intervall [`r prognose`]. Daraus schließen wir, dass mit
+einer Wahrscheinlichkeit von `r 1 - alpha` das mittlere Einkommen
+im Standort 1 zwischen `r prognose[1]` und `r prognose[2]` höher ist
+als im Standort 2. Die Supermarktkette würde sich vermutlich
+für den Standort 1 entscheiden.
+
+# Zwei Stichproben mit unbekannter Standardabweichung
+In der Praxis werden wir selten die Standardabweichungen für den
+eben beschriebenen Gauß-Test kennen. Dann führen wir 
+wie schon im Fall einer Stichprobe einen t-Test durch.
+Es gibt hier zwei Varianten. Einmal geht man für die Berechnung
+der Varianz der Differenz der Erwartungswerte davon aus,
+dass die Varianz in beiden Stichproben gleich oder verschieden ist.
+Für beide Fälle gibt es dann schätzer für die Varianz der Differenz,
+die wir hier aber nicht näher betrachten wollen.
+
+# Hypothesentests mit zwei Stichproben in R
+Wir führen jetzt diesen Hypothesentest mit Hilfe von R durch.
+Dabei verwenden wir die Funktion *t.test*, der wir zwei Stichproben übergeben können. Dort werden auch die Standardabweichung der Differenz der beiden Mittelwerte berechnet.
+
+Als Daten verwenden wir ein Beispiel aus [@mcclave_91] mit zwei
+Stichproben zweier normalverteilter Zufallsvariabler. Als Irrtumswahrscheinlichkeit verwenden wir hier 1%.
+Wir gehen davon aus, dass beide Stichproben die gleiche Varianz
+besitzen, dazu gibt es die Option *var.equal*.
+
+```{r examplett, include=TRUE, echo=TRUE}
+alpha <- 0.1
+
+x <- c(2.1, 3.6, 1.4, 3.0, 2.9, 3.2)
+y <- c(3.4, 3.0, 4.1, 3.9, 3.5)
+
+result <- t.test(x, y, 
+                 alternative = "two.sided",
+                 conf.level = 1-alpha,
+                 var.equal = TRUE)
+
+result
+```
+
+In der Ausgabe der Funktion *t.test* finden wir Angaben über die berechneten Mittelwerte der beiden Stichproben und ein Prognose-Intervall für die Differenz. Im Beispiel erhalten wir das
+Intervall [`r result$conf.int`]. Mit Wahrscheinlichkeit 90%
+liegt die Differenz der beiden Mittelwerte in diesem Intervall. Daraus schließen wir mit der Wahrscheinlichkeit `r result$p.value`, dass der Mittelwert
+der zweiten Stichprobe größer ist als der der ersten:
+\[
+\mu_1 < \mu_2.
+\]
+Die eben angegebene Wahrscheinlichkeit lesen wir aus dem
+p-Wert in der Ausgabe der Funktion *t.test*.
+
+Wir haben keinen Wert für die Differenz in der Nullhypothese angegeben.
+Das wäre natürlich auch möglich, dafür gibt es die Option *mu = *.
+Der Default-Wert für diesen Parameter ist 0.
+
+
+## Der Datensatz *UScrime*
+Im Folgenden verwenden wir wie in [@kabacoff_15] den Datensatz *UScrime*, der im Package *MASS* enthalten ist.
+Dieser Datensatz enthält DAten über die Strafverfolgung
+in den U.S.A. und Kriminalitätsraten, aus 47 US-Bundesstaaten aus dem 
+Jahr 1960. Wir untersuchen insbesondere die Merkmale
+
+- *Prob*, die Wahrscheinlichkeit einer Inhaftierung,
+- *U1*, die Arbeitslosenquote der männlichen Einwohner in den Städten im Alter von 14 - 24, und
+- *U2*, die Arbeitslosenquote der männlichen Einwohner in den Städten im Alter von 35 - 39.
+
+Der Datensatz enthält einen Faktor *So*, der angibt, ob es sich um einen Bundesstaat im Süden der U.S.A. handelt oder nicht. 
+Mit Hilfe eines solchen Faktors können wir der Funktion *t.test*
+eine Gruppierung übergeben - mit anderen Worten, die Funktion
+teilt für uns ein Merkmal in zwei Stichproben auf.
+Der Faktor *So* ist so konfiguriert, dass wir als *group 0*
+die Nord- und als *group 1* die Südstaaten erhalten.
+
+## Unabhängige Stichproben
+
+Als erster Test überprüfen wir, ob die Wahrscheinlichkeit einer Inhaftierung in Nord- und Südstaaten gleich ist. 
+Wir gehen bei der Durchführung des Hypothesentests davon aus,
+dass beide Stichproben normalverteilt sind und
+dass die beiden Stichproben statistisch unabhängig 
+voneinander sind. Man spricht dann von einem
+unabhängigen t-Test.
+
+Wir geben kein Konfidenzniveau an, so dass die Funktion
+den Default 95% verwendet.
+
+```{r crimet1, include=TRUE, echo=TRUE}
+result <- t.test(Prob ~ So,
+                 data=UScrime,
+                 alternative="two.sided",
+                 var.equal=FALSE)
+
+result
+```
+
+Wir haben nicht angegeben, dass die beiden Varianzen in den beiden
+Teilen gleich sind, so dass jetzt ein sogenannter Welch-Test
+durchgeführt wird. Das gibt die Methode an wie die Varianz
+der Differenz geschätzt wird.
+Nehmen wir die Nullhypthose, dass die Mittelwerte für die Wahrscheinlichkeit der Inhaftierung gleich ist, an?
+Schon der ausgegebene p-Wert von `r result$p.value` sagt uns,
+dass wir die Nullhypothese verwerfen. 
+Mit Hilfe des Prognoseintervalls [`r result$conf.int`]
+erkennen wir, dass mit dieser Wahrscheinlichkeit die Inhaftierungsquote
+im Süden größer ist
+
+## Abhängige Stichproben
+Als nächsten Hypothesentest untersuchen wir, ob die Arbeitslosenquoten
+in den beiden Altersgruppen gleich sind oder nicht. Jetzt können wir
+nicht davon ausgehen, dass die beiden Stichproben unabhängig sind.
+Dann spricht man von einem abhängigen t-Test. Dazu gibt es für
+die Funktion *t.test* die Option *paired*, die wir in diesem Fall auf *TRUE* setzen.
+
+```{r crimet2, include=TRUE, echo=TRUE}
+result <- t.test(UScrime$U1, UScrime$U2,
+                 paired=TRUE,
+                 data=UScrime,
+                 alternative="two.sided",
+                 var.equal=FALSE)
+
+result
+```
+
+Wir erhalten nur eine Ausgabe bei der Schätzung der Differenz.
+Diest ist mit `r result$estimate` auch so groß, dass wir die Nullhypothese der gleichen Arbeitslosenquoten verwerfen.
+Der angegebene p-Wert ist extrem klein.
+
+
+## Gepaarte und ungepaarte Tests - ein Vergleich
+Wir vertiefen das Thema der unabhängigen und abhängigen
+Tests nochmals auf der Basis von Daten, die [@mcclave_91] entnommen sind (Seite 421).
+
+Wir untersuchen die täglichen Umsätze zweier Restaurants.
+Insgesamt haben wir die Umsätze an 12 Tagen von zwei aufeinanderfolgenden Wochentagen (ohne Sonntag).
+Die Angaben sind in US-Dollar.
+
+Wir untersuchen die Nullhypothese, dass die Umsätze in beiden Restaurants gleich sind. Dabei gehen wir von unabhängigen
+Stichproben aus und dass die Varianzen in beiden Stichproben
+nicht gleich sind.
+
+```{r crestaurantt1, include=TRUE, echo=TRUE}
+restaurant1 <- c(759, 981, 1005, 1449, 1905, 2073, 693, 873, 1074, 1338, 1932, 2106)
+restaurant2 <- c(678, 933, 918, 1302, 1782, 1971, 639, 825, 999, 1281, 1827, 2049)
+
+t.test(restaurant1, restaurant2,
+                 paired=FALSE,
+                 alternative="two.sided",
+                 var.equal=FALSE)
+
+```
+
+Mit diesen Ausgaben verwerfen wir die Nullhypothese nicht. Wir verändern das Konfidenzniveau und führen den Test nochmals durch.
+
+
+```{r crestaurantt2, include=TRUE, echo=TRUE}
+alpha = 0.2
+
+t.test(restaurant1, restaurant2,
+       paired=FALSE,
+       alternative="two.sided",
+       var.equal=FALSE,
+       conf.level = 1-alpha)
+
+```
+
+Der p-Wert bleibt unverändert und sehr hoch. Das Prognose-Intervall ist immer noch sehr groß. Wir würden also immer noch die Nullhypothese nicht verwerfen.
+
+Wenn wir die Daten nochmals ausgeben, dann erkennen wir, dass die Umsätze in Restaurant 1 an jedem der Tage. Deshalb sollte es uns eigentlich schwer fallen den Ergebnissen der beiden Tests zu glauben.
+Das liegt daran, dass wir nicht davon ausgehen sollten, dass die beiden Stichproben unabhängig sind. Da wir für jeden Tag immer die Umsätze haben sollten wir einen gepaarten t-Test durchführen.
+
+
+```{r crestaurantt3, include=TRUE, echo=TRUE}
+result <- t.test(restaurant1, restaurant2,
+       paired=TRUE,
+       alternative="two.sided",
+       var.equal=FALSE)
+result
+```
+
+Mit diesen Ergebnissen verwerfen wir unsere Nullhypothse. Der p-Wert ist extrem klein, und sowohl die Schätzung für die Differenz (`r result$estimate`) als auch das Prognose-Intervall für die Differenz
+([`r result$conf.int`]) sprechen dafür, dass der Umsatz im Restaurant 1
+höher ist als der im Restaurant 2, mit Wahrscheinlichkeit 95%.
+
+# Literaturverzeichnis
