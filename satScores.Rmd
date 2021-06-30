@@ -3,6 +3,12 @@ title: "Das Beispiel SAT Scores aus McClave-Benson"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -11,12 +17,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
@@ -361,7 +361,7 @@ innerhalb der Gruppen messen. Wir nennen diese Summe *sum of squares for error*
 und kurz SSE. Wieder formulieren wir die Formel allgemein und setzen
 unsere konkreten Werten aus dem Fall 2 ein.
 \[
-SSE = \sum_{j=1}^n_1 (y_{1j - \overline{y}_1)^2 + \ldots + \sum_{j=1}^n_p (y_{pj - \overline{y}_p)^2
+SSE = \sum_{j=1}^{n_1} (y_{1j} - \overline{y}_1)^2 + \ldots + \sum_{j=1}^{n_p}  (y_{pj} - \overline{y}_p)^2
 \]
 Für unser Beispiel ist dies leicht zu berechnen, da die ersten 5 Zeilen
 zu den Frauen und die restlichen5 Zeilen zu den männlichen Teilnehmern gehören:
