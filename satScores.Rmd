@@ -1,0 +1,462 @@
+---
+title: "Das Beispiel SAT Scores aus McClave-Benson"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+# Die ersten 4 Default-Farben aus ggplot2
+library(scales)
+defColors <- hue_pal()(4)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "RdYlGn")
+
+# Library für die Funktion plotmeans
+library(gplots)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=4)
+```
+
+# Motivation
+
+Wir haben bereits Hypothesentests durchgeführt, mit denen wir
+zwei Stichproben oder eine Spalte, die wir mit einem Faktor in zwei
+Teile aufteilen können darauf überprüfen können, ob die Erwartungswerte
+gleich sind oder nicht. Dazu haben wir einen t-Test durchgeführt.
+Wir betrachten ein weiteres Beispiel für den Einsatz solcher
+unverbunderen t-Tests und führen anschließend
+die Variationsanalyse (ANOVA) ein. Wir erhalten bei unseren
+Hypothesentests die gleichen Ergebnisse. Der Vorteil
+der Variationsanalyse ist jedoch, dass wir diesen Ansatz 
+auf mehr als zwei Einflussgrößen oder Level in einem Datensatz
+anwenden können.
+
+# Unverbundene t-Tests
+Wir wiederholen nochmals den Einsatz von t-Tests und gehen am Ende
+zu einer Funktion in R über, die das gleiche Experiment an Hand
+eines Hypothesentests untersucht, der ANOVA verwendet.
+
+Die Daten die wir in diesem Abschnitt verwenden stammen aus [@mcclave_91].
+Wir untersuchen die SAT scores, die Prüfungsergebnisse von potentiellen
+Studierenden an einer amerikanischen Hochschule. Dazu gibt das Buch
+insgesamt 10 Daten an, jeweils 5 Daten von Frauen und 5 von Männern.
+Die Daten gibt es zweimal, wobei bei jeder Variante die Mittelwerte
+der Daten gleich sind und sich aber je nach Geschlecht unterscheiden.
+Die Frage ist natürlich ob wir mit einem t-Test oder ANOVA
+entscheiden können ob die Nullhypothese, dass die Erwartungswerte
+für beide Level gleich sind, verworfen wird oder nicht.
+
+## Die Daten
+Die Daten für dieses Beispiel werden nicht aus einer Datei eingelesen
+sondern wurden auf dem Buch entnommen und in Datensätze
+in R überführt.
+
+```{r satscore0, include=TRUE, echo=FALSE}
+satscorefemale1 <- c(490, 520, 550, 580, 610)
+satscoremale1 <- c(530, 560, 590, 620, 650)
+
+scores1 <- c(490, 520, 550, 580, 610, 530, 560, 590, 620, 650)
+satlevels <- as.factor(c("w", "w", "w", "w", "w",
+                          "m", "m", "m", "m", "m"))
+
+satscores1 <- tibble(response=scores1,
+                     treatment=satlevels)
+
+scores2 <- c(540, 545, 550, 555, 560, 580, 585, 590, 595, 600)
+
+satscores2 <- tibble(response=scores2,
+                     treatment=satlevels)
+```
+
+Die Daten werden als tibble abgelegt. Das Geschlecht wird als *factor* in einer weiteren Spalte
+abgelegt. Tabelle 1 zeigt den Inhalt dieses Datensatzes.
+
+
+```{r satscoreKable1, include=TRUE, echo=FALSE}
+kable(satscores1,
+        align="l",
+        caption="Tabelle 1: Die Prüfungsergebnisse als tibble",
+        col.names=c("Punktzahl", "Geschlecht")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Wir berechnen mit Hilfe der Funktion *summarize* den Mittelwert und die Standardabweichung:
+
+```{r satscoreAgg1, include=TRUE, echo=FALSE}
+agg1 <- satscores1 %>%
+  group_by(treatment) %>%
+  summarize(Mittelwerte=mean(response),
+            Standardabweichungen=sd(response),
+            .groups="keep")
+```
+
+Für die Mittelwerte erhalten wir die Werte `r agg1$Mittelwerte[1]` für die männlichen und 
+`r agg1$Mittelwerte[2]` für die weiblichen Teilnehmer. Die Standardabweichungen für beide
+Teile der Ergebnisse stimmen überein, wir erhalten jeweils den Wert `r agg1$Standardabweichungen[1]`.
+
+Als Alternative wird im Buch ein weiterer Datensatz vorgestellt, die wir genauso 
+repräsentieren. In Tabelle 2 sind diese Daten zu sehen.
+
+```{r satscoreKable2, include=TRUE, echo=FALSE}
+kable(satscores2,
+        align="l",
+        caption="Tabelle 2: Die alternativen Prüfungsergebnisse als tibble",
+        col.names=c("Punktzahl", "Geschlecht")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+agg2 <- satscores2 %>%
+  group_by(treatment) %>%
+  summarize(Mittelwerte=mean(response),
+            Standardabweichungen=sd(response),
+            .groups="keep")
+```
+
+Für die Mittelwerte erhalten wir die gleichen Werte wie für die erste Alternative:
+`r agg2$Mittelwerte[1]` für die männlichen und 
+`r agg2$Mittelwerte[2]` für die weiblichen Teilnehmer.
+Wieder stimmen die Standardabweichungen für beide
+Teile der Ergebnisse überein, wir erhalten jeweils den Wert `r agg2$Standardabweichungen[1]`.
+
+
+## Visualisierungen
+Wir visualisieren jetzt beide Datensätze um uns einen Eindruck zu beschaffen, ob
+die Nullhypothese in den anschließenden Hypothesentests verworfen werden wird oder nicht.
+Dazu verwenden wir einmal *ggplot* und stellen die Werte als Punkte auf dem Zahlenstrahl aus.
+
+```{r satscore1Plot, include=TRUE, echo=FALSE, fig.height=2}
+ggplot(satscores1, aes(x=response)) +
+  geom_point(aes(y=0, color=treatment), size=3) + 
+  geom_point(x=550, y=0, fill=defColors[3], size=4, shape=22) + 
+  geom_point(x=590, y=0, fill=defColors[1], size=4, shape=22) +
+  geom_text(x=550, y=-0.05, label="Mittelwert Frauen", 
+            color=defColors[3], hjust="center") +
+  geom_text(x=590, y=0.05, label="Mittelwert Männer", 
+            color=defColors[1], hjust="center") +
+  scale_y_continuous(limits=c(-0.1, 0.1)) +
+  labs(
+    title="Prüfungsergebnisse und Mittelwerte (Fall 1)", 
+    x="Erreichte Punktzahlen"
+  ) +  
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank()) +
+  guides(color=guide_legend(title="Geschlecht"))
+
+ggsave(filename="satscore1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Die Punkte liegen ineinander verschränkt, die Mittelwerte deuten aber auf unterschiedliche Werte hin. Davon können wir uns gut mit Hilfe eines Box-Plots überzeugen.
+
+
+```{r satscoreboxp1, include=TRUE, echo=FALSE}
+ggplot(data=satscores1) +
+  geom_boxplot(mapping=aes(x = treatment, y = response), fill=myPalette[3]) +
+  labs(
+    title="Box-Plot der SAT Scores (Fall 1)", 
+    x="Geschlecht", 
+    y="Punktzahlen"
+  ) +
+  theme(legend.position = "none")
+
+ggsave(filename="satscorebox1.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+
+Als Alternative verwenden wir die Funktion *plotmeans* aus der Package
+*car*. Damit erhalten wir eine Ausgabe der Mittelwerte und für jeden Wert des verwendeten
+Faktors ein Konfidenzintervall. Wir verwenden hier den Defaultwert von 95% des Konfidenzniveaus.
+Die beiden Konfidenzintervalle schneiden sich, was darauf hinweist, dass beim anschließenden Hypothesentest nicht unbedingt zu erwarten ist, dass die Nullhypothese verworfen wird.
+
+```{r satscore1PlotMeans, include=TRUE, echo=FALSE, warnings=FALSE}
+plotmeans(response ~ treatment, data=satscores1,
+          xlab="Geschlecht",
+          ylab='Prüfungsergebnisse',
+          col="darkgoldenrod2",
+          n.label=FALSE,
+          use.t=TRUE,
+          barwidth=2,
+          barcol="darkgoldenrod1",
+          main='Prüfungsergebnisse (Fall 1)\n95% Konfidenzniveau')
+
+png(filename="images/satscore1pmeans.png", 
+    width = 16, height = 9, units="cm",
+    res=300)
+
+plotmeans(response ~ treatment, data=satscores1,
+          xlab="Geschlecht",
+          ylab='Prüfungsergebnisse',
+          col="darkgoldenrod2",
+          n.label=FALSE,
+          use.t=TRUE,
+          barwidth=2,
+          barcol="darkgoldenrod1",
+          main='Prüfungsergebnisse (Fall 1)\n95% Konfidenzniveau')
+
+dev.off()
+```
+
+Jetzt visualisieren wir mit den gleichen Funktionen den zweiten Fall.
+
+```{r satscore2a, include=TRUE, echo=FALSE, fig.height=2}
+ggplot(satscores2, aes(x=response)) +
+  geom_point(aes(y=0, color=treatment), size=3) + 
+  geom_point(x=550, y=0, fill=defColors[3], size=4, shape=22) + 
+  geom_point(x=590, y=0, fill=defColors[1], size=4, shape=22) +
+  geom_text(x=550, y=-0.05, label="Mittelwert Frauen", 
+            color=defColors[3], hjust="center") +
+    geom_text(x=590, y=0.05, label="Mittelwert Männer", 
+              color=defColors[1], hjust="center") +
+    scale_y_continuous(limits=c(-0.1, 0.1)) +
+  labs(
+    title="Prüfungsergebnisse und Mittelwerte (Fall 2)", 
+    x="Erreichte Punktzahlen"
+  ) +  
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank()) +
+  guides(color=guide_legend(title="Geschlecht"))
+
+ggsave(filename="satscore2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+```{r satscore2b, include=TRUE, echo=FALSE}
+plotmeans(response ~ treatment, data=satscores2,
+          xlab="Geschlecht",
+          ylab='Prüfungsergebnisse',
+          col="darkgoldenrod2",
+          n.label=FALSE,
+          use.t=TRUE,
+          barwidth=2,
+          barcol="darkgoldenrod1",
+          main="Prüfungsergebnisse (Fall 2)\n95% Konfidenzniveau")
+
+png(filename="images/satscore2pmeans.png", 
+    width = 16, height = 9, units="cm",
+    res=300)
+
+plotmeans(response ~ treatment, data=satscores2,
+          xlab="Geschlecht",
+          ylab='Prüfungsergebnisse',
+          col="darkgoldenrod2",
+          n.label=FALSE,
+          use.t=TRUE,
+          barwidth=2,
+          barcol="darkgoldenrod1",
+          main="Prüfungsergebnisse (Fall 2)\n95% Konfidenzniveau")
+
+dev.off()
+```
+
+In diesem Fall sehen wir, dass die Ergebnisse klar voneinander getrennt sind. Das ist in beiden Abbildungen
+gut zu erkennen. Hier würden wir erwarten, dass die Nullhypothese in den Tests verworfen wird.
+Es ist auch gut zu sehen dass im Fall 2 die Streuung in den Ergebnisse kleiner ist. Davon hatten wir uns
+bereits mit Hilfe der Standardabweichungen überzeugt.
+
+```{r satscoreboxp, include=TRUE, echo=FALSE}
+ggplot(data=satscores2) +
+  geom_boxplot(mapping=aes(x = treatment, y = response), fill=myPalette[3]) +
+  labs(
+    title="Box-Plot der SAT Scores (Fall 2)", 
+    x="Geschlecht", 
+    y="Punktzahlen"
+  ) +
+  theme(legend.position = "none")
+
+ggsave(filename="satscorebox2.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Hypothesentests
+Wir führen jetzt die Hypothesentests durch. Dazu verwenden wir wieder die Funktion *t.test*.
+Wir gehen davon aus, dass die Varianzen in beiden Teilen übereinstimmen. Das Ergebnis, das wir erhalten wird nicht wesentlich beeinflusst, wovon Sie sich überzeugen können. Aber wir hatten bei der
+Untersuchung der Streuung festgestellt, dass die Standardabweichungen in beiden Teilen
+der Teilnehmer übereingestimmt hatten.
+
+```{r satscorettest1, include=TRUE, echo=TRUE}
+
+t.test(response~treatment, data=satscores1,
+                 paired=FALSE,
+                 alternative="two.sided",
+                 var.equal=TRUE)
+```
+
+Auf Grund dieser Ergebnisse verwerfen wir für diese Daten
+die Nullhypothese, dass die Erwartungswerte bei Frauen und Männer gleich sind, nicht.
+Das hatten wir bereits an Hand der Visualisierungen vermutet.
+
+Wir betrachten jetzt den Fall 2. Hier würden wir vermuten, dass die Nullhypothese verworfen wird:
+
+```{r satscore2tests, include=TRUE, echo=TRUE}
+t.test(response~treatment, data=satscores2,
+                 paired=FALSE,
+                 alternative="two.sided",
+                 var.equal=TRUE)
+```
+
+Die Ausgaben von R bestätigen diese Vermutung, wir verwerfen die Nullhypothese und gehen jetzt davon aus,
+dass sich die Erwartungswerte für die Punktzahlen bei Frauen und Männern unterscheiden.
+
+# Varianzanalyse - Analysis of Variance
+Bei den bisherigen Betrachtungen stellen wir fest, dass wir auf der einen Seite
+die Varianz im kompletten Datensatz, unabhängig vom Geschlecht der Studierenden
+in Relation zur Varianz in den beiden Einzelteilen setzen müssen.
+Als Daten für die Darstellung verwenden wir den Fall 2 der SAT Scores.
+
+Dazu berechnen wir zuerst die Streuung der Mitelwerte der beiden Teilmengen für
+das jeweilige Geschlecht um den Mittelwert des kompletten Datensatzes.
+Die beiden Mittelwerte sind durch `r agg2$Mittelwerte[2]` und `r agg2$Mittelwerte[1]` gegeben, der Mittelwert
+für die Spalte *response* ist durch `r 0.5*(agg2$Mittelwerte[1] + agg2$Mittelwerte[2])` gegeben.
+Diese Summe von quadratischen Abweichungen nennen wir *SST*
+für *sum of squares for treatment*. 
+Wir formulieren dies direkt allgemein für mehr als 2 Teile, als Symbol verwenden
+wir p. Im Beispiel ist p=2, mit $\overline{y}$ bezeichnen wir den Mittelwert
+des Gesamtdatensatzes, mit $\overline{y}_i$ die der einzelnen Gruppen:
+\[
+SST = \sum_{i=1}^p n_i(\overline{y}_i - \overline{y})^2 
+\]
+Dies berechnen wir jetzt für unser Beispiel:
+ 
+```{r sst, include=TRUE, echo=TRUE}
+n1 <- 5
+n2 <- 5
+ybar<- 0.5*(agg2$Mittelwerte[1] + agg2$Mittelwerte[2])
+sst <- n1*(agg2$Mittelwerte[1]-ybar)**2 + n2*(agg2$Mittelwerte[2]-ybar)**2
+```
+ 
+Für unser Beispiel erhalten wir einen Wert SST = `r sst`.
+
+Jetzt bilden wir eine weitere Quadratsumme, mit der wir die Streuung
+innerhalb der Gruppen messen. Wir nennen diese Summe *sum of squares for error* 
+und kurz SSE. Wieder formulieren wir die Formel allgemein und setzen
+unsere konkreten Werten aus dem Fall 2 ein.
+\[
+SSE = \sum_{j=1}^n_1 (y_{1j - \overline{y}_1)^2 + \ldots + \sum_{j=1}^n_p (y_{pj - \overline{y}_p)^2
+\]
+Für unser Beispiel ist dies leicht zu berechnen, da die ersten 5 Zeilen
+zu den Frauen und die restlichen5 Zeilen zu den männlichen Teilnehmern gehören:
+
+```{r  sse, include=TRUE, echo=TRUE}
+sse1 <- satscores2$response[1:5]
+sse1 <- sse1 - agg2$Mittelwerte[2]
+sse1Sum <- sum(sse1**2)
+
+sse2 <- satscores2$response[6:10]
+sse2 <- sse2 - agg2$Mittelwerte[1]
+sse2Sum <- sum(sse1**2)
+
+sse <- sse1Sum+sse2Sum
+```
+
+Wir erhalten das Ergebnis `r sse` für SSE. Jetzt müssen wir diese Quadratsummen
+noch durch die Anzahl der Freiheitsgrade dividieren, damit berechnen wir die
+Variablen *mean square for treatments* MST und *mean square for error* MSE:
+\[
+MST = \frac{SST}{p-1}, MSE = \frac{SSE}{n-p}.
+\]
+
+```{r  mstmse, include=TRUE, echo=FALSE}
+mst <- sst
+mse <- sse/8
+fvalue <- mst/mse
+```
+
+In unserem Beispiel ist p=2, damit erhalten wir für den Fall 2 die beiden Werte
+`r mst` für MST und r mse` für MSE.
+
+Jetzt setzen wir diese beiden Quadratsummen in Relation zueinander und bilden
+den Quotienten
+\[
+F = \frac{MST}{MSE}
+\]
+Ist der Quotient F nahe beim Wert 1 weisen darauf hin, dass die Streuung innerhalb der
+Gruppen und die Streuung im kompletten Datensatz sehr nahe beieinander liegen.
+Dann könnten die Unterschiede zwischen den verschiedenen Mittelwerte in den Gruppen
+einfach durch zufällige Einflüsse hervorgerufen werden. Anders sieht das aus wenn
+der Quotient F weit von 1 entfernt ist. Dann ist die Streuung innerhalb der verschiedenen
+Gruppenmittelwerte deutlich größer als die Streuung innerhalb der Gruppen, was ja 
+im Fall 2 durchaus der Fall ist. In unserem Beispiel
+erhalten wir einen Wert von `r fvalue` für den Quotienten.
+
+Ein Quotient von Quadratsummen wir F hat eine F-Verteilung. Also können wir damit
+wieder einen Hypothesentest durchführen und fragen uns, ob der Quotient weit genug von
+der 1 entfernt ist um die Nullhypothese zu verwerfen, dass die Erwartungswerte
+der Gruppen gleich sind.
+
+Wir berechnen die Quantile der F-Verteilung. Dazu haben wir zwei Freiheitsgrade
+für den Wert von p-1 und für n-p ein Zähler und Nenner. Dies sind die beiden Zahlen
+die wir bereits in der Berechnung von Zähler und Nenner verwendet haben.
+Wir berechnen das 95% Quantil:
+
+
+```{r  fquant, include=TRUE, echo=FALSE}
+fquant <- qf(0.95, 1, 8)
+```
+
+Wir erhalten den Wert `r fquant` für dieses Quantil. Unser berechnet Wert 
+liegt deutlich oberhalb dieses Quantils, so dass wir die Nullhypothese verwerfen, wie
+schon beim t-Test. Für den Fall 1 können wir alle Berechnungen analog durchführen.
+Hier ist der Quotient durch den Wert 1.78 gegeben. Wir verwerfen, wie schon beim t-Test,
+die Nullhypothese nicht.
+
+In R gibt es für den eben vorgestellten hypothesentest die Funktion *aov*.
+Der Aufruf der Funktion *aov* ähnelt dem Aufruf der Funktion *lm*, mit der wir lineare Modelle
+und Regressionsgeraden berechnen können. Das ist kein Zufall und liegt an der zu Grunde liegenden
+Mathematik. Wir führen einen Hypothesentest für den Fall 1 aus, bei dem der t-Test
+die Nullhypothese nicht verworfen hatte. Wir speichern dabei die Ausgabe der Funktion *aov*
+in einem Objekt und verwenden die Funktion *summary*, um die Ergebnisse des Tests auszugeben.
+
+
+```{r satscoreaovtest1, include=TRUE, echo=TRUE}
+aovfit1 <- aov(response~treatment, data=satscores1)
+summary(aovfit1)
+```
+
+Der p-Wert führt dazu, dass wir wieder die Nullhypothese nicht verwerfen. Im Eintrag
+*F value* finden wir unseren Zahlenwert wieder.
+
+Welches Ergebnis erhalten wir für den Fall 2?
+
+```{r satscoreaovtest2, include=TRUE, echo=TRUE}
+aovfit2 <- aov(response~treatment, data=satscores2)
+summary(aovfit2)
+```
+
+Wie schon selbst berechnet ist der *F value* durch 64 gegeben.
+Wieder wird die Nullhypothese verworfen, dafür spricht auchb der angegebene p-Wert.
+
+Im Fall von zwei Stufen einer Einflussgröße können wir sowohl die Funktion *t.test* oder 
+die Funktion *aov* einsetzen. Das statistische Ergebnis der Tests ist das gleiche.
+
+# Literaturverzeichnis
+
