@@ -3,6 +3,12 @@ title: "ANOVA - Repeated Measurs"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -11,12 +17,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
@@ -122,7 +122,7 @@ Wir erkennen sehr gut, dass es offensichtlich Unterschiede in den Mittelwerten g
 ggplot(data=selfesteem) +
   geom_boxplot(mapping=aes(x = time, y = score), fill=myPalette[3]) +
   labs(
-    title="Box-Plot für den Datensatz selfesteem für die drei Zeitpunkte)", 
+    title="Box-Plot für den Datensatz selfesteem für die drei Zeitpunkte", 
     x="Zeitpunkte", 
     y="Scores"
   ) +
@@ -136,7 +136,7 @@ Beides zeigt uns, dass es durchaus Sinn macht die ANOVa durchzuführen.
 ## Hypothesentest
 Jetzt führen wir den Hypothesentest durch.
 
-```{r selfTest, include=TRUE, echo=FALSE}
+```{r selfTest, include=TRUE, echo=TRUE}
 aov.test <- selfesteem %>%
   anova_test(dv = score, wid = id, within = time)
 
@@ -148,7 +148,7 @@ Wir führen wieder paarweise Vergleiche durch, um zu untersuchen ob alle Zeitpun
 zu einer Veränderung führen. Dabei verwenden wir t-Tests, dabei achten wir natürlich darauf,
 dass wir einen gepaarten t-Test durchführen.
 
-```{r selfpwc, include=TRUE, echo=FALSE}
+```{r selfpwc, include=TRUE, echo=TRUE}
 pwc <- selfesteem %>%
   pairwise_t_test(
     score ~ time, paired = TRUE,

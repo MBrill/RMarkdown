@@ -3,12 +3,6 @@ title: "Analysis of Variance - ANOVA"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -17,6 +11,12 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
@@ -206,7 +206,7 @@ par(las=2)
 par(mar=c(5,8,2,4))
 plot(tukey, las=1, col="darkgoldenrod1")
 
-png(filename="images/cholesterolTukey.png", 
+png(filename="images/cholesterolHSDTukey.png", 
     width = 16, height = 9, units="cm",
     res=300)
 
@@ -249,7 +249,7 @@ plot(cld(tukey, level=0.05), col="darkgoldenrod1")
 dev.off()
 ```
 
-Stufen, die gemeinsame Buchstaben-Codes haben wie *2times" oder *4times"*
+Stufen, die gemeinsame Buchstaben-Codes haben wie *2times* oder *4times*
 haben keine signifikanten Unterschiede in den Erwartungswerten.
 Die Stufe *4times* ist besser als *1times*. Die Stufe *drugD*
 ist ergibt nicht signifikant bessere Ergebnisse als *4times*, bei beiden
@@ -400,7 +400,7 @@ ggplot(ToothGrowth, aes(x=supp, y = len)) +
   ) +
   guides(fill=guide_legend(title="Dosis in mg"))
 
-ggsave(filename="toothBox", plot=last_plot(), device="png",
+ggsave(filename="toothBox.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
 Man erkennt auch hier durchaus eine Unterscheidung, insbesondere scheint es einen Zusammenhang zwischen der verwendeten Dosis und dem Resultat in der Länge der Zähne
@@ -592,7 +592,7 @@ ggplot(headache, aes(x=treatment, y = pain_score)) +
   guides(fill=guide_legend(title="Risiko für Migräne")) +
   facet_grid(~gender)
 
-ggsave(filename="headacheBox", plot=last_plot(), device="png",
+ggsave(filename="headacheBox.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
 
