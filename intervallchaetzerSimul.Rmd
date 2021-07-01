@@ -198,7 +198,7 @@ Dabei verwenden wir wie bisher auch den Wert 5.0 für die Standardabweichung.
 
 ```{r umfangCom, echo=TRUE}
 prognose_length <- 2.0
-alpha = 0.025
+alpha = 0.05
 ub = qnorm(1-alpha/2)
 
 n <- 2.0*sigma_0*ub/prognose_length
@@ -277,7 +277,6 @@ sem <- sd_est/sqrt(n)
 
 Wir erhalten als Ergebnis für sem den Wert `r sem`.
 
-
 Wieder verwenden wir das Niveau 95%, also 5% Irrtumswahrscheinlichkeit
 Die berechnungen bleiben fast gleich, wir ersetzen
 die Funktion *qnorm* durch *qt$. Dabei achten wir darauf, dass
@@ -320,11 +319,63 @@ die Irrtumswahrscheinlichkeit oder den Stichproben-Umfang verändern.
 Die Effekte die auftreten sind analog zu denen, die wir bereits
 festgehalten haben.
 
-# Intervallschätzungen für die Standardabweichung
-Auch für die Standardabweichung einer untersuchten verteilung können
+# Intervallschätzungen für die Varianz
+Auch für die Varianz einer untersuchten verteilung können
 wir Intervallschätzungen erstellen. Dabei benötigen wir
 eine weitere Verteilung, die Chi-Quadrat-Verteilung und ihre
-Quantile. Diese Verteilung steht als xchisq zur Verfügung,
+Quantile. Diese Verteilung steht in R als *chisq* zur Verfügung,
 so dass das Vorgehen analog zu bisher verläuft. Der einzige
 Unterschied den man beachten sollte ist, dass diese Verteilung
-nicht mehr symmetrisch ist, was man bei der Standardnormalverteilung oder der t-Verteilung verwenden kann.
+nicht mehr symmetrisch ist, was man bei der Standardnormalverteilung oder der t-Verteilung verwenden kann. Auch für diese Verteilung
+gibt es ein Markdown-Dokument mit grafischen Darstellungen
+von Dichten und Verteilungsfunktionen.
+
+Als Stichprobenfunktionen verwenden wir die Stichprobenvarianz
+und die Stichprobenstandardabweichung. Auch hier verwenden wir
+wieder unser Beispiel der Stichprobe bei der Untersuchung der Reißfestigkeit in einem Unternehmen.
+
+```{r festigkeitvar05,  message=FALSE, echo=TRUE, results='asis'}
+festigkeit <- c(106.0, 102.0, 94.0,107.0, 99.0)
+n <- length(festigkeit)
+var_est <- var(festigkeit)
+
+alpha = 0.05
+
+ql <- 1.0 - alpha/2
+qu <- alpha/2.0
+
+lb <- qchisq(ql, df = n-1)
+ub <- qchisq(qu, df = n-1)
+
+# Grenzen
+a <- (n-1)/lb * var_est
+b <- (n-1)/ub * var_est
+
+# Intervall
+prognose <- c(a, b)
+```
+Das Prognose-Intervall mit Irrtumswahrscheinlichkeit `r alpha`, zum Niveau `r 1 - alpha`, für die Varianz ist gegeben als
+[ `r prognose` ].
+
+Wir berechnen eine weitere Schätzung, dieses Mal mit Irrtumswahrscheinlichkeit 0.1. Hier erwarten wir dann ein
+kleineres Intervall, da wir eine größere Unsicherheit zulassen.
+
+```{r festigkeitvar10,  message=FALSE, echo=FALSE, results='asis'}
+alpha = 0.1
+
+ql <- 1.0 - alpha/2
+qu <- alpha/2.0
+
+lb <- qchisq(ql, df = n-1)
+ub <- qchisq(qu, df = n-1)
+
+# Grenzen
+a <- (n-1)/lb * var_est
+b <- (n-1)/ub * var_est
+
+# Intervall
+prognose <-  c(a, b)
+```
+
+Das Prognose-Intervall mit Irrtumswahrscheinlichkeit `r alpha`, zum Niveau `r 1 - alpha`, für die Varianz ist gegeben als
+[ `r prognose` ].

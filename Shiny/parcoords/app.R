@@ -1,6 +1,12 @@
 library(shiny)
+library(plotly)
 
 ui <- fluidPage(
+    
+    # App title ----
+    titlePanel("Parallele Koordinaten mit plotly mit Shiny"),
+    # HTML-Ausgabe
+    htmlOutput("textbody"),
     plotlyOutput("parcoords"),
     verbatimTextOutput("info")
 )
@@ -27,9 +33,17 @@ server <- function(input, output, session) {
             event_register("plotly_restyle")
     })
     
+    # Informationstext ausgeben
     output$info <- renderPrint({
         d <- event_data("plotly_restyle")
         if (is.null(d)) "Brush along a dimension" else d
+    })
+    
+    # Text ausgeben
+    output$textbody <- renderUI({
+        HTML("<p>Parallele Koordinaten für den Datensatz Iris,
+             verknüpft in einer Shiny-App</p>
+             <p>Unterhalb der Grafik finden sie Info-Ausgaben aus R.</p>")
     })
     
 }

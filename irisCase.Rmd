@@ -55,7 +55,7 @@ irisValues <- iris[,-5]
 ```
 
 # Quellen
-Die Darstellung der Verfahren orientiert sich an [@tibshirani_13] und [kabacoff_15].
+Die Darstellung der Verfahren orientiert sich an [@tibshirani_13] und [@kabacoff_15].
 
 # Visualisierungen
 Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,

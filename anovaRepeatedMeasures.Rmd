@@ -1,0 +1,183 @@
+---
+title: "ANOVA - Repeated Measurs"
+author: "Manfred Brill"
+date: "Sommersemester 2021"
+output: 
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "RdYlGn")
+
+# Library für die Funktion plotmeans
+library(gplots)
+
+# Library für den Datensatz cholesterol
+suppressPackageStartupMessages(library(multcomp))
+library(multcomp)
+
+# Library für den Datensatz ...
+suppressPackageStartupMessages(library(car))
+library(car)
+
+# Packages aus datanovia
+library(rstatix)
+library(ggpubr)
+library(datarium)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=4)
+```
+
+# ANOVA für repeated measures
+Mit *repeated measures ANOVA* analysiert man Daten bei denen Subjekte im Experiment
+mehrfach vermessen oder erfasst werden. Eine andere Bezeichnung dafür
+ist *within-subjects ANOVA*. Mit *within-subject* ist gemeint, das ein Merkmal
+der identischen Indivuuen zu mehreren Zeitpunkten erfasst werden. Wir hatten beim Thema
+t-Test bereits verbundene oder gepaarte Tests durchgeführt - jetzt untersuchen wir
+den analogen Fall mit ANOVA.
+
+Wir konzentrieren uns auf *one-way repeated measures*. Die Ausweitung auf zweifaktorielle
+Varianzanalyse oder noch mehr Faktoren können aber analog bearbeitet werden. Wieder verwenden wir die Packages *rstatix*, *ggpubr* und *datarium*.
+
+In diesem Dokument konzentrieren wir uns auf die Durchführung der Tests. 
+Mehr zu Voraussetzungen für die Durchführung der Tests und zu den Verfahren findet man 
+in  [@kassambara_19] und online auf [@kassambara].
+
+# One-way repeated measures ANOVA
+
+## Der Datensatz
+Als Datensatz verwenden wir *selfesteem* aus dem Package *datarium*. Der Hilfetext zu diesem Datensatz:
+
+"*
+The dataset contains 10 individuals' self-esteem score on three time points during a specific diet to determine whether their self-esteem improved.
+*"
+Wir werfen einen Blick auf das tibble:
+
+```{r self, include=TRUE, echo=TRUE}
+kable(head(selfesteem, 3), align="l",
+      caption="Tabelle 1: Die ersten drei Zeilen des Datensatzes selfesteem") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Wir sehen die gespeicherten Werte zu den drei Zeitpunkten, die als *t1*, *t2* und *t3* gekennzeichnet sind. Die Daten liegen im sogenannten *wide-format* vor, was nicht nur für
+die Durchführung von ANOVA eher ungeeignetist. Im Package *tidyverse* gibt es die
+sehr nützliche Funktion *gather*, mit der wir solche Daten in das *long-format*
+umwandeln können. Wir führen dies jetzt durch, im Ergebnis erkennen wir sehr gut,
+was unter einem *long-format* verstanden wird.
+
+```{r selfGather, include=TRUE, echo=TRUE}
+selfesteem <- selfesteem %>%
+  gather(key="time", value = "score", t1, t2, t3) %>%
+  convert_as_factor(id, time)
+
+kable(head(selfesteem, 3), align="l",
+      caption="Tabelle 2: Der Datensatz selfesteem im long-format") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Wir sehen gut, was ein *long-format* ist. Wir erhalten eine neue Spalte, in der der Zeitpunkt für die Messung gekennzeichnet ist. Dabei haben wir sicher gestellt, dass diese Spalte vom Datentyp *factor* ist, was wir natürlich bei der Durchführung des ANOVA benötigen.
+
+Wir berechnen mit Hilfe der Funktion *summarize* die Anzahlen, die Mittelwerte und die Standardabweichungen:
+
+```{r satscoreAgg1, include=TRUE, echo=FALSE}
+agg1 <- selfesteem %>%
+  group_by(time) %>%
+  summarize(Mittelwerte=mean(score),
+            Standardabweichungen=sd(score),
+            .groups="keep")
+
+agg1
+```
+
+Wir erkennen sehr gut, dass es offensichtlich Unterschiede in den Mittelwerten gibt. Das überprüfen wir wiederum mit Hilfe eines Box-Plots.
+
+```{r selfBox, include=TRUE, echo=FALSE}
+ggplot(data=selfesteem) +
+  geom_boxplot(mapping=aes(x = time, y = score), fill=myPalette[3]) +
+  labs(
+    title="Box-Plot für den Datensatz selfesteem für die drei Zeitpunkte)", 
+    x="Zeitpunkte", 
+    y="Scores"
+  ) +
+  theme(legend.position = "none")
+
+ggsave(filename="selfesteemBox.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+Beides zeigt uns, dass es durchaus Sinn macht die ANOVa durchzuführen.
+
+## Hypothesentest
+Jetzt führen wir den Hypothesentest durch.
+
+```{r selfTest, include=TRUE, echo=FALSE}
+aov.test <- selfesteem %>%
+  anova_test(dv = score, wid = id, within = time)
+
+get_anova_table(aov.test)
+```
+
+## Post-hoc Analyse
+Wir führen wieder paarweise Vergleiche durch, um zu untersuchen ob alle Zeitpunkte
+zu einer Veränderung führen. Dabei verwenden wir t-Tests, dabei achten wir natürlich darauf,
+dass wir einen gepaarten t-Test durchführen.
+
+```{r selfpwc, include=TRUE, echo=FALSE}
+pwc <- selfesteem %>%
+  pairwise_t_test(
+    score ~ time, paired = TRUE,
+    p.adjust.method = "bonferroni"
+  )
+
+pwc
+```
+Wir können das Tibble *pwc* (die Abkürzung steht für *pairweise comparison*)
+mit Hilfe von *ggplot2* ausgeben:
+
+```{r selfpwcTukey, include=TRUE, echo=TRUE}
+pwc <- pwc %>% 
+  add_xy_position(x = "time")
+
+ggplot(data=selfesteem, aes(x=time, y = score)) + 
+  geom_boxplot(fill="darkgoldenrod1", color="black") + 
+  stat_pvalue_manual(pwc, hide.ns=FALSE) + 
+  labs(
+    title="Paarweise Vergleiche nach Tukey für den Datensatz selfesteem",
+    x = "Zeitpunkte",
+    y = "Scores"
+  )
+
+ggsave(filename="selfesteemTukey.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Wir erkennen gut, dass es signifikante Unterschiede zwischen den drei Zeitpunkten gibt.
+
+# Literaturverzeichnis
+
