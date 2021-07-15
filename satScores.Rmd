@@ -44,12 +44,11 @@ options(digits=4)
 # Motivation
 
 Wir haben bereits Hypothesentests durchgeführt, mit denen wir
-zwei Stichproben oder eine Spalte, die wir mit einem Faktor in zwei
-Teile aufteilen können darauf überprüfen können, ob die Erwartungswerte
+zwei Stichproben darauf überprüfen können, ob die beiden Erwartungswerte
 gleich sind oder nicht. Dazu haben wir einen t-Test durchgeführt.
 Wir betrachten ein weiteres Beispiel für den Einsatz solcher
 unverbunderen t-Tests und führen anschließend
-die Variationsanalyse (ANOVA) ein. Wir erhalten bei unseren
+die Variationsanalyse oder kurz ANOVA (*analysis of variance*) ein. Wir erhalten bei unseren
 Hypothesentests die gleichen Ergebnisse. Der Vorteil
 der Variationsanalyse ist jedoch, dass wir diesen Ansatz 
 auf mehr als zwei Einflussgrößen oder Level in einem Datensatz
@@ -58,14 +57,14 @@ anwenden können.
 # Unverbundene t-Tests
 Wir wiederholen nochmals den Einsatz von t-Tests und gehen am Ende
 zu einer Funktion in R über, die das gleiche Experiment an Hand
-eines Hypothesentests untersucht, der ANOVA verwendet.
+eines Hypothesentests untersucht und dafür ANOVA verwendet.
 
 Die Daten die wir in diesem Abschnitt verwenden stammen aus [@mcclave_91].
 Wir untersuchen die SAT scores, die Prüfungsergebnisse von potentiellen
 Studierenden an einer amerikanischen Hochschule. Dazu gibt das Buch
 insgesamt 10 Daten an, jeweils 5 Daten von Frauen und 5 von Männern.
 Die Daten gibt es zweimal, wobei bei jeder Variante die Mittelwerte
-der Daten gleich sind und sich aber je nach Geschlecht unterscheiden.
+der Daten gleich sind und sich je nach Geschlecht unterscheiden.
 Die Frage ist natürlich ob wir mit einem t-Test oder ANOVA
 entscheiden können ob die Nullhypothese, dass die Erwartungswerte
 für beide Level gleich sind, verworfen wird oder nicht.
@@ -73,7 +72,9 @@ für beide Level gleich sind, verworfen wird oder nicht.
 ## Die Daten
 Die Daten für dieses Beispiel werden nicht aus einer Datei eingelesen
 sondern wurden auf dem Buch entnommen und in Datensätze
-in R überführt.
+in R überführt. 
+Die Daten werden als tibble abgelegt. Das Geschlecht wird als *factor* in einer weiteren Spalte
+abgelegt. Tabelle 1 zeigt den Inhalt dieses Datensatzes.
 
 ```{r satscore0, include=TRUE, echo=FALSE}
 satscorefemale1 <- c(490, 520, 550, 580, 610)
@@ -92,10 +93,6 @@ satscores2 <- tibble(response=scores2,
                      treatment=satlevels)
 ```
 
-Die Daten werden als tibble abgelegt. Das Geschlecht wird als *factor* in einer weiteren Spalte
-abgelegt. Tabelle 1 zeigt den Inhalt dieses Datensatzes.
-
-
 ```{r satscoreKable1, include=TRUE, echo=FALSE}
 kable(satscores1,
         align="l",
@@ -108,7 +105,7 @@ kable(satscores1,
 
 Wir berechnen mit Hilfe der Funktion *summarize* den Mittelwert und die Standardabweichung:
 
-```{r satscoreAgg1, include=TRUE, echo=FALSE}
+```{r satscoreAgg1, include=TRUE, echo=TRUE}
 agg1 <- satscores1 %>%
   group_by(treatment) %>%
   summarize(Mittelwerte=mean(response),
@@ -148,8 +145,8 @@ Teile der Ergebnisse überein, wir erhalten jeweils den Wert `r agg2$Standardabw
 
 ## Visualisierungen
 Wir visualisieren jetzt beide Datensätze um uns einen Eindruck zu beschaffen, ob
-die Nullhypothese in den anschließenden Hypothesentests verworfen werden wird oder nicht.
-Dazu verwenden wir einmal *ggplot* und stellen die Werte als Punkte auf dem Zahlenstrahl aus.
+die Nullhypothese in den anschließenden Hypothesentests verworfen werden kann oder nicht.
+Dazu stellen die Werte als Punkte auf dem Zahlenstrahl aus.
 
 ```{r satscore1Plot, include=TRUE, echo=FALSE, fig.height=2}
 ggplot(satscores1, aes(x=response)) +
@@ -222,10 +219,10 @@ plotmeans(response ~ treatment, data=satscores1,
           barcol="darkgoldenrod1",
           main='Prüfungsergebnisse (Fall 1)\n95% Konfidenzniveau')
 
-dev.off()
+invisible(dev.off())
 ```
 
-Jetzt visualisieren wir mit den gleichen Funktionen den zweiten Fall.
+Jetzt visualisieren wir mit den gleichen Funktionen den zweiten Fall:
 
 ```{r satscore2a, include=TRUE, echo=FALSE, fig.height=2}
 ggplot(satscores2, aes(x=response)) +
@@ -275,7 +272,7 @@ plotmeans(response ~ treatment, data=satscores2,
           barcol="darkgoldenrod1",
           main="Prüfungsergebnisse (Fall 2)\n95% Konfidenzniveau")
 
-dev.off()
+invisible(dev.off())
 ```
 
 In diesem Fall sehen wir, dass die Ergebnisse klar voneinander getrennt sind. Das ist in beiden Abbildungen
@@ -299,12 +296,13 @@ ggsave(filename="satscorebox2.png", plot=last_plot(), device="png",
 
 ## Hypothesentests
 Wir führen jetzt die Hypothesentests durch. Dazu verwenden wir wieder die Funktion *t.test*.
-Wir gehen davon aus, dass die Varianzen in beiden Teilen übereinstimmen. Das Ergebnis, das wir erhalten wird nicht wesentlich beeinflusst, wovon Sie sich überzeugen können. Aber wir hatten bei der
+Wir gehen davon aus, dass die Varianzen in beiden Teilen übereinstimmen. Das Ergebnis, das wir erhalten wird durch diese Einstellung nicht wesentlich beeinflusst, wovon Sie sich gerne überzeugen können. Aber wir hatten bei der
 Untersuchung der Streuung festgestellt, dass die Standardabweichungen in beiden Teilen
-der Teilnehmer übereingestimmt hatten.
+der Teilnehmer überein gestimmt hatten.
+
+Wir beginnen mit dem Fall 1:
 
 ```{r satscorettest1, include=TRUE, echo=TRUE}
-
 t.test(response~treatment, data=satscores1,
                  paired=FALSE,
                  alternative="two.sided",
@@ -315,7 +313,7 @@ Auf Grund dieser Ergebnisse verwerfen wir für diese Daten
 die Nullhypothese, dass die Erwartungswerte bei Frauen und Männer gleich sind, nicht.
 Das hatten wir bereits an Hand der Visualisierungen vermutet.
 
-Wir betrachten jetzt den Fall 2. Hier würden wir vermuten, dass die Nullhypothese verworfen wird:
+Wir betrachten jetzt den Fall 2. Hier würden wir erwarten, dass die Nullhypothese verworfen wird:
 
 ```{r satscore2tests, include=TRUE, echo=TRUE}
 t.test(response~treatment, data=satscores2,
@@ -324,7 +322,7 @@ t.test(response~treatment, data=satscores2,
                  var.equal=TRUE)
 ```
 
-Die Ausgaben von R bestätigen diese Vermutung, wir verwerfen die Nullhypothese und gehen jetzt davon aus,
+Die Ausgaben von R bestätigen diese Erwartung, wir verwerfen die Nullhypothese und gehen davon aus,
 dass sich die Erwartungswerte für die Punktzahlen bei Frauen und Männern unterscheiden.
 
 # Varianzanalyse - Analysis of Variance
@@ -333,13 +331,13 @@ die Varianz im kompletten Datensatz, unabhängig vom Geschlecht der Studierenden
 in Relation zur Varianz in den beiden Einzelteilen setzen müssen.
 Als Daten für die Darstellung verwenden wir den Fall 2 der SAT Scores.
 
-Dazu berechnen wir zuerst die Streuung der Mitelwerte der beiden Teilmengen für
+Dazu berechnen wir zuerst die Streuung der Mittelwerte der beiden Teilmengen für
 das jeweilige Geschlecht um den Mittelwert des kompletten Datensatzes.
 Die beiden Mittelwerte sind durch `r agg2$Mittelwerte[2]` und `r agg2$Mittelwerte[1]` gegeben, der Mittelwert
 für die Spalte *response* ist durch `r 0.5*(agg2$Mittelwerte[1] + agg2$Mittelwerte[2])` gegeben.
 Diese Summe von quadratischen Abweichungen nennen wir *SST*
 für *sum of squares for treatment*. 
-Wir formulieren dies direkt allgemein für mehr als 2 Teile, als Symbol verwenden
+Wir formulieren dies direkt allgemein für mehr als 2 Teile, als Symbol für die Anzahl der Teile verwenden
 wir p. Im Beispiel ist p=2, mit $\overline{y}$ bezeichnen wir den Mittelwert
 des Gesamtdatensatzes, mit $\overline{y}_i$ die der einzelnen Gruppen:
 \[
@@ -354,7 +352,7 @@ ybar<- 0.5*(agg2$Mittelwerte[1] + agg2$Mittelwerte[2])
 sst <- n1*(agg2$Mittelwerte[1]-ybar)**2 + n2*(agg2$Mittelwerte[2]-ybar)**2
 ```
  
-Für unser Beispiel erhalten wir einen Wert SST = `r sst`.
+Für unser Beispiel erhalten wir den Wert SST = `r sst`.
 
 Jetzt bilden wir eine weitere Quadratsumme, mit der wir die Streuung
 innerhalb der Gruppen messen. Wir nennen diese Summe *sum of squares for error* 
@@ -392,34 +390,32 @@ fvalue <- mst/mse
 ```
 
 In unserem Beispiel ist p=2, damit erhalten wir für den Fall 2 die beiden Werte
-`r mst` für MST und r mse` für MSE.
+`r mst` für MST und `r mse` für MSE.
 
 Jetzt setzen wir diese beiden Quadratsummen in Relation zueinander und bilden
 den Quotienten
 \[
 F = \frac{MST}{MSE}
 \]
-Ist der Quotient F nahe beim Wert 1 weisen darauf hin, dass die Streuung innerhalb der
-Gruppen und die Streuung im kompletten Datensatz sehr nahe beieinander liegen.
+Ist der Quotient F nahe beim Wert 1 weist dies darauf hin, dass die Streuung innerhalb der Gruppen und die Streuung im kompletten Datensatz sehr nahe beieinander liegen.
 Dann könnten die Unterschiede zwischen den verschiedenen Mittelwerte in den Gruppen
-einfach durch zufällige Einflüsse hervorgerufen werden. Anders sieht das aus wenn
+einfach durch zufällige Einflüsse entstanden sein. Anders sieht es aus wenn
 der Quotient F weit von 1 entfernt ist. Dann ist die Streuung innerhalb der verschiedenen
 Gruppenmittelwerte deutlich größer als die Streuung innerhalb der Gruppen, was ja 
 im Fall 2 durchaus der Fall ist. In unserem Beispiel
-erhalten wir einen Wert von `r fvalue` für den Quotienten.
+erhalten wir in diesem Fall einen Wert von `r fvalue` für den Quotienten.
 
 Ein Quotient von Quadratsummen wir F hat eine F-Verteilung. Also können wir damit
 wieder einen Hypothesentest durchführen und fragen uns, ob der Quotient weit genug von
 der 1 entfernt ist um die Nullhypothese zu verwerfen, dass die Erwartungswerte
 der Gruppen gleich sind.
 
-Wir berechnen die Quantile der F-Verteilung. Dazu haben wir zwei Freiheitsgrade
-für den Wert von p-1 und für n-p ein Zähler und Nenner. Dies sind die beiden Zahlen
+Wir berechnen die Quantile der F-Verteilung. Dazu haben wir die Freiheitsgrade
+p-1 und für n-p in Zähler und Nenner. Dies sind die beiden Zahlen
 die wir bereits in der Berechnung von Zähler und Nenner verwendet haben.
 Wir berechnen das 95% Quantil:
 
-
-```{r  fquant, include=TRUE, echo=FALSE}
+```{r  fquant, include=TRUE, echo=TRUE}
 fquant <- qf(0.95, 1, 8)
 ```
 
@@ -429,6 +425,7 @@ schon beim t-Test. Für den Fall 1 können wir alle Berechnungen analog durchfü
 Hier ist der Quotient durch den Wert 1.78 gegeben. Wir verwerfen, wie schon beim t-Test,
 die Nullhypothese nicht.
 
+# ANOVA in R
 In R gibt es für den eben vorgestellten hypothesentest die Funktion *aov*.
 Der Aufruf der Funktion *aov* ähnelt dem Aufruf der Funktion *lm*, mit der wir lineare Modelle
 und Regressionsgeraden berechnen können. Das ist kein Zufall und liegt an der zu Grunde liegenden
@@ -442,8 +439,9 @@ aovfit1 <- aov(response~treatment, data=satscores1)
 summary(aovfit1)
 ```
 
-Der p-Wert führt dazu, dass wir wieder die Nullhypothese nicht verwerfen. Im Eintrag
-*F value* finden wir unseren Zahlenwert wieder.
+Der p-Wert, den wir in der ersten Zeile der Ausgabe als letzten Wert finden, führt dazu, dass wir die Nullhypothese nicht verwerfen. Im Eintrag
+*F value* finden wir den wert des Quotienten wieder, den wir in der Herleitung
+manuell berechnet hatten.
 
 Welches Ergebnis erhalten wir für den Fall 2?
 
@@ -453,7 +451,7 @@ summary(aovfit2)
 ```
 
 Wie schon selbst berechnet ist der *F value* durch 64 gegeben.
-Wieder wird die Nullhypothese verworfen, dafür spricht auchb der angegebene p-Wert.
+Wieder wird die Nullhypothese verworfen, dafür spricht auch der angegebene p-Wert.
 
 Im Fall von zwei Stufen einer Einflussgröße können wir sowohl die Funktion *t.test* oder 
 die Funktion *aov* einsetzen. Das statistische Ergebnis der Tests ist das gleiche.
