@@ -1,8 +1,13 @@
 ---
 title: "Beschreibende Statistik mit R"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
+date: "Wintersemester 2021/22"
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -11,11 +16,6 @@ output:
     highligt: pygments
     theme: cosmo
     number_sections: yes
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
 bibliography: literatur.bib
 ---
 
@@ -104,8 +104,8 @@ Wir können Daten mit Hilfe von Parametern beschreiben. Dazu gibt es in *Tidyver
 Die Anzahl der Werte berechnen wir mit Hilfe
 der Funktion *tally*, und Häufigkeiten zählen wir
 mit *count*.
-*Tidyverse* kann wir gewohnt mit Hilfe von Funktionsaufrufen verwendet werden. 
-Sehr mächtig ist das Pipeline-Konzept.
+*Tidyverse* kann wie gewohnt mit Hilfe von Funktionsaufrufen verwendet werden. 
+Sehr mächtig ist das Pipeline-Konzept in *dplyr*.
 Für die Berechnung der Anzahl der Werte und
 der Häufigkeiten sehen Sie
 unten beide Methoden. 
@@ -123,7 +123,8 @@ frequencies <- liefer %>%
   group_by(Lieferzeiten) %>%
   summarize(n=n()) %>%
   mutate(relativ = n / sum(n),
-         prozent = relativ*100)
+         prozent = relativ*100,
+         .groups="keep")
 
 frequencies
 ```
