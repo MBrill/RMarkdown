@@ -1623,15 +1623,16 @@ div.tocify {
 <h1><span class="header-section-number">1</span> Hypothesentests mit einer Stichprobe und bekannter Standardabweichung</h1>
 <div id="zweiseitige-hypothesentests" class="section level2">
 <h2><span class="header-section-number">1.1</span> Zweiseitige Hypothesentests</h2>
+<p>In den Folien wird ein Beispiel mit der Füllmenge von Flaschen in einer Brauerei betrachtet. Wir haben eine Füllmenge und wir möchten mit Hilfe einer Stichprobe überprüfen, ob diese Füllmenge eingehalten wird. Dazu besetzen wir einige Variablen, die sowohl die vorgegebenen Mengen und die Ergebnisse der Stichprobe enthalten.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>mu_h0 &lt;-<span class="st"> </span><span class="fl">500.0</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a>n &lt;-<span class="st"> </span><span class="dv">25</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>mu_est &lt;-<span class="st"> </span><span class="fl">499.28</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
 <span id="cb1-5"><a href="#cb1-5"></a>sigma2 &lt;-<span class="st"> </span><span class="fl">2.25</span></span>
 <span id="cb1-6"><a href="#cb1-6"></a>sigma_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="kw">sqrt</span>(sigma2)</span></code></pre></div>
-<p>In den Folien wird ein Beispiel mit der Füllmenge von Flaschen in einer Brauerei betrachtet. Als Nullhypothese gehen wir davon aus, dass die mittlere Füllhöhe der Flaschen durch 500 cm<span class="math inline">\(^3\)</span> gegeben ist. Ab sofort lassen wir die Einheit der Füllhöhe im Text weg.</p>
-<p>Wir überprüfen diese Nullhypothese H0 gegen die Gegenhypothese H1, dass die mittlere Füllhöhe nicht durch diesen Betrag gegeben ist. Ein solcher Hypothesentest nennen wir <strong>zweiseitiger Hypothesentest</strong>.</p>
-<p>Wir gehen bei unserem Test davon aus, dass wir in einer Stichprobe mit 25 Flaschen durch das arithmetische Mittel 499.28 als Punktschätzer erhalten haben. Aus Unterlagen der Qualitätssicherung wissen wir, dass die Füllhöhe normalverteilt ist, mit einer Varianz von 2.25, also einer Standardabweichung von 1.5.</p>
+<p>Als Nullhypothese gehen wir davon aus, dass die mittlere Füllhöhe der Flaschen durch 500 cm<span class="math inline">\(^3\)</span> gegeben ist. Ab sofort lassen wir die Einheit der Füllhöhe im Text weg.</p>
+<p>Wir überprüfen diese Nullhypothese H0 gegen die Gegenhypothese H1, dass die mittlere Füllhöhe nicht durch diesen Betrag gegeben ist. Einen solchen Hypothesentest nennen wir <strong>zweiseitiger Hypothesentest</strong>.</p>
+<p>Wir gehen bei unserem Test davon aus, dass wir in einer Stichprobe mit 25 Flaschen durch das arithmetische Mittel 499.28 als Punktschätzer erhalten haben. Aus Unterlagen der Qualitätssicherung wissen wir, dass die Füllhöhe normalverteilt ist, mit einer Varianz von 2.25, also einer Standardabweichung von 1.5. Wenn wir jetzt noch das Konfidenzniveau festlegen haben wir alle Daten um das Prognoseintervall zu berechnen und unseren Hypothesentest durchzuführen.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>sem &lt;-<span class="st"> </span>sigma_<span class="dv">0</span><span class="op">/</span><span class="kw">sqrt</span>(n)</span>
 <span id="cb2-2"><a href="#cb2-2"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.01</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
@@ -1665,17 +1666,17 @@ div.tocify {
 <span id="cb3-13"><a href="#cb3-13"></a><span class="co"># Intervall</span></span>
 <span id="cb3-14"><a href="#cb3-14"></a>prognose &lt;-<span class="st"> </span>mu_est <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(a, b)</span></code></pre></div>
 <p>Das Prognose-Intervall mit Irrtumswahrscheinlichkeit 0.05, zum Niveau 0.95, ist gegeben als [498.692, 499.868]. Der Wert von 500 aus der Nullhypothese liegt nicht in diesem Intervall. Dann ist der Mittelwert, den wir für das Prognose-Intervall verwenden haben zu unwahrscheinlich - wir verwerfen die Nullhypothese und nehmen die Gegenhypothese, dass die mittlere Füllmenge <strong>nicht</strong> durch 500 gegeben ist, an.</p>
-<p>Allgemein bezeichnen wir das in den Beispielen berechnete Prognoseintervall den <strong>Annahmebereich</strong>. Liegt der Wert aus der Nullhypothse in diesem Intervall, dann verwerfen wir die Nullhypothese nicht. Das Komplement des Prognoseintervalls bezeichnen wir aus offensichtlichen Gründen als <strong>Verwerfungsbereich</strong>.</p>
+<p>Allgemein bezeichnen wir das in den Beispielen berechnete Prognoseintervall als den <strong>Annahmebereich</strong>. Liegt der Wert aus der Nullhypothse in diesem Intervall, dann verwerfen wir die Nullhypothese nicht. Das Komplement des Prognoseintervalls bezeichnen wir aus offensichtlichen Gründen als <strong>Verwerfungsbereich</strong>.</p>
 </div>
 <div id="einseitige-hypothesentests" class="section level2">
 <h2><span class="header-section-number">1.2</span> Einseitige Hypothesentests</h2>
-<p>Das Eichamt vermutet vermutlich eher, dass die Füllhöhe kleiner als der Wert 500ist. Oder das Unternehmens selbst vermutet eventuell, dass die Füllhöhe zu hoch ist. Solche Thesen können wir mit Hilfe von <strong>einseitigen Hypothesentests</strong> überprüfen. Hier verwenden wir als Gegenhypothese keine Ungleichung, sondern eine Ungleichung, entweder mit &gt; od er &lt;.</p>
-<p>Bei der Berechnung von <strong>Annahme-</strong> und <strong>Verwerfungsbereich</strong> müssen wir die restlichen Flächen nicht links und rechts anordnen sondern wir arbeiten mit dem Wert 1 - alpha. Für die Nullhypothese H0 verwenden wir als Beispiel <span class="math display">\[
+<p>Das Eichamt vermutet vermutlich eher, dass die Füllhöhe kleiner als der Wert 500 ist. Oder das Unternehmen selbst vermutet eventuell, dass die Füllhöhe zu hoch ist. Solche Thesen können wir mit Hilfe von <strong>einseitigen Hypothesentests</strong> überprüfen. Hier verwenden wir als Gegenhypothese eine Ungleichung, entweder mit dem Vergleichsoperator &gt; oder &lt;.</p>
+<p>Bei der Berechnung des <strong>Annahme-</strong> und <strong>Verwerfungsbereicsh</strong> müssen wir die restlichen Flächen nicht links und rechts anordnen sondern wir arbeiten mit dem Wert 1 - <span class="math inline">\(\alpha\)</span>. Für die Nullhypothese H0 verwenden wir als Beispiel <span class="math display">\[
 H_0: \mu \geq 500.
 \]</span> Dann ist die Gegenhypothese durch <span class="math display">\[
 H_1: \mu &lt; 500
 \]</span> gegeben.</p>
-<p>Das Vorgehen ist analog wie beim zweiseitigen Test, wir berechnen als Annahmebereich ein Intervall, das im negativen Unendlich auf dem Zahlenstrahl beginnt und als rechte Grenze durch das Quantil zur Warscheinlichkeit 1-alpha gegeben ist. Als Irrtumswahrscheinlichkeit verwenden wir 5%.</p>
+<p>Das Vorgehen ist analog wie beim zweiseitigen Test, wir berechnen als Annahmebereich ein Intervall, das bei <span class="math inline">\(-\infty\)</span> auf dem Zahlenstrahl beginnt und als rechte Grenze durch das Quantil zur Warscheinlichkeit 1 - <span class="math inline">\(\alpha\)</span> gegeben ist. Als Irrtumswahrscheinlichkeit verwenden wir 5%.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a>qu &lt;-<span class="st"> </span><span class="fl">1.0</span> <span class="op">-</span><span class="st"> </span>alpha</span>
@@ -1686,37 +1687,37 @@ H_1: \mu &lt; 500
 <span id="cb4-8"><a href="#cb4-8"></a></span>
 <span id="cb4-9"><a href="#cb4-9"></a><span class="co"># Intervall</span></span>
 <span id="cb4-10"><a href="#cb4-10"></a>prognose &lt;-<span class="st"> </span>mu_est <span class="op">+</span><span class="st"> </span>b</span></code></pre></div>
-<p>Wir erhalten als rechte Grenze des Annahmebereichs den Wert 499.7735. Mit dem Niveau 0.95 verwerfen wir die Nullhypothese und nehmend die Gegenhypothese an, dass die Füllhöhe weniger als 500 beträgt.</p>
-<p>Bemerkung: wenn wir für die Irrtumswahrscheinlichkeit 1% verwenden wird auch für dieses Niveau die Nullhypothese verworfen!</p>
+<p>Wir erhalten als rechte Grenze des Annahmebereichs den Wert 499.7735. Mit dem Niveau 0.95 verwerfen wir die Nullhypothese und nehmen die Gegenhypothese an, dass die Füllhöhe weniger als 500 beträgt.</p>
+<p>Bemerkung: wenn wir für die Irrtumswahrscheinlichkeit 1% verwenden wird auch für dieses Niveau die Nullhypothese verworfen, was Sie überprüfen sollten!</p>
 </div>
 <div id="gauß-test" class="section level2">
 <h2><span class="header-section-number">1.3</span> Gauß-Test</h2>
-<p>Bevor wir zu dem Fall gehen, dass wir die Standardabweichung nicht kennen formulieren wir den Ablauf des beschriebenen Hypothesentests allgemein. Wir werden bemerken, dass dieser Ablauf so gut wie immer eingehalten wird.</p>
+<p>Bevor wir zu dem Fall gehen, dass wir bei der Durchführung des Hypothesentests die Standardabweichung nicht kennen formulieren wir den Ablauf des beschriebenen Hypothesentests allgemein. Wir werden bemerken, dass dieser Ablauf so gut wie immer eingehalten wird. Wir nennen einen solchen Test <em>Gauß-Test</em>.</p>
 <ol style="list-style-type: decimal">
 <li>Wir formulieren die Nullhypothese H0 und die Gegenhypothese H1.</li>
-<li>Wir legen ein Signifikanzniveau 1 - alpha bzw. die Irrtumswahrscheinlichkeit alpha fest. Damit können wir den Annahme- bzw. den Verwerfungsbereich angeben.</li>
-<li>Wir berechnen den Wert der <strong>Statistik</strong>, hier den Wert z für den Punktschätzer des Erwartungswerts.</li>
-<li>Wir verwerfen H0, falls der Wert der Statistik nicht im Annahmebereich liegt. Liegt der Wert von z im Annahmebereich verwerfen wir die Nullhypothese nicht.</li>
+<li>Wir legen ein Signifikanzniveau 1 - <span class="math inline">\(\alpha\)</span> bzw. die Irrtumswahrscheinlichkeit <span class="math inline">\(\alpha\)</span> fest. Damit können wir den Annahme- bzw. den Verwerfungsbereich angeben.</li>
+<li>Wir verwerfen die Nullhypothese, falls der Wert der aus der Nullhypothese nicht im Annahmebereich liegt. Liegt der Wert im Annahmebereich verwerfen wir die Nullhypothese nicht.</li>
 </ol>
 </div>
 <div id="p-werte" class="section level2">
 <h2><span class="header-section-number">1.4</span> p-Werte</h2>
-<p>Neben den beiden Bereichen, die wir für die Annahme oder für das Verwerfen von Hypothesen aus den Prognose-Intervallen bilden wird in der Praxis sehr häufig mit dem sogenannten <strong>p-Wert</strong>, im Englischen <strong>p-value</strong>, gearbeitet. Manchmal finden wir auch die Bezeichnung <strong>observed significance level</strong>. Dieser Wert ist die Antwort auf die Frage, wie wahrscheinlich der Wert der Statistik im Schritt 3 ist, wenn die Nullhypothese gilt.</p>
-<p>Für einen zweiseitigen Hypothesentest können wir dieses p berechnen. Der Wert ist gegeben als die Wahrscheinlichkeit, dass wir den berechnen Wert der Statistik oder noch unwahrscheinlichere finden. Diese Berechnung können wir mit der Dichte, hier der Normalverteilung durchführen. Ist der berechnete p-Wert kleiner als die Irrtumswahrscheinlichkeit verwerfen wir die Nullhypothese.</p>
+<p>Neben den beiden Bereichen, die wir für die Annahme oder für das Verwerfen einer Nullhypothesn aus den Prognose-Intervallen bilden wird in der Praxis sehr häufig mit dem sogenannten <strong>p-Wert</strong>, im Englischen <strong>p-value</strong>, gearbeitet. Manchmal finden wir auch die Bezeichnung <strong>observed significance level</strong>. Dieser Wert ist die Antwort auf die Frage, wie wahrscheinlich der Wert der Punktschätzung ist, wenn die Nullhypothese wahr ist.</p>
+<p>Für einen zweiseitigen Hypothesentest können wir dieses p berechnen. Der Wert ist gegeben als die Wahrscheinlichkeit, dass wir den berechnen Wert der Punktschätzung oder noch unwahrscheinlichere finden. Diese Berechnung können wir mit der Dichte, hier der Normalverteilung durchführen. Ist der berechnete p-Wert kleiner als die Irrtumswahrscheinlichkeit verwerfen wir die Nullhypothese.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>p &lt;-<span class="st"> </span><span class="fl">2.0</span> <span class="op">*</span><span class="st"> </span><span class="kw">pnorm</span>(mu_est, <span class="dt">mean =</span> mu_h0, <span class="dt">sd =</span> sem)</span></code></pre></div>
-<p>Wir erhalten für den zweiseitigen Test den Wert 0.0164 für den p-Wert. Da er größer ist als 1% verwerfen wir für diese Irrtumswahrscheinlichkeit die Nullhypothese nicht (was wir ja bereits mit Hilfe des Annahmebereichs durchgeführt hatten). Für die Irrtumswahrscheinlichkeit 5% verwerfen wir die Nullhypothese.</p>
+<p>In unserem Beispiel mit den Füllhöhen erhalten für den zweiseitigen Test den Wert 0.0164 für den p-Wert. Da er größer ist als 1% verwerfen wir für diese Irrtumswahrscheinlichkeit die Nullhypothese nicht - dieses Ergebnis hatten bereits mit Hilfe des Annahmebereichs erzielt. Für die Irrtumswahrscheinlichkeit 5% verwerfen wir die Nullhypothese. Denn der p-Wert ist kleiner als 0.05.</p>
 <p>Auch für den einseitigen Hypothesentest können wir den p-Wert berechnen, hier verschwindet allerdings der Faktor 2.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>p &lt;-<span class="st"> </span><span class="kw">pnorm</span>(mu_est, <span class="dt">mean =</span> mu_h0, <span class="dt">sd =</span> sem)</span></code></pre></div>
-<p>Hier erhalten wir für p den Wert 0.0082.</p>
+<p>Hier erhalten wir für p den Wert 0.0082. Wie schon vorher entschieden verwerfen wir für beide Werte von <span class="math inline">\(\alpha\)</span>.</p>
 </div>
 </div>
 <div id="hypothesentest-mit-unbekannter-standardabweichung" class="section level1">
 <h1><span class="header-section-number">2</span> Hypothesentest mit unbekannter Standardabweichung</h1>
 <div id="t-tests" class="section level2">
 <h2><span class="header-section-number">2.1</span> t-Tests</h2>
-<p>In der Praxis werden wir die Standardabweichung für die Grundgesamtheit häufig nicht kennen. In diesem Fall führen wir einen sogenannten t-Test durch. Der Ablauf ist genauso wie oben, außer dass wir jetzt zwei Punktschätzer, für den Erwartungswert und die Varianz, verwenden und eine Zufallsvariable, eine <strong>Statistik</strong>, einsetzen, die nicht normal-, sondern t-verteilt ist.</p>
-<p>Da uns keine konkreten Werte für die Füllhöhen in der Brauerei vorliegen verwenden wir stattdessen Stichprobenwerte über die Reißfestigkeit, die wir in den Datensätzen in OLAT finden, die wir bereits als Beispiel für die Berechnung von Punkt- und Intervallschätzern eingesetzt haben. Wir führen einen zweiseitigen Hypothesentest aus, dabei verwenden wir Nullhypothese, dass der Erwartungswert der normalverteilten Grundgesamtheit durch 100 gegeben ist. Als Irrtumswahrscheinlichkeit verwenden wir 5%.</p>
-<p>Wir berechnen den Annahmebereich mit Hilfe der Quantile der t-Verteilung. Sonst entsteht kein großer Unterschied.</p>
+<p>In der Praxis werden wir die Standardabweichung für die Grundgesamtheit vermutlich nicht kennen. In diesem Fall führen wir einen sogenannten t-Test durch. Der Ablauf ist genauso wie oben, außer dass wir jetzt zwei Punktschätzer, für den Erwartungswert und die Varianz, verwenden und statt einer Normalverteilung die t-Verteilung einsetzen.</p>
+<p>Da uns keine konkreten Werte für die Füllhöhen in der Brauerei vorliegen verwenden wir stattdessen Stichprobenwerte über die Reißfestigkeit, die wir in den Datensätzen in OLAT finden, die wir bereits als Beispiel für die Berechnung von Punkt- und Intervallschätzern eingesetzt haben. Wir weisen die Werte direkt der Variable <em>festigkeit</em> zu, dann müssen wir die Werte nicht einlesen.</p>
+<p>Wir führen einen zweiseitigen Hypothesentest aus, dabei untersuchen wir die Nullhypothese, dass der Erwartungswert der normalverteilten Grundgesamtheit durch 100 gegeben ist. Als Irrtumswahrscheinlichkeit verwenden wir 5%.</p>
+<p>Wir berechnen den Annahmebereich mit Hilfe der Quantile der t-Verteilung. Sonst entsteht kein großer Unterschied im verwenden R-Quellcode.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>festigkeit &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">106</span>, <span class="dv">102</span>, <span class="dv">94</span>, <span class="dv">107</span>, <span class="dv">99</span>, <span class="dv">103</span>, <span class="dv">98</span>, <span class="dv">101</span>, <span class="dv">102</span>, <span class="dv">90</span>)</span>
 <span id="cb7-2"><a href="#cb7-2"></a></span>
 <span id="cb7-3"><a href="#cb7-3"></a>mu_h0 &lt;-<span class="st"> </span><span class="fl">100.0</span></span>
@@ -1746,12 +1747,13 @@ H_1: \mu &lt; 500
 <div id="hypothesentests-für-binomialverteilte-größen" class="section level2">
 <h2><span class="header-section-number">2.2</span> Hypothesentests für binomialverteilte Größen</h2>
 <p>Die Binomialverteilung wird sehr häufig in der Qualitätssicherung oder allgemein für die Modellierung von Anteilen in einer Grundgesamtheit eingesetzt.</p>
-<p>Als Beispiel betrachten wir einen Hersteller von Bauteilen, der angibt, dass der Anteil fehlerhafter Stücke in seiner Produktion höchstens 3% beträgt. Wir ziehen eine Stichprobe, um diese Angabe zu prüfen und entnehmen der Produktion 500 Bauteile. Die Nullhypothese ist jetzt, dass der Parameter p der binomialverteilten Zufallsvariable, die die Anzahl der defekten Bauteile modelliert durch p=0.03 gegeben ist. Die Gegenhypothese lautet, dass p ungleich 0.03ist. Wir legen eine Irrtumswahrscheinlichkeit von 0.05 fest. Wenn wir wie schon in der Wahrscheinlichkeitsrechnung eine Zählvariable verwenden, dann berechnen wir mit dem arithmeischen Mittel über diese Zählvariable eine Punktschätzung für p. Ist n groß genug, dann können wir die Binomialverteilung durch eine Normalverteilung ersetzen.</p>
-<p>Bevor wir dies durchführen rufen wir uns in Erinnerung: <span class="math display">\[
+<p>Als Beispiel betrachten wir einen Hersteller von Bauteilen, der angibt, dass der Anteil fehlerhafter Stücke in seiner Produktion höchstens 3% beträgt. Wir ziehen eine Stichprobe, um diese Angabe zu prüfen und entnehmen der Produktion 500 Bauteile. Die Nullhypothese ist jetzt, dass der Parameter p der binomialverteilten Zufallsvariable, die die Anzahl der defekten Bauteile modelliert durch p=0.03 gegeben ist. Die Gegenhypothese lautet, dass p ungleich 0.03 ist. Wir legen eine Irrtumswahrscheinlichkeit von 0.05 fest.</p>
+<p>Wenn wir wie schon in der Wahrscheinlichkeitsrechnung eine Zählvariable verwenden, dann berechnen wir mit dem arithmetischen Mittel über diese Zählvariable eine Punktschätzung für p. Ist n groß genug, dann können wir die Binomialverteilung durch eine Normalverteilung ersetzen.</p>
+<p>Bevor wir dies durchführen rufen wir uns einige Fakten für die Binomialverteilung in Erinnerung: <span class="math display">\[
 E(X) = n \cdot p, \sigma^2 = \frac{p(1-p)}{n}.
-\]</span> Mit dem arithmetischen Mittel berechnen wir eine Schätzung p, , die Standardabweichung können wir mit der in der Nullhypothese angegebenen Anteil berechnen und führen anschließend eine Gauß-Test für diese Statistik durch: <span class="math display">\[
+\]</span> Mit dem arithmetischen Mittel berechnen wir eine Schätzung p, die Standardabweichung können wir mit dem in der Nullhypothese angegebenen Anteil berechnen und führen anschließend einen Gauß-Test für diese Statistik durch: <span class="math display">\[
 H_0: p = p_0, H_1: p \neq p_0.
-\]</span> Wir berechnen die folgende standardnormalverteilte Statistik: <span class="math display">\[
+\]</span> Wir normalisieren die verwendete Zufallsvariable und berechnen die Zahl z, die <em>Statistik</em>: <span class="math display">\[
 z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 \]</span> Da z standardnormalverteilt ist können wir die Quantile der Standardnormalverteilung verwenden um den Annahmebereich zu berechnen und den Hypothesentest durchzuführen.</p>
 <p>Für die Durchführung des Hypothesentests gehen wir davon aus, dass wir in der Stichprobe mit n=500 Bauteilen 20 defekte Bauteile gefunden haben. Dann ist der Punktschätzer als 0.04 gegeben.</p>
@@ -1776,16 +1778,13 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 <h1><span class="header-section-number">3</span> Hypothesentests in R</h1>
 <div id="der-gauß-test-mit-der-funktion-z.test" class="section level2">
 <h2><span class="header-section-number">3.1</span> Der Gauß-Test mit der Funktion <em>z.test</em></h2>
-<p>Natürlich gibt es die Tests die wir vorgestellt haben (und noch viele mehr) als Funktionen in R. Den Hypothesentest mit bekannter Standardabweichung findet man nicht im Default-Paket <em>stats</em>, da in der Praxis meist ein t-Test durchgeführt wird. Im Package <em>TeachingDemos</em> gibt es aber die Funktion <em>z.test</em>, mit der man auch diesen Test durchführen kann. In der Doku dieser Funktion findet man schon den Hinweis, dass das nur für <em>akademische</em> Zwecke implementiert wurde und man in der Praxis den t-Test mit Hilfe der Funktion <em>t.test</em> verwenden soll. Beide Funktionen erhalten als Argument die komplette Stichprobe. Wir können die Nullhypothese und die Irrtumswahrscheinlichkeit übergeben, als Default wird von einer Irrtumswahrscheinlichkeit von 5% verwendet.</p>
-<p>Da wir eine Stichprobe benötigen verwenden wir die 10 Werte für die Untersuchung der Reißfestigkeit, die wir bereits bei den Intervallschätzern verwendet haben. Statt alle Variablen zu berechnen übergeben wir die Stichprobe und verwenden anschließend die Ergebnisse dieser Funktion.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">library</span>(TeachingDemos)</span></code></pre></div>
-<pre><code>## Warning: package &#39;TeachingDemos&#39; was built under R version 4.0.5</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>sigma_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="fl">5.0</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
-<span id="cb12-3"><a href="#cb12-3"></a>res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
-<span id="cb12-4"><a href="#cb12-4"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha)</span>
-<span id="cb12-5"><a href="#cb12-5"></a></span>
-<span id="cb12-6"><a href="#cb12-6"></a>res</span></code></pre></div>
+<p>Natürlich gibt es die Tests die wir vorgestellt haben (und noch viele mehr) als Funktionen in R. Den Hypothesentest mit bekannter Standardabweichung findet man nicht im Default-Paket <em>stats</em>, da in der Praxis meist ein t-Test durchgeführt wird. Im Package <em>TeachingDemos</em> gibt es aber die Funktion <em>z.test</em>, mit der wir diesen Test durchführen können. In der Dokumentation dieser Funktion findet man schon den Hinweis, dass die Funktion nur für <em>akademische</em> Zwecke implementiert wurde und man in der Praxis den t-Test mit Hilfe der Funktion <em>t.test</em> verwenden soll.</p>
+<p>Beide Funktionen erhalten als Argument die komplette Stichprobe. Wir können die Nullhypothese und die Irrtumswahrscheinlichkeit übergeben, als Default wird von einer Irrtumswahrscheinlichkeit von 5% ausgegangen. Da wir eine Stichprobe benötigen verwenden wir die 10 Werte für die Untersuchung der Reißfestigkeit, die wir bereits beim t-Test verwendet haben. Statt alle Variablen selbst zu berechnen übergeben wir die Stichprobe und verwenden anschließend die Ergebnisse dieser Funktion. Um die Funktionen zu verwenden laden wir spätestens jetzt das Package <em>TeachingDemos</em>.</p>
+<p>Wir rufen die Funktion <em>z.test</em> auf, speichern das Ergebnis auf einem Objekt und geben dieses Objekt auf der Konsole aus:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>sigma_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="fl">5.0</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>(res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
+<span id="cb10-4"><a href="#cb10-4"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha))</span></code></pre></div>
 <pre><code>## 
 ##  One Sample z-test
 ## 
@@ -1798,23 +1797,30 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 ## sample estimates:
 ## mean of festigkeit 
 ##              100.2</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>pv &lt;-<span class="st"> </span>res<span class="op">$</span>p.value</span>
-<span id="cb14-2"><a href="#cb14-2"></a>statistic &lt;-<span class="st"> </span>res<span class="op">$</span>estimate</span>
-<span id="cb14-3"><a href="#cb14-3"></a>ci &lt;-<span class="st"> </span>res<span class="op">$</span>conf.int</span></code></pre></div>
-<p>Wir übergeben den Wert für die Nullhypothese, die bekannte Standardabweichung und das Konfidenzniveau. In der Struktur, die wir als Ergebnis erhalten finden wir alle Angaben, die wir benötigen um den Test zu entscheiden. Wir finden den Punktschätzer für den Erwartungswert und den Annahmebereich, genauso wie den berechneten p-Wert. Mit Hilfe von beiden Angaben entscheiden wir, dass wir die Nullhypothese nicht verwerfen. Als p-Wert erhalten wir 0.8993. Der berechnete Wert der Statistik ist durch 100.2 gegeben, der Annahmebereich durch 97.101, 103.299.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.01</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a>res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
-<span id="cb15-3"><a href="#cb15-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha)</span>
-<span id="cb15-4"><a href="#cb15-4"></a>pv &lt;-<span class="st"> </span>res<span class="op">$</span>p.value</span>
-<span id="cb15-5"><a href="#cb15-5"></a>statistic &lt;-<span class="st"> </span>res<span class="op">$</span>estimate</span>
-<span id="cb15-6"><a href="#cb15-6"></a>ci &lt;-<span class="st"> </span>res<span class="op">$</span>conf.int</span></code></pre></div>
-<p>Wir wiederholen den Test, allerdings verwenden wir dieses Mal das Niveau 99%. Als p-Wert erhalten wir wieder 0.8993. Der berechnete Wert der Statistik ist immer noch durch 100.2 gegeben, der Annahmebereich durch [96.1273, 104.2727]. Wir verwerfen auch mit diesem Niveau die Nullhypothese nicht.</p>
+<p>Wir übergeben den Wert für die Nullhypothese, die bekannte Standardabweichung und das Konfidenzniveau. In der Struktur, die wir als Ergebnis erhalten finden wir alle Angaben, die wir benötigen um den Test zu entscheiden. Wir finden den Punktschätzer für den Erwartungswert und den Annahmebereich, genauso wie den berechneten p-Wert. Mit Hilfe von beiden Angaben entscheiden wir, dass wir die Nullhypothese nicht verwerfen. Als p-Wert erhalten wir 0.8993.</p>
+<p>Im Beispiel ist der Punktschätzer für den Erwartungswert wie schon uns selbst oben berechnet durch 100.2 gegeben, der Annahmebereich ist das Intervall [97.101, 103.299].</p>
+<p>Wir können die Irrtumswahrscheinlichkeit verändern und führen anschließend den Test mit der Funktio nochmals durch:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.01</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>(res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
+<span id="cb12-3"><a href="#cb12-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha))</span></code></pre></div>
+<pre><code>## 
+##  One Sample z-test
+## 
+## data:  festigkeit
+## z = 0.13, n = 10.0, Std. Dev. = 5.0, Std. Dev. of the sample mean =
+## 1.6, p-value = 0.9
+## alternative hypothesis: true mean is not equal to 100
+## 99 percent confidence interval:
+##   96.13 104.27
+## sample estimates:
+## mean of festigkeit 
+##              100.2</code></pre>
+<p>Für das Niveau 99 % erhalten wir wieder den p-Wert 0.8993. Und der berechnete Punktschätzer für den Erwartungswert ist selbstverständlich wieder durch 100.2 gegeben, der Annahmebereich ist jetzt [96.1273, 104.2727]. Wir verwerfen auch mit diesem Niveau die Nullhypothese nicht.</p>
 <p>Mit der Funktion können wir auch einseitige Hypothesentests durchführen. Das müssen wir beim Aufruf der Funktion nur übergeben.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
-<span id="cb16-3"><a href="#cb16-3"></a>              <span class="dt">alternative=</span><span class="st">&quot;less&quot;</span>,</span>
-<span id="cb16-4"><a href="#cb16-4"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha)</span>
-<span id="cb16-5"><a href="#cb16-5"></a>res</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>(res &lt;-<span class="st"> </span><span class="kw">z.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, sigma_<span class="dv">0</span>, </span>
+<span id="cb14-3"><a href="#cb14-3"></a>              <span class="dt">alternative=</span><span class="st">&quot;less&quot;</span>,</span>
+<span id="cb14-4"><a href="#cb14-4"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha))</span></code></pre></div>
 <pre><code>## 
 ##  One Sample z-test
 ## 
@@ -1827,16 +1833,14 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 ## sample estimates:
 ## mean of festigkeit 
 ##              100.2</code></pre>
-<p>Mit den Ausgaben der Funktion erkennen wir, dass wir die Nullhypthese nicht verwerfen.</p>
+<p>Mit den Ausgaben der Funktion erkennen wir, dass wir die Nullhypothese nicht verwerfen.</p>
 </div>
 <div id="der-t-test-mit-der-funktion-t.test" class="section level2">
 <h2><span class="header-section-number">3.2</span> Der t-Test mit der Funktion <em>t.test</em></h2>
-<p>Es ist nicht überraschend, dass der t-Test im Package <em>stat</em> in R verfügbar ist. Die Funktion funktioniert analog zu <em>z.test</em>, so dass wir sofort den t-Test für unsere Reißfestigkeit durchführen können.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
-<span id="cb18-2"><a href="#cb18-2"></a>res &lt;-<span class="st"> </span><span class="kw">t.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, </span>
-<span id="cb18-3"><a href="#cb18-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha)</span>
-<span id="cb18-4"><a href="#cb18-4"></a></span>
-<span id="cb18-5"><a href="#cb18-5"></a>res</span></code></pre></div>
+<p>Es ist nicht überraschend, dass der t-Test im Package <em>stat</em> in R verfügbar ist. Die Funktion funktioniert ganz analog zu <em>z.test</em>, so dass wir sofort den t-Test für unsere Reißfestigkeit durchführen können.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>(res &lt;-<span class="st"> </span><span class="kw">t.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>, </span>
+<span id="cb16-3"><a href="#cb16-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha))</span></code></pre></div>
 <pre><code>## 
 ##  One Sample t-test
 ## 
@@ -1848,16 +1852,11 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 ## sample estimates:
 ## mean of x 
 ##     100.2</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>pv &lt;-<span class="st"> </span>res<span class="op">$</span>p.value</span>
-<span id="cb20-2"><a href="#cb20-2"></a>statistic &lt;-<span class="st"> </span>res<span class="op">$</span>estimate</span>
-<span id="cb20-3"><a href="#cb20-3"></a>ci &lt;-<span class="st"> </span>res<span class="op">$</span>conf.int</span></code></pre></div>
-<p>Als p-Wert erhalten wir 0.9059. Der berechnete Wert der Statistik ist immer noch durch 100.2 gegeben, der Annahmebereich durch [96.4783, 103.9217]. Wir verwerfen auch mit diesem Niveau die Nullhypothese nicht.</p>
-<p>Wiederum können wir auch einen einseitigen Test durchführen:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>res &lt;-<span class="st"> </span><span class="kw">t.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>,</span>
-<span id="cb21-2"><a href="#cb21-2"></a>              <span class="dt">alternative=</span><span class="st">&quot;less&quot;</span>,</span>
-<span id="cb21-3"><a href="#cb21-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha)</span>
-<span id="cb21-4"><a href="#cb21-4"></a></span>
-<span id="cb21-5"><a href="#cb21-5"></a>res</span></code></pre></div>
+<p>Als p-Wert erhalten wir 0.9059. Der Punktschätzer für den Erwartungswert 100.2 verändert sich natürlich auch nicht. Der Annahmebereich ist durch [96.4783, 103.9217]. Wir verwerfen mit diesem Niveau die Nullhypothese nicht.</p>
+<p>Wiederum können wir einen einseitigen Test durchführen:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>(res &lt;-<span class="st"> </span><span class="kw">t.test</span>(festigkeit, <span class="dt">mu=</span><span class="dv">100</span>,</span>
+<span id="cb18-2"><a href="#cb18-2"></a>              <span class="dt">alternative=</span><span class="st">&quot;less&quot;</span>,</span>
+<span id="cb18-3"><a href="#cb18-3"></a>              <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha))</span></code></pre></div>
 <pre><code>## 
 ##  One Sample t-test
 ## 
@@ -1869,20 +1868,19 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 ## sample estimates:
 ## mean of x 
 ##     100.2</code></pre>
-<p>Wir verwerfen die Nullhypothese nicht.</p>
+<p>Wir verwerfen diese Nullhypothese nicht.</p>
 </div>
 <div id="tests-für-binomialverteilte-zufallsvariablen" class="section level2">
 <h2><span class="header-section-number">3.3</span> Tests für binomialverteilte Zufallsvariablen</h2>
 <p>Wir hatten das Beispiel einer binomailverteilten Zufallsvariable betrachtet, für die wir einen Hypothesentest für den Anteil p der defekten Bauteile durchgeführt haben. In R gibt es für diese Tests die Funktion <em>prop.test</em>, die wir nun durchführen.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>p0 &lt;-<span class="st"> </span><span class="fl">0.03</span></span>
-<span id="cb23-2"><a href="#cb23-2"></a>n &lt;-<span class="st"> </span><span class="dv">500</span></span>
-<span id="cb23-3"><a href="#cb23-3"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
-<span id="cb23-4"><a href="#cb23-4"></a>p &lt;-<span class="st"> </span><span class="dv">20</span></span>
-<span id="cb23-5"><a href="#cb23-5"></a></span>
-<span id="cb23-6"><a href="#cb23-6"></a>res &lt;-<span class="st"> </span><span class="kw">prop.test</span>(<span class="dt">x=</span><span class="dv">20</span>, n, <span class="dt">p=</span><span class="fl">0.03</span>, </span>
-<span id="cb23-7"><a href="#cb23-7"></a>                 <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha, </span>
-<span id="cb23-8"><a href="#cb23-8"></a>                 <span class="dt">correct=</span><span class="ot">TRUE</span>)</span>
-<span id="cb23-9"><a href="#cb23-9"></a>res</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>p0 &lt;-<span class="st"> </span><span class="fl">0.03</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a>n &lt;-<span class="st"> </span><span class="dv">500</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>p &lt;-<span class="st"> </span><span class="dv">20</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a></span>
+<span id="cb20-6"><a href="#cb20-6"></a>(res &lt;-<span class="st"> </span><span class="kw">prop.test</span>(<span class="dt">x=</span><span class="dv">20</span>, n, <span class="dt">p=</span><span class="fl">0.03</span>, </span>
+<span id="cb20-7"><a href="#cb20-7"></a>                 <span class="dt">conf.level=</span><span class="dv">1</span><span class="op">-</span>alpha, </span>
+<span id="cb20-8"><a href="#cb20-8"></a>                 <span class="dt">correct=</span><span class="ot">TRUE</span>))</span></code></pre></div>
 <pre><code>## 
 ##  1-sample proportions test with continuity correction
 ## 
@@ -1894,8 +1892,8 @@ z = \frac{p-p_0}{\sqrt{\frac{p(1-p)}{n}}}
 ## sample estimates:
 ##    p 
 ## 0.04</code></pre>
-<p>Auch hier verwerfen wir die Nullhypothese nicht. Wir können wie schon bei den Gauß- und t-Tests die einzelnen Ausgaben in der Variable <em>res</em> abfragen. Als Wert für die Statistik erhalten wir 0.04, und als Annahmebereich das Intervall [0.0252, 0.0622]. Auch der berechnete p-Wert von 0.2381 spricht dafür, die Nullhypothese nicht zu verwerfen.</p>
-<p>Der Parameter <em>correct</em> kann verwendet werden, um zu steuern, ob bei der Durchführung des Tests eine Stetigkeitskorrektur durchgeführt wird.</p>
+<p>Wir verwerfen die Nullhypothese nicht. Als Punktschätzer für p erhalten wir 0.04, und als Annahmebereich das Intervall [0.0252, 0.0622]. Der berechnete p-Wert von 0.2381 spricht ebenfalls dafür, die Nullhypothese nicht zu verwerfen.</p>
+<p>Der Parameter <em>correct</em> kann verwendet werden, um zu steuern, ob bei der Durchführung des Tests eine Stetigkeitskorrektur durchgeführt wird. Damit kann sichergestellt werden, dass die Annäherung der Binomialverteilung durch eine Normalverteilung eine gute Qualität hat.</p>
 </div>
 </div>
 
