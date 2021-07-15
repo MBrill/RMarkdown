@@ -3,6 +3,12 @@ title: "Analysis of Variance - ANOVA"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -11,12 +17,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
@@ -53,12 +53,12 @@ options(digits=4)
 
 # ANOVA
 Wir haben die Varianzanalyse oder, wie sie mit der englischsprachigen Abkürzung meist
-kurz genannt wird, ANOVA bereits an Hand eines Beispiel motiviert und durchgeführt.
+kurz genannt wird, ANOVA, bereits an Hand eines Beispiel motiviert und durchgeführt.
 Jetzt betrachten wir den Einsatz von ANOVA insbesondere in Verbindung
 mit verschiedenen Designs von Experimenten.
 
 Die Funktion *aov*, die wir verwendet haben gibt es einmal im *stats*-Package in der Default-Installation, jedoch auch in mehreren anderen Packages wie *car*. 
-Interessant ist das Package *rstatix*, zu dem es eine gut Web-Site und ein Buch gibt
+Interessant ist das Package *rstatix*, zu dem es eine gute Web-Site und ein Buch gibt
 und das sich dadurch auszeichnet, dass die Funktionen sich gut in Pipelines
 integrieren lassen, die wir mit *tidyverse* implementieren.
 Insbesondere bei  zwei oder mehr Faktoren werden wir sehen, dass das
@@ -110,7 +110,7 @@ alternativen Medikamente *drugD* und *drugE* verabreicht wurden.
 
 Wir bestimmen mit einer *tidyverse*-Pipeline 
 die Anzahlen für die verschiedenen Stufen,
-die Mittelwerte und die Standardabweichung.
+die Mittelwerte und die Standardabweichungen.
 Wir erkennen, dass wir jeweils 10 Einträge pro
 Stufe in den Daten vorfinden. Die Mittelwerte scheinen sich
 stark zu unterscheiden.
@@ -156,7 +156,7 @@ plotmeans(response ~ trt, data=cholesterol,
           barcol="darkgoldenrod1",
           main='Cholesterol\n95% Konfidenzintervalle')
 
-dev.off()
+invisible(dev.off())
 ```
 
 ## Hypothesentests
@@ -172,7 +172,7 @@ ist, dass alle fünf Erwartungswerte der Cholesterol-Reduktion
 identisch sind. Die Gegenhypothese ist, dass sich mindestens zwei
 der Erwartungswerte unterscheiden. Aus den Zahlen und der grafischen
 Ausgabe könnte man bereits vorhersagen, dass wir die Nullhypothese
-verworfen wird.
+verworfen werden.
 
 ```{r kabacoff1Test, include=TRUE, echo=TRUE}
 fit <- aov(response ~ trt, data=cholesterol)
@@ -184,13 +184,13 @@ dn.fit <- cholesterol %>%
 dn.fit
 ```
 
-Unsere Vorhersage ist bestätigt, mit diesem p-Wert verwerfen wir
+Unsere Vorhersage ist bestätigt, mit diesen p-Werten verwerfen wir
 die Nullhypothese, die Erwartungswerte in der Cholesterol-Reduktion
 unterscheiden sich.
 
 ## Paarweise Vergleiche
 
-Jetzt stellt sich sofort die Frage, welche Stufen bzw. Behandlungen sich von welchen unterscheiden.
+Jetzt stellt sich sofort die Frage, welche Stufen bzw. Behandlungen sich von welchen signifikant unterscheiden.
 Die Statistik kennt hier mehrere Verfahren.
 Als erste Funktion verwenden wir *TukeyHSD*.
 Dabei steht *HSD* für den von Tukey vorgeschlagenen Algorithmus
@@ -205,16 +205,16 @@ der *plot*-Funktion übergeben und erhalten so eine grafische Ausgabe.
 par(las=2)
 par(mar=c(5,8,2,4))
 plot(tukey, las=1, col="darkgoldenrod1")
+```
 
+```{r kabacoff2Save, include=FALSE, echo=FALSE}
 png(filename="images/cholesterolHSDTukey.png", 
     width = 16, height = 9, units="cm",
     res=300)
-
 par(las=2)
 par(mar=c(5,8,2,4))
 plot(tukey, col="darkgoldenrod1")
-
-dev.off()
+invisible(dev.off())
 ```
 
 An Hand der p-Werte in der Ausgabe der Funktion *tukeyHSD*
@@ -241,12 +241,14 @@ mit Hilfe von Buchstabenkombinationen darstellt.
 par(mar=c(5, 4, 6, 2))
 tukey <- glht(fit, linfct=mcp(trt="Tukey"))
 plot(cld(tukey, level=0.05), col="darkgoldenrod1")
+```
 
+```{r kabacoff2glhtSave, include=FALSE, echo=FALSE}
 png(filename="images/cholesterolglhtTukey.png", 
     width = 16, height = 9, units="cm",
     res=300)
 plot(cld(tukey, level=0.05), col="darkgoldenrod1")
-dev.off()
+invisible(dev.off())
 ```
 
 Stufen, die gemeinsame Buchstaben-Codes haben wie *2times* oder *4times*
@@ -257,7 +259,7 @@ Stufen finden wir in der Ausgabe den Buchstaben c.
 Wieder erkennen wir, dass *drugE* signifikant besser ist als alle anderen.
 
 Auch das Package *rstatix* enthält eine Funktion mit der wir die p-Werte
-für die einzelnen Kombinationen berechnen können.
+für die einzelnen Kombinationen berechnen können:
 
 ```{r TukeyAnova, include=TRUE, echo=TRUE}
 pwc <- cholesterol %>% 
@@ -283,7 +285,9 @@ ggplot(data=cholesterol, aes(x=trt, y = response)) +
   labs(
     title="Paarweise Vergleiche nach Tukey für den Datensatz cholesterol"
   )
+```
 
+```{r TukeyAnovaPlotSave, include=FALSE, echo=FALSE}
 ggsave(filename="cholesterolTukey.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
@@ -291,7 +295,7 @@ Auch hier finden wir die p-Werte für die verschiedenen Paare der Stufen.
 
 ## Überprüfung der Voraussetzungen
 
-In der Annahme für die Verwendung der Funktion *aov* steckt auch,
+In der Annahme für die Verwendung der Funktion *aov* steckt insbesondere,
 dass die untersuchte Größe normalverteilt ist und die Varianzen
 in den Faktoren gleich sind. Das können wir mit Hilfe eines Q-Q Plots
 überprüfen.
@@ -299,7 +303,9 @@ in den Faktoren gleich sind. Das können wir mit Hilfe eines Q-Q Plots
 ```{r kabacoffqq, include=TRUE, echo=TRUE}
 model <- lm(response~trt, data =cholesterol)
 ggqqplot(residuals(model), title="Q-Q Plot für den Datensatz Cholesterol (95% Konfidenzniveau)", xlab="Theoretisch", ylab = "Residuen", panel.labs = TRUE)
+```
 
+```{r kabacoffqqSave, include=FALSE, echo=FALSE}
 ggsave(filename="cholesterolqq.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
@@ -308,7 +314,7 @@ Die Punkte, die zu den Samples gehören fallen in das angezeigte 95%-Konfidenzin
 also gehen wir davon aus, dass die Annahme der Normalverteilung gegeben ist.
 
 Alternativ können wir einen sogenannte Bartlett- oder einen Shapiro-Testdurchführen.
-Die Nullhypothese für diese Hypothesentest ist, dass sich die 
+Die Nullhypothese für diese Hypothesentests ist, dass sich die 
 Varianzen in den fünf Gruppen nicht stark unterscheiden.
 
 ```{r kabacoff4, include=TRUE, echo=TRUE}
@@ -322,8 +328,6 @@ nicht stark unterscheiden, also verwerfen wir diese Nullhypothese nicht.
 
 # Zweifaktorielle Varianzanalyse - Two-Way ANOVA
 
-
-
 ## Beschreibung der Daten
 Jetzt betrachten wir den Fall, dass zwei Faktoren
 vorliegen, Wir verwenden wie in [@kabacoff_15] den Datensatz *ToothGrowth*,
@@ -334,6 +338,8 @@ Der folgende Text ist dem Hilfetext entnommen, den wir mit
 *?ToothGrowth* abrufen können. Dort finden wir auch eine Literaturangabe für die Daten:
 
 "*The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, orange juice or ascorbic acid (a form of vitamin C and coded as VC).*"
+
+Wir geben die ersten  Zeilen der Daten als Tabelle aus: 
 
 ```{r toothG1, include=TRUE, echo=TRUE}
 kable(head(ToothGrowth), align="l",
@@ -381,11 +387,11 @@ kable(aggregation, align="l",
 
 Es gibt 60 Einträge, die sich gleichmässig auf die 6 möglichen Kombinationen verteilen - 
 es liegt ein *balanced design* vor.
-Wir erkennen auch, dass es durchaus Unterschiede zwischen den verschiedenen Mittelwerte
-der Zahnlängen gibt. Ob diese Unterschiede signifikant sind muss der Hypothesentest
+Wir erkennen auch, dass es durchaus Unterschiede zwischen den verschiedenen Mittelwerten
+der Zahnlängen gibt. Ob diese Unterschiede signifikant sind oder nicht muss der Hypothesentest
 erweisen.
 
-Bevor wir den Hypothesentest durchführen erstellen wir noch einen Boxplot,
+Bevor wir den Hypothesentest durchführen erstellen wir einen Boxplot,
 bei dem wir ebenfalls beide Faktoren berücksichtigen.
 
 ```{r toothG1Box, include=TRUE, echo=TRUE}
@@ -399,11 +405,13 @@ ggplot(ToothGrowth, aes(x=supp, y = len)) +
     y = "Zahnlänge"
   ) +
   guides(fill=guide_legend(title="Dosis in mg"))
+```
 
+```{r toothG1BoxSave, include=FALSE, echo=FALSE}
 ggsave(filename="toothBox.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
-Man erkennt auch hier durchaus eine Unterscheidung, insbesondere scheint es einen Zusammenhang zwischen der verwendeten Dosis und dem Resultat in der Länge der Zähne
+Man erkennt auch hier durchaus eine Unterscheidung, insbesondere scheint es einen Zusammenhang zwischen der verwendeten Dosis und der Länge der Zähne
 zu geben.
 
 ## Voraussetzungen für die Durchführung des Hypothesentests
@@ -412,14 +420,10 @@ für die Varianzanalyse erfüllt sind, insbesondere ob die Stichproben normalver
 Wir erstellen einen Q-Q-Plot, dabei verwenden wir wie später auch
 ein Modell der Form *len ~ supp*dose*:
 
-
 ```{r toothQQ, include=TRUE, echo=TRUE}
 model <- lm(len ~ supp*dose, data = ToothGrowth)
 
 ggqqplot(residuals(model), title="Q-Q Plot für den Datensatz ToothGrowth (95% Konfidenzniveau)", xlab="Theoretisch", ylab = "Residuen", panel.labs = TRUE)
-
-ggsave(filename="toothqq.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
 
 shapiro_test(residuals(model))
 
@@ -428,6 +432,10 @@ ToothGrowth %>%
   shapiro_test(len)
 ```
 
+```{r toothQQSave, include=FALSE, echo=FALSE}
+ggsave(filename="toothqq.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
 Der p-Wert des Shapiro-Tests und der Q-Q Plot sprechen dafür, dass die Vorbedingungen für die
 erfüllt sind. Wir führen den Shapiro-Test auch gruppenweise durch, auch hier
 sehen wir p-Werte, die dafür sprechen den Hypothesentest durchzuführen.
@@ -441,25 +449,26 @@ ggqqplot(ToothGrowth, "len", ggtheme=theme_bw()) +
     title = "ToothGrowth - Gruppenweise Q-Q Plots"
   ) +
   facet_grid(supp ~ dose)
-  
+```
+
+```{r toothQQ2Save, include=FALSE, echo=FALSE, warnings=FALSE}
 ggsave(filename="toothqqgroups.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
 
 ## Hypothesentest
-Dann führen wir die Varianzanalyse durch. 
+Jetzt führen wir die Varianzanalyse durch. Dabei verwenden wir eine Pipeline
+und die Funktion *anova_test*.
 
 ```{r toothTest, include=TRUE, echo=TRUE, warnings=FALSE}
-aov.test <- ToothGrowth %>%
-  anova_test(len ~ supp*dose)
-
-aov.test
+(aov.test <- ToothGrowth %>%
+  anova_test(len ~ supp*dose))
 ```
 
 In der Ausgabe des Hypothesentests erkennen wir drei Zeilen. Die beiden Faktoren
 werden bewertet, beide sind offensichtlich signifikant. Die dritte Zeile
 mit dem Eintrag *supp:dose* bewertet die Interaktion zwischen den beiden Faktoren.
-Auch diese Interaktion ist signifikatn. Wir verwerfen die Nullhypothese.
+Auch diese Interaktion ist signifikant. Wir verwerfen die Nullhypothese.
 
 ## Analyse nach dem Test - post-hoc analysis
 Nachdem wir festgestellt haben, dass beide Faktoren und auch ihre Interaktion
@@ -480,7 +489,6 @@ ToothGrowth %>%
 ```
 Der Faktor der Verabreichung ist für alle Level der Dosierung statistisch signifikant,
 wir erhalten sehr kleine p-Werte.
-
 Wie schon bei der einfaktoriellen Analyse führen wir auch hier wieder paarweise
 Vergleich durch um zu untersuchen welche Gruppenmittelwerte unterschiedlich sind.
 
@@ -512,8 +520,8 @@ Die einzige nicht signifikante Kombination ist die in Zeile
 3. Wir verabreichen Orangensaft, in dem Fall gibt es keinen signifikanten
 Unterschied bei den Dosierungen 1 mg und 2 mg.
 
-Wir erstellen wieder
-einen Boxplot, indem wir dies auch erkennen:
+Wir erstellen 
+einen Boxplot, indem wir dies gut erkennen:
 
 ```{r BonferroniAnovaPlot, include=TRUE, echo=TRUE}
 pwc <- pwc %>% 
@@ -530,7 +538,9 @@ ggplot(data=ToothGrowth, aes(x=supp, y = len)) +
     y = "Zahnlänge"
   ) +
   guides(fill=guide_legend(title="Dosis in mg"))
+```
 
+```{r BonferroniAnovaPlotSave, include=FALSE, echo=FALSE}
 ggsave(filename="toothTukey.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
@@ -539,7 +549,7 @@ ggsave(filename="toothTukey.png", plot=last_plot(), device="png",
 
 ## dreifaktorielle Varianzanalyse
 Natürlich können wir jetzt zu drei oder noch mehr Faktoren übergeben, was wir aber nur 
-kurz machen. Eine gute Beschreibung dafür finden wir wieder auf [@kassambara].
+kurz betrachten werden. Eine gute Beschreibung dafür finden wir auf [@kassambara].
 Wir verwenden die dort eingesetzten Daten aus dem Package *datarium*
 und führen die Varianzanalyse durch.
 
@@ -547,10 +557,10 @@ Die Daten stammen aus dem Datensatz *headache* und beschreiben drei Faktoren
 für Migräne-Anfälle. Die Stärke der Migräne wird im kardinalen
 Merkmale *pain_score* gemessen. Es wird die Auswirkung von drei Medikamenten
 *X*, *Y* und *Z* untersucht. Die Teilnehmer bestehen aus 36 Frauen und 36 Männern,
-die nochmals unterteilt werden, ob ihr Migräne-Risiko klein oder groß ist.
+die nochmals unterteilt werden, darauf hin ob ihr Migräne-Risiko klein oder groß ist.
 Wir ziehen aus dem Datensatz, der nach *library(datarium)* verfügbar ist
 einige Zeilen heraus und achten dabei darauf, dass jede der möglichen Kombinationen
-enthalten ist.
+enthalten ist:
 
 ```{r threeWayData, include=TRUE, echo=TRUE}
 set.seed(42)
@@ -591,7 +601,9 @@ ggplot(headache, aes(x=treatment, y = pain_score)) +
   ) +
   guides(fill=guide_legend(title="Risiko für Migräne")) +
   facet_grid(~gender)
+```
 
+```{r threeBoxSave, include=FALSE, echo=FALSE}
 ggsave(filename="headacheBox.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
@@ -601,17 +613,15 @@ für den Einsatz der Varianzanalyse gegeben sind und führen direkt
 den Test durch.
 
 ```{r threeTest, include=TRUE, echo=TRUE}
-aov.test <- headache %>%
-  anova_test(pain_score ~ gender*risk*treatment)
-
-aov.test
+(aov.test <- headache %>%
+  anova_test(pain_score ~ gender*risk*treatment))
 ```
 
-Es gibt eine signifikante Interaktion zwischen allen drei Faktoren. Und es gibt
+Es gibt eine signifikante Interaktionen zwischen allen drei Faktoren. Und es gibt
 zwei nicht-signifikante Interaktionen, einmal zwischen Geschlecht und Migräne-Risiko
-und zwischen Migräne-Risko und Medikant.
+und zwischen Migräne-Risko und Medikament.
 
-Anschließend führt man jetzt eine Gruppierung nach Geschlecht durch und innerhalb dieser
+Anschließend führen wir eine Gruppierung nach Geschlecht durch und innerhalb der so entstehenden 
 Gruppen eine zweifaktorielle Varianzanalyse. Hier wird sehr deutlich, dass wir vom
 Einsatz von *tidyverse* und den Pipelines profitieren:
 
@@ -625,7 +635,7 @@ headache %>%
 Wir erhalten eine signifikante Interaktion zwischen verabreichtem Medikament und dem Migräne-Risiko bei den Männern mit p=0.008, jedoch nicht bei den weiblichen Teilnehmerinnen.
 Offensichtlich beeinflusst das Migräne-Risiko den Effekt des verabreichten Medikaments.
 
-Anschließend kann man für die männlichen Teilnemer weiter analysieren und paarweise Vergleiche anstellen und visualieren, worauf wir an dieser Stellt jedoch verzichten.
+Anschließend kann man für die männlichen Teilnehmer weiter analysieren und paarweise Vergleiche anstellen und visualieren, worauf wir an dieser Stelle jedoch verzichten.
 
 ## Kovarianzanalyse - ANCOVA
 Eine Kovarianzanalyse ist sehr stark verwandt mit der Varianzanalyse, die wir
@@ -671,25 +681,21 @@ Wir überprüfen keine der Voraussetzungen sondern berechnen direkt
 den Hypothesentest.
 
 ```{r litterTest, include=TRUE, echo=TRUE}
-aov.test <- litter %>%
-  anova_test(weight ~ gesttime + dose)
-
-aov.test
+(aov.test <- litter %>%
+  anova_test(weight ~ gesttime + dose))
 ```
 
 Wir sehen hier, dass die Dosis nur ganz knapp signifikant ist. Die Voraussetzung
-für einensolchen ANCOVA-Test ist, dass es einen linearen Zusammenhang
-zwischen *gesttime* und *weight* gibt. Wenn man hier die Ausgleichsgeraden bestimmt
+für einen solchen ANCOVA-Test ist, dass es einen linearen Zusammenhang
+zwischen *gesttime* und *weight* gibt. Wenn man in diesem Beispiel die Ausgleichsgeraden bestimmt
 erhält man allerdings ein sehr kleines Bestimmtheitsmaß.
 
 Das können wir untersuchen indem wir die Interaktion zwischen *gesttime* und *dose*
 in den Aufruf von *anova_test* einbauen.
 
 ```{r litterTestInteract, include=TRUE, echo=TRUE}
-aov.test <- litter %>%
-  anova_test(weight ~ gesttime * dose)
-
-aov.test
+(aov.test <- litter %>%
+  anova_test(weight ~ gesttime * dose))
 ```
 
 Die Interaktion zwischen der Tragzeit und der Dosierung ist nicht signifikant. 
