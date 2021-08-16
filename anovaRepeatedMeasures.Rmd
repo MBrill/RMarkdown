@@ -3,6 +3,12 @@ title: "ANOVA - Repeated Measurs"
 author: "Manfred Brill"
 date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     
     fig_caption: yes
@@ -11,12 +17,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 bibliography: literatur.bib 
 ---
 
@@ -55,7 +55,8 @@ options(digits=4)
 Mit *repeated measures ANOVA* analysiert man Daten bei denen Subjekte im Experiment
 mehrfach vermessen oder erfasst werden. Eine andere Bezeichnung dafür
 ist *within-subjects ANOVA*. Mit *within-subject* ist gemeint, das ein Merkmal
-der identischen Indivuuen zu mehreren Zeitpunkten erfasst werden. Wir hatten beim Thema
+der identischen Individuen zu mehreren Zeitpunkten erfasst werden. 
+Wir hatten beim Thema
 t-Test bereits verbundene oder gepaarte Tests durchgeführt - jetzt untersuchen wir
 den analogen Fall mit ANOVA.
 
@@ -69,14 +70,13 @@ in  [@kassambara_19] und online auf [@kassambara].
 # One-way repeated measures ANOVA
 
 ## Der Datensatz
-Als Datensatz verwenden wir *selfesteem* aus dem Package *datarium*. Der Hilfetext zu diesem Datensatz:
+Als Datensatz verwenden wir *selfesteem* aus dem Package *datarium*. Der Hilfetext zu diesem Datensatz gibt Auskunft über den Inhalt der Daten:
 
 "*
 The dataset contains 10 individuals' self-esteem score on three time points during a specific diet to determine whether their self-esteem improved.
 *"
-Wir werfen einen Blick auf das tibble:
 
-```{r self, include=TRUE, echo=TRUE}
+```{r self, include=TRUE, echo=FALSE}
 kable(head(selfesteem, 3), align="l",
       caption="Tabelle 1: Die ersten drei Zeilen des Datensatzes selfesteem") %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
@@ -84,8 +84,8 @@ kable(head(selfesteem, 3), align="l",
                 position = "center")
 ```
 
-Wir sehen die gespeicherten Werte zu den drei Zeitpunkten, die als *t1*, *t2* und *t3* gekennzeichnet sind. Die Daten liegen im sogenannten *wide-format* vor, was nicht nur für
-die Durchführung von ANOVA eher ungeeignetist. Im Package *tidyverse* gibt es die
+In Tabelle 1 können wir einen Blick auf das tibble werfen. Wir sehen die gespeicherten Werte zu den drei Zeitpunkten, die als *t1*, *t2* und *t3* gekennzeichnet sind. Die Daten liegen im sogenannten *wide-format* vor, was nicht nur für
+die Durchführung von ANOVA eher ungeeignet ist. Im Package *tidyverse* gibt es die
 sehr nützliche Funktion *gather*, mit der wir solche Daten in das *long-format*
 umwandeln können. Wir führen dies jetzt durch, im Ergebnis erkennen wir sehr gut,
 was unter einem *long-format* verstanden wird.
@@ -102,18 +102,16 @@ kable(head(selfesteem, 3), align="l",
                 position = "center")
 ```
 
-Wir sehen gut, was ein *long-format* ist. Wir erhalten eine neue Spalte, in der der Zeitpunkt für die Messung gekennzeichnet ist. Dabei haben wir sicher gestellt, dass diese Spalte vom Datentyp *factor* ist, was wir natürlich bei der Durchführung des ANOVA benötigen.
+Wir erhalten eine neue Spalte, in der der Zeitpunkt für die Messung gekennzeichnet ist. Dabei haben wir sicher gestellt, dass diese Spalte vom Datentyp *factor* ist, was wir natürlich bei der Durchführung des ANOVA benötigen.
 
-Wir berechnen mit Hilfe der Funktion *summarize* die Anzahlen, die Mittelwerte und die Standardabweichungen:
+Mit Hilfe der Funktion *summarize* berechnen wir die Anzahlen, die Mittelwerte und die Standardabweichungen:
 
 ```{r satscoreAgg1, include=TRUE, echo=FALSE}
-agg1 <- selfesteem %>%
+(agg1 <- selfesteem %>%
   group_by(time) %>%
   summarize(Mittelwerte=mean(score),
             Standardabweichungen=sd(score),
-            .groups="keep")
-
-agg1
+            .groups="keep"))
 ```
 
 Wir erkennen sehr gut, dass es offensichtlich Unterschiede in den Mittelwerten gibt. Das überprüfen wir wiederum mit Hilfe eines Box-Plots.
@@ -122,7 +120,7 @@ Wir erkennen sehr gut, dass es offensichtlich Unterschiede in den Mittelwerten g
 ggplot(data=selfesteem) +
   geom_boxplot(mapping=aes(x = time, y = score), fill=myPalette[3]) +
   labs(
-    title="Box-Plot für den Datensatz selfesteem für die drei Zeitpunkte)", 
+    title="Box-Plot für den Datensatz selfesteem für die drei Zeitpunkte", 
     x="Zeitpunkte", 
     y="Scores"
   ) +
@@ -131,32 +129,35 @@ ggplot(data=selfesteem) +
 ggsave(filename="selfesteemBox.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
-Beides zeigt uns, dass es durchaus Sinn macht die ANOVa durchzuführen.
+Beides zeigt uns, dass es durchaus Sinn macht ANOVA durchzuführen.
 
 ## Hypothesentest
-Jetzt führen wir den Hypothesentest durch.
+Jetzt führen wir den Hypothesentest mit der Funktion *anova_test* in einer Pipeline durch. Dabei verwenden wir die Funktion *get_anova_table*, um die Ergebnisse
+auf der Konsole auszugeben:
 
-```{r selfTest, include=TRUE, echo=FALSE}
+```{r selfTest, include=TRUE, echo=TRUE}
 aov.test <- selfesteem %>%
   anova_test(dv = score, wid = id, within = time)
 
 get_anova_table(aov.test)
 ```
 
-## Post-hoc Analyse
+Der angegebene p-Wert führt dazu, dass wir die Nullhypothese verwerfen.
+
+## Paarweise Vergleiche
 Wir führen wieder paarweise Vergleiche durch, um zu untersuchen ob alle Zeitpunkte
 zu einer Veränderung führen. Dabei verwenden wir t-Tests, dabei achten wir natürlich darauf,
 dass wir einen gepaarten t-Test durchführen.
 
-```{r selfpwc, include=TRUE, echo=FALSE}
-pwc <- selfesteem %>%
+```{r selfpwc, include=TRUE, echo=TRUE}
+(pwc <- selfesteem %>%
   pairwise_t_test(
-    score ~ time, paired = TRUE,
+    score ~ time, 
+    paired = TRUE,
     p.adjust.method = "bonferroni"
-  )
-
-pwc
+  ))
 ```
+
 Wir können das Tibble *pwc* (die Abkürzung steht für *pairweise comparison*)
 mit Hilfe von *ggplot2* ausgeben:
 
@@ -172,7 +173,9 @@ ggplot(data=selfesteem, aes(x=time, y = score)) +
     x = "Zeitpunkte",
     y = "Scores"
   )
+```
 
+```{r selfpwcTukeySave, include=FALSE, echo=FALSE}
 ggsave(filename="selfesteemTukey.png", plot=last_plot(), device="png",
        path="images/", width=16, height=9, units="cm")
 ```
