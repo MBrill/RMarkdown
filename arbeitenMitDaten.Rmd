@@ -1,7 +1,6 @@
 ---
 title: "Datentypen und Datensätze"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -14,7 +13,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 ```
 
 # Voraussetzungen
@@ -72,8 +71,6 @@ Sie *rm* mit dem Bezeichner verwenden.
 Es gibt eine *print*-Funktion. Wenn wir eine Variable oder einen Ausdruck auf der Konsole eingeben erhalten wir ebenfalls eine Ausgabe.
 
 ## Der Datentyp factor
-
-
 
 In der beschreibenden Statistik unterscheiden wir zwischen qualitativen
 und quantitativen Merkmalen. Die qualitativen Merkmale hatten wir dort sogar

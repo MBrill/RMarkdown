@@ -1,7 +1,6 @@
 ---
 title: "Das Beispiel Old Faithful"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -17,8 +16,9 @@ bibliography: literatur.bib
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
-library(tidyverse)
 library(kableExtra)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "Set2")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma

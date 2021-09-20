@@ -1,9 +1,7 @@
 ---
 title: "Das Beispiel Familienstand"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
 output: 
-  
   html_notebook : default  
     
   html_document: 
@@ -20,7 +18,7 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma

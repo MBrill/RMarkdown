@@ -1,7 +1,6 @@
 ---
 title: "Erste Schritte mit R"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes

@@ -1,7 +1,6 @@
 ---
 title: "Kontingenztabellen und grafische Ausgaben"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
 output: 
   html_document: 
     fig_caption: yes
@@ -40,6 +39,7 @@ wohnungen <- read.csv2("data/wohnungen.csv")
 ```{r  message=FALSE}
 head(wohnungen)
 ```
+
 # Kontingenztabellen
 Wir erzeugen jetzt eine Kontingenztabelle - andere Bezeichnungen dafür sind Kreuztabellen oder in Microsoft Excel eine Pivot-Tabelle. Dazu verwenden wir die Funktion *table*. Für die Arbeit mit ggplot ist es nützlich die Häufigkeiten
 im sogenannten long-Format zu haben. Dazu verwenden wir einen Gruppierung
@@ -94,10 +94,7 @@ kable(sport, caption="Kontingenztabelle für den Datensatz *Beruf und Sport*")
 
 # Visualisierung von Kontingenztabellen
 Wir betrachten hier verschiedene Möglichkeiten der Visualisierung. 
-Ganz einfach können wir solche Kontingenztabellen mit Hilfe von gestapelten Balkendiagrammen oder mehreren Boxplots visualisieren. Diese Abschnitte müssen noch realisiert werden,
-Beispiele dazu gibt es bereits. Heatmaps sollten hier auch noch aufgenommen werden.
-
-Wir betrachten aktuell die folgenden Möglichkeiten genauer:
+Wir betrachten die folgenden Möglichkeiten genauer:
 
 * Balkendiagramme
 * Streuungsdiagramme

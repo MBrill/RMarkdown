@@ -1,0 +1,440 @@
+---
+title: "Der Datensatz HairEyeColor"
+author: "Manfred Brill"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+    
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(kableExtra)
+
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+library(plotly)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=4)
+```
+
+# Movitation und Daten
+Wir verwenden einen Datensatz als Einstiegsbeispiel für die Stochastik-Vorlesung.
+Dabei verwenden wir Daten mit qualitativen Merkmalen, um uns auf die grafische
+Darstellung und den Begriff der Häufigkeiten zu konzentrieren.
+
+Der Datensatz *HairEyeColor* existiert auch in R im Package *dataset*. Allerdings ist
+er dort bereits nach Geschlecht eingeteilt und als Konfidenztabelle formatiert.
+Diese Form geht auf Friendly zurück, Ziel dieser Daten ist die Diskussion
+von  Zusammenhängen und einem anschließenden Hypothesentest.
+
+Die verwendeten Daten stammen von Amy Froelich [@froelich_13] und stehen als CSV zur Verfügung.
+Auch hier wurde bereits eine Aggregation durchgeführt, allerdings so, dass wir
+noch die Häufigkeiten der verschiedenen Merkmale und der Kombinationen 
+darstellen können.
+
+Wir lesen die Daten ein und stellen die ersten Zeilen als Tabelle in diesem
+Dokument dar. Es gibt keine fehlenden Werte. Die erste spalte
+löschen wir sofort wieder, da wir keine Zeilennummer benötigen.
+Um eine Warnung zu unterdrücken
+wurde die csv-Datei im Header verändert, aus dem leeren Spaltentitel
+für die Zeilennummer wurde *Id* gemacht.
+Die Überschrift der Spalte *Freq* ändern wir in *Frequency*,
+aus *Eye* machen wir *EyeColor*. 
+Wir sorgen auch dafür dass aus den drei ersten Spalten
+Faktoren gemacht werden.
+
+```{r import, echo=FALSE, warnings=FALSE, message=FALSE}
+daten <- read_csv("data/HairEyeColor.csv", 
+                 col_types = cols(Id = col_skip()))
+
+daten$Hair <- as_factor(daten$Hair)
+daten$Eye <- as_factor(daten$Eye)
+daten$Sex <- as_factor(daten$Sex)
+
+daten <- daten %>%
+  select(Hair, EyeColor=Eye, Sex, Frequency=Freq)
+
+# Variablen für die Ausgabe der Statistik im Text
+n <- nrow(daten)
+
+numberOfStudents <- daten %>%
+  summarize(sum(Frequency))
+```
+
+Wir verwenden *kable* und stellen die ersten sechs Zeilen als Tabelle dar.
+In Tabelle 1 finden wir die absoluten Häufigkeiten:
+```{r tabelle, message=FALSE, results='markup', echo=FALSE}
+kable(head(daten),
+        align="l",
+        caption="Tabelle 1: Die ersten sechs Zeilen im Datensatz HairEyeColor",
+        col.names=c("Hair", "EyeColor", "Sex", "Frequency")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+# Exploration der Merkmale
+
+Wir machen einige Aussagen über die Daten, die wir
+durchaus als Tabellen und Graphiken auch in die Vorlesung übernehmen können.
+
+* Das Merkmal Hair hat die Ausprägungen `r levels(daten$Hair)`.
+* Das Merkmal EyeColor hat die Ausprägungen `r levels(daten$EyeColor)`. *Hazel* kann man mit
+*Haselnussbraun* übersetzen.
+* Das Merkmal Sex hat die Ausprägungen `r levels(daten$Sex)`.
+* Insgesamt haben wir `r n` Zeilen im Datensatz. Das bedeutet, dass alle Kombinationen
+der drei Merkmale vorhanden sind, denn aus der Kombinatorik erhalten wir mit der
+Produktregel 4*4*2 = 32 mögliche kombinationen.
+* Wenn wir die Häufigkeiten in der letzten Spalte aufaddieren können wir
+bestimmen, dass ingesamt `r numberOfStudents` Studierende befragt wurden.
+Dies stimmt mit den Angaben von Friendly überein.
+
+## Das Merkmal Sex
+Als erstes Tabelle bestimmen wir die Anzahl der Frauen und Männer im Datensatz
+und geben dieses Ergebnis auch grafisch als Balkendiagramm aus.
+
+```{r groupedBySex, echo=TRUE, warnings=FALSE, message=FALSE}
+numberOfStudentsBySex <- daten %>%
+  group_by(Sex) %>%
+  summarize(Anzahl=sum(Frequency)) %>%
+  mutate(Prozentanteile=100.0*Anzahl/sum(Anzahl))
+
+
+kable(numberOfStudentsBySex,
+        align="l",
+        caption="Tabelle 2: Verteilung des Merkmals *Sex*",
+        col.names=c("Ausprägung", "Anzahl", "Anteil in Prozent")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+# Plot absolute Häufigkeiten
+ggplot(numberOfStudentsBySex) + 
+  geom_bar(mapping=aes(x=Sex, y = Anzahl), stat="identity",
+           fill=myPalette[1]) +
+  scale_x_discrete(limits=c("Female", "Male")) + 
+  labs(
+    title="HairEyeColor", 
+    subtitle="Absolute Häufigkeiten für das Merkmal Geschlecht",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+
+ggsave(filename="HairEyeSex.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Plot relative Häufigkeiten
+ggplot(numberOfStudentsBySex) + 
+  geom_bar(mapping=aes(x=Sex, y = Prozentanteile), stat="identity",
+           fill=myPalette[1]) +
+  scale_x_discrete(limits=c("Female", "Male")) + 
+  labs(
+    title="HairEyeColor", 
+    subtitle="Relative Häufigkeiten für das Merkmal Geschlecht",
+    x="",
+    y="Relative Häufigkeit"
+  ) 
+
+ggsave(filename="HairEyeSexRel.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Obwohl sich die Daten in der Veröffentlichung von den verwendeten unterscheiden
+(Froelich hatte über mehrere Jahre eigene Daten erhoben) sind die Ergebnisse
+vergleichbar. Wir haben ungefähr eine 50-50 Verteilung zwischen den Geschlechtern.
+
+## Das Merkmal EyeColor
+Jetzt betrachten wir analog das Merkmal *EyeColor*, erstellen eine Tabelle
+und grafische Darstellungen.
+
+```{r groupedByEyeColor, echo=TRUE, warnings=FALSE, message=FALSE}
+numberOfStudentsByEyeColor <- daten %>%
+  group_by(EyeColor) %>%
+  summarize(Anzahl=sum(Frequency)) %>%
+  mutate(Prozentanteile=100.0*Anzahl/sum(Anzahl))
+
+numberOfStudentsByEyeColor$EyeColor <- as_factor(numberOfStudentsByEyeColor$EyeColor)
+
+kable(numberOfStudentsByEyeColor,
+        align="l",
+        caption="Tabelle 3: Verteilung des Merkmals *EyeColor*",
+        col.names=c("Ausprägung", "Anzahl", "Anteil in Prozent")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+# Plot absolute Häufigkeiten
+ggplot(numberOfStudentsByEyeColor) + 
+  geom_bar(mapping=aes(x=EyeColor, y = Anzahl), stat="identity",
+           fill=myPalette[1]) +
+  labs(
+    title="HairEyeColor", 
+    subtitle="Absolute Häufigkeiten für das Merkmal Augenfarbe",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+
+ggsave(filename="HairEyeEyeColor.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+
+# Plot relative Häufigkeiten
+ggplot(numberOfStudentsByEyeColor) + 
+  geom_bar(mapping=aes(x=EyeColor, y = Prozentanteile), stat="identity",
+           fill=myPalette[1]) +
+  labs(
+    title="HairEyeColor", 
+    subtitle="Relative Häufigkeiten für das Merkmal Augenfarbe",
+    x="",
+    y="Relative Häufigkeit"
+  ) 
+
+ggsave(filename="HairEyeEyeColorRel.png", plot=last_plot(), device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+Auch her erhalten wir annähernd die Verteilung wie in der Veröffentlichung, die Anteile
+für die Farben *Blue* und *Brown* sind ziemlich gleich.
+
+## Kreisdiagramme
+In der Veröffentlichung werden zwei Kreisdiagramme erzeugt, an denen man sehr gut
+diskutieren kann, dass solche Kreisdiagramme nicht häufig verwendet werden sollten.
+
+Das sieht man schon daran, dass in ggplot überhaupt kein geom gibt,
+mit dem solche Diagramme erstellen können. Das geht mit einem Trick,
+den man auch in den Hilfetexten zu R findet.
+Wir erstellen ein Balkendiagramm mit *geom_col* und schalten anschließend
+auf Polarkoordinaten um.
+Das Bild das wir so erhalten entspricht der linken Darstellung
+in der Veröffentlichung. Wir haben zwar eine Legende,
+aber die Unterschiede zwischen den Augenfarben *Green* und
+*Hazel* oder zwischen *Blue* und *Brown* sind sehr schwer zu erkennen,
+das sieht alles gleich aus. Das geht offensichtlich in den Balkendiagrammen infacher.
+
+```{r eyeColorPieCharts, echo=TRUE, warnings=FALSE, message=FALSE}
+# Plot Häufigkeiten als Kreisdiagramm
+ggplot(numberOfStudentsByEyeColor, aes(x="", y=Prozentanteile,     
+                                       fill=factor(EyeColor))) + 
+  geom_col() +
+  scale_fill_brewer(palette="Set2") + 
+  coord_polar("y", start=0, direction=-1) + 
+  labs(
+    title="HairEyeColor", 
+    subtitle="Kreisdiagramm für das Merkmal Augenfarbe",
+    x="",
+    y=""
+  ) +
+  theme(
+    axis.text.x=element_blank(),
+    axis.text.y=element_blank()
+  ) + 
+  guides(fill=guide_legend(title="Haarfarben"))
+```
+
+Mit Hilfe von *plotly* können wir auch sehr schnell Kreisdiagramme 
+erstellen und dort auch Beschriftungen einfügen. Insbesondere können 
+wir dort auch Text innerhalb der Abschnitte anzeigen, so dass wir hier
+diese Alternative einsetzen.
+
+
+```{r eyeColorPiePlotly, echo=TRUE, warnings=FALSE, message=FALSE}
+fig <- plot_ly(data = numberOfStudentsByEyeColor,
+               labels = ~EyeColor,
+               values = ~Prozentanteile,
+               type = 'pie',
+               textposition = 'inside',
+               textinfo = 'label',
+               insidetextfont = list(color='#FFFFFF'),
+               hoverinfo = 'text',
+               marker = list(
+                 colors = myPalette,
+                 line = list(color = '#FFFFFF', width = 1)
+                 ),
+               showlegend = FALSE)
+
+fig <- fig %>%
+  layout(title = 'HairEyeColor -Kreisdiagramm für das Merkmal Augenfarbe ',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabeles = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabeles = FALSE)
+  )
+
+fig
+```
+
+Ohne weitere Beschriftung ist das schwer zu interpretieren. Dass immer zwei Farben ziemlich gleich sind ist zwar zu erkennen, aber die Balkendiagramme geben hier
+mehr her. Wir schreiben die Werte ebenfalls in das Diagramm,
+dann wird das lesbar. Daüfr verändern wir das Attribut *textinfo*.
+
+
+```{r eyeColorPiePlotly2, echo=TRUE, warnings=FALSE, message=FALSE}
+fig <- plot_ly(data = numberOfStudentsByEyeColor,
+               labels = ~EyeColor,
+               values = ~Prozentanteile,
+               type = 'pie',
+               textposition = 'inside',
+               textinfo = 'label+percent',
+               insidetextfont = list(color='#FFFFFF'),
+               hoverinfo = 'text',
+               marker = list(
+                 colors = myPalette,
+                 line = list(color = '#FFFFFF', width = 1)
+                 ),
+               showlegend = FALSE)
+
+fig <- fig %>%
+  layout(title = 'HairEyeColor -Kreisdiagramm für das Merkmal Augenfarbe ',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabeles = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabeles = FALSE)
+  )
+
+fig
+```
+
+Interne Bemerkung: diese beiden mit *plotly* erzeugten Bilder werden
+bei der Erzeugung des HTML-Formates nicht gespeichert, sondern müssen
+mit Hilfe des Javascript-Menus von plotly manuell gespeichert werden!
+
+# Kontingenzanalyse
+Man stellt sich sicher die Frage, ob es einen Zusammenhang zwischen dem Geschlecht und der Augenfarbe gibt, oder andere Zusammenhänge. Dafür erstellen wir
+einen Kontingenztabelle und visualisieren diese mit Hilfe von Heatmaps oder
+Mosaikplots. Interessant wird das insbesondere dann, wenn wir noch
+am Ende einen Chi-Quadrat-Test durchführen und das Ergebnis diskutieren.
+
+## Kontingenztabellen
+In R können wir eine Kontingenztabelle mit Hilfe von *table* oder *prop.table* (für relative Angaben) erzeugen.
+Die folgende Darstellung hält sich an die Seite auf
+[cookbook-r.com](https://cookbook-r.com/Manipulating_data/Converting_between_data_frames_and contingency_tables/).
+
+Insgesamt gibt es drei verschiedene Sichten auf solche Daten:
+- ein tibble, in dem jeder einzelne **case** in einer Zeile steht - das long format,
+- ein tibble mit Anzahlen, in dem jede Zeile eine der möglichen Kombinationen enthält,
+- eine Kontingenztabelle.
+
+Wir erzeugen mit Hilfe von *tidyverse* ein tibble mit  den Kombinationen.
+
+
+```{r contingency, echo=TRUE, warnings=FALSE, message=FALSE}
+numberOfStudentsBySex <- daten %>%
+  group_by(Sex, EyeColor) %>%
+  summarize(Anzahl=sum(Frequency)) 
+
+kable(numberOfStudentsBySex,
+        align="l",
+        caption="Tabelle 4: Verteilung des Merkmals *EyeColor gruppiert nach Geschlecht*",
+        col.names=c("Geschlecht", "Augenfarbe", "Anzahl")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+Daraus können wir auch manuell eine Kontingenztabelle machen,
+die wir aber nicht als Eingabe in die Funktionen für die Kontingenzanalyse in R
+verwenden können.
+
+```{r contingencyManal, echo=TRUE, warnings=FALSE, message=FALSE}
+tab <- numberOfStudentsBySex %>%
+  pivot_wider(names_from = EyeColor, values_from = Anzahl)
+
+
+kable(tab,
+        align="l",
+        caption="Tabelle 5: Manuell erstellte Kontingenztabelle",
+        col.names=c("Geschlecht", "Brown", "Blue", "Hazel", "Green")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Jetzt verwenden wir wie auf der Webpage gezeigt die Funktion *xtabs*, um
+eine Kontingenztabelle zu erhalten. Dabei können wir die eingelesenen
+Daten, die auf der Variable *daten* liegen verwenden. Die Funktion xtabs
+verwendet ein Formel-Interface für die Definition der Kontingenztabelle.
+Wenn wir die Reihenfolge auf der rechten Seite der Formel umdrehen vertauschen wir 
+Zeilen und Spalten. Wir geben das Objekt auf der Konsole aus.
+
+```{r contioncyxtab, echo=TRUE, warnings=FALSE, message=FALSE}
+corrTable <- xtabs(Frequency ~ Sex + EyeColor, data = daten)
+
+kable(corrTable, 
+      align="l",
+      caption="Tabelle 6: Mit xtabs erstellte Kontingenztabelle") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")  
+```
+
+Die Variable *corrTable* ist jetzt vom richtigen Typ. Wir können
+jetzt die Randwahrscheinlichkeiten hinzufügen und alle 
+anderen Funktionen für die Analyse einsetzen.
+
+
+```{r contioncyxtab2, echo=TRUE, warnings=FALSE, message=FALSE}
+corrTableRand <- addmargins(corrTable)
+
+kable(corrTableRand, 
+      align="l",
+      caption="Tabelle 7: Kontingenztabelle mit Randhäufigkeiten") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")  
+```
+
+ChiQuadrat und auch den (nicht korrigierten) Kontingenzkoeffizienten erhalten wir mit vcd::assocstats. Das werden wir aber nicht ausführen,
+sondern die Kontingenztabelle grafisch darstellung und anschließend
+den Chi-Quadrat-Test durchführen. In diesen Ausgaben finden wir den berechneten
+Wert für Chi-Quadrat auch.
+
+## Grafische Ausgabe von Kontingenztabellen
+Wir können gestapelte Balkendiagramme verwenden um die Daten
+auf einen Zusammenhang zu untersuchen. Bevor wir das sinnvoll durchführen
+können müssen wir eine Funktion wie *CountstoCases* implementieren,
+sonst funktionieren die Darstellungen mit ggplot nicht.
+
+Oder wir machen *nur* eine Heatmap - da kann es aber auch sein, dass
+wir eine counts-Tabelle brauchen ...
+
+```{r stackedDodged, message=FALSE}
+ggplot(data=daten) +
+  geom_bar(mapping=aes(x=EyeColor, fill=factor(Sex))) + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="HairEyeColor",
+         x="Augenfarbe",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Geschlecht"))
+
+ggplot(data=daten) +
+  geom_bar(mapping=aes(x=Sex, fill=factor(EyeColor))) + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="HairEyeColor",
+         x="Geschlecht",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Augenfarbe"))
+
+```
+
+## Hypothesentest
+
+Den Hypothesentest führen wir mit der Funktion aus datanovia durch. 
+
+# Die Daten als Grundgesamtheit
+Ob wir das in den Folien machen muss man sehen, aber im Paper wird das gemacht.
+Wir fassen die Datei als *Grundgesamtheit* auf. Dann können wir Aussagen 
+über die Wahrscheinlichkeit machen, mit wir eine Frau oder einen Mann,
+oder eine Haarfarbe oder auch KOmbinationen dafür  ziehen. Das kann man
+gut in der Wahrscheinlichkeitsrechnung einsetzen.
+
+# Literaturverzeichnis
