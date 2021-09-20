@@ -26,7 +26,7 @@ options(digits=3)
 ```
 
 # Einlesen der Daten
-In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ein Merkmal enthalten und untersuchen den Zusammenhang zwischen zwei oder mehr Merkmalen.
+In verschiedenen Lehrveranstaltungen betrachten wir Datensätze, die mehr als ein Merkmal enthalten und untersuchen den Zusammenhang zwischen zwei oder mehr dieser Merkmale.
 
 Als Einstieg betrachten wir das Beispiel der *Wohnsituation*, ein Datensatz, der Bamberg und Baur [@bamberg_93] entnommen ist. Dieser Datensatz ist auf OLAT in den Kursen verfügbar und wurde manuell aus dem angegebenen Buch in eine csv-Datei übertragen. Wir lesen die Daten ein und speichern sie auf dem Objekt  *wohnungen*.
 Wir geben die ersten Zeilen dieser Daten aus, um
