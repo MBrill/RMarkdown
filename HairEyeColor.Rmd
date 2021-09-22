@@ -21,6 +21,10 @@ library(kableExtra)
 
 library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 library(plotly)
+library(rstatix)
+library(ggpubr)
+
+library(vcd)
 
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "Set2")
@@ -121,7 +125,7 @@ kable(numberOfStudentsBySex,
                 position = "center")
 
 # Plot absolute Häufigkeiten
-ggplot(numberOfStudentsBySex) + 
+p <- ggplot(numberOfStudentsBySex) + 
   geom_bar(mapping=aes(x=Sex, y = Anzahl), stat="identity",
            fill=myPalette[1]) +
   scale_x_discrete(limits=c("Female", "Male")) + 
@@ -132,11 +136,13 @@ ggplot(numberOfStudentsBySex) +
     y="Absolute Häufigkeit"
   ) 
 
-ggsave(filename="HairEyeSex.png", plot=last_plot(), device="png",
+p
+
+ggsave(filename="HairEyeSex.png", plot=p, device="png",
        path="images/", width=16, height=9, units="cm")
 
 # Plot relative Häufigkeiten
-ggplot(numberOfStudentsBySex) + 
+p <- ggplot(numberOfStudentsBySex) + 
   geom_bar(mapping=aes(x=Sex, y = Prozentanteile), stat="identity",
            fill=myPalette[1]) +
   scale_x_discrete(limits=c("Female", "Male")) + 
@@ -147,7 +153,9 @@ ggplot(numberOfStudentsBySex) +
     y="Relative Häufigkeit"
   ) 
 
-ggsave(filename="HairEyeSexRel.png", plot=last_plot(), device="png",
+p
+
+ggsave(filename="HairEyeSexRel.png", plot=p, device="png",
        path="images/", width=16, height=9, units="cm")
 ```
 
@@ -305,11 +313,18 @@ Interne Bemerkung: diese beiden mit *plotly* erzeugten Bilder werden
 bei der Erzeugung des HTML-Formates nicht gespeichert, sondern müssen
 mit Hilfe des Javascript-Menus von plotly manuell gespeichert werden!
 
-# Kontingenzanalyse
+# Kontingenz und Kovarianz
 Man stellt sich sicher die Frage, ob es einen Zusammenhang zwischen dem Geschlecht und der Augenfarbe gibt, oder andere Zusammenhänge. Dafür erstellen wir
 einen Kontingenztabelle und visualisieren diese mit Hilfe von Heatmaps oder
 Mosaikplots. Interessant wird das insbesondere dann, wenn wir noch
 am Ende einen Chi-Quadrat-Test durchführen und das Ergebnis diskutieren.
+
+Der Originaldatensatz enthält schon die Häufigkeiten für jede Kombination.
+Wir müssen ihn später in einer Kontingenzmatrix umbauen und auch
+in einen Datensatz im long-Format, der abhängig von den Häufigkeiten
+jeweils eine Zeile hat. Dieser Datensatz ist dann sehr praktisch,
+da er sehr gut zu den ggplot-Funktionen und anderen R-Funktionen passt.
+Dafür gibt es in *rstatix* die Funktion *count_to_cases*.
 
 ## Kontingenztabellen
 In R können wir eine Kontingenztabelle mit Hilfe von *table* oder *prop.table* (für relative Angaben) erzeugen.
@@ -322,7 +337,6 @@ Insgesamt gibt es drei verschiedene Sichten auf solche Daten:
 - eine Kontingenztabelle.
 
 Wir erzeugen mit Hilfe von *tidyverse* ein tibble mit  den Kombinationen.
-
 
 ```{r contingency, echo=TRUE, warnings=FALSE, message=FALSE}
 numberOfStudentsBySex <- daten %>%
@@ -341,10 +355,9 @@ Daraus können wir auch manuell eine Kontingenztabelle machen,
 die wir aber nicht als Eingabe in die Funktionen für die Kontingenzanalyse in R
 verwenden können.
 
-```{r contingencyManal, echo=TRUE, warnings=FALSE, message=FALSE}
+```{r contingencyManual, echo=TRUE, warnings=FALSE, message=FALSE}
 tab <- numberOfStudentsBySex %>%
   pivot_wider(names_from = EyeColor, values_from = Anzahl)
-
 
 kable(tab,
         align="l",
@@ -371,6 +384,8 @@ kable(corrTable,
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                 full_width = T, 
                 position = "center")  
+
+daten.long <- counts_to_cases(corrTable)
 ```
 
 Die Variable *corrTable* ist jetzt vom richtigen Typ. Wir können
@@ -386,7 +401,7 @@ kable(corrTableRand,
       caption="Tabelle 7: Kontingenztabelle mit Randhäufigkeiten") %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                 full_width = T, 
-                position = "center")  
+                position = "center")
 ```
 
 ChiQuadrat und auch den (nicht korrigierten) Kontingenzkoeffizienten erhalten wir mit vcd::assocstats. Das werden wir aber nicht ausführen,
@@ -394,17 +409,84 @@ sondern die Kontingenztabelle grafisch darstellung und anschließend
 den Chi-Quadrat-Test durchführen. In diesen Ausgaben finden wir den berechneten
 Wert für Chi-Quadrat auch.
 
+Bevor wir das machen erzeugen wir noch einen tibble, der die *cases*
+enthält, also die dritte Möglichkeit die Daten zu repräsentieren. 
+Dazu verwenden wir die gerade erzeugte Kontingenztabelle
+und die Funktion *rstatix::count_to_cases*.
+
+```{r casesdf, echo=TRUE, warnings=FALSE, message=FALSE}
+
+daten.long <- counts_to_cases(corrTable)
+kable(head(daten.long, 3), 
+      align="l",
+      caption="Tabelle 8: Die ersten 4 Zeilen eines tibble mit den 592 Fällen") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+## Bedingte Häufigkeiten
+Wir geben  die relativen Häufigkeiten a und diskutieren wie im Paper von Froelich
+über die Werte.
+
+Dazu nehmen wir die Kontingenztabelle mit Rand, die wir erstellt haben und greifen
+auf die Werte zu. Damit können wir eine Verteilung für die Augenfarbe
+erstellen unter der Bedingung, dass wir wissen wie das Geschlecht ist.
+Wir berechnen die werte und erstellen ein neues tibble.
+
+```{r condFr1, echo=TRUE, warnings=FALSE, message=FALSE}
+condMat <- corrTableRand[1:2,1:4]/corrTableRand[1:2,5]
+kable(condMat, 
+      align="l",
+      caption="Tabelle 9: Bedingte Wahrscheinlichkeiten für die Augenfarbe nach Geschlecht") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+kable(numberOfStudentsByEyeColor,
+        align="l",
+        caption="Tabelle 3: Verteilung des Merkmals *EyeColor*",
+        col.names=c("Ausprägung", "Anzahl", "Anteil in Prozent")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+In Tabelle 3 hatten wir die Verteilung der Augenfarbe bereits festgehalten, wir wiederholen diese Tabelle nochmals unterhalb der gerade erzeugten Tabelle. Wir sehen, dass die
+jetzt berechneten bedingten Häufigkeiten nicht weit von den Häufigkeiten ohne
+Berücksichtigung des Merkmals Geschlecht sind.
+
+
+Wir führen das gleiche auch für die Spalten durch, betrachten also die bedingten Häufigkeiten
+für das Geschlecht bei bekannter Augenfarbe.
+
+```{r condFr2, echo=TRUE, warnings=FALSE, message=FALSE}
+condMat <- matrix(c(corrTableRand[1,1:4]/corrTableRand[3,1:4],
+             corrTableRand[2,1:4]/corrTableRand[3,1:4]), 
+             ncol=2,
+             dimnames = list(c("Brown", "Blue", "Hazel", "Green"),
+                             c("Male", "Female")))
+kable(condMat, 
+      align="l",
+      caption="Tabelle 10: Bedingte Wahrscheinlichkeiten für die Geschlechter nach Augenfarbe") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+
+```
+
+Bei der Betrachtung der Merkmale hatten wir eine Verteilung der Geschlechtung
+von ung. 47% Männer und 53% Frauen festgehalten, das hatten wir in Tabelle 2 schon
+ausgegeben. Hier könnte man vermuten, dass es eine leicht Abhängigkeit für das Geschlecht
+gibt, wenn wir die Augenfarbe kennen.
+
 ## Grafische Ausgabe von Kontingenztabellen
 Wir können gestapelte Balkendiagramme verwenden um die Daten
-auf einen Zusammenhang zu untersuchen. Bevor wir das sinnvoll durchführen
-können müssen wir eine Funktion wie *CountstoCases* implementieren,
-sonst funktionieren die Darstellungen mit ggplot nicht.
+auf einen Zusammenhang zu untersuchen. Dafür verwenden wir das eben
+gerade erstellte tibble. ggplot zählt für uns die entsprechenden Häufigkeiten.
 
-Oder wir machen *nur* eine Heatmap - da kann es aber auch sein, dass
-wir eine counts-Tabelle brauchen ...
-
-```{r stackedDodged, message=FALSE}
-ggplot(data=daten) +
+```{r dodged, message=FALSE, echo=TRUE, warnings=TRUE}
+plot1 <- ggplot(data=daten.long) +
   geom_bar(mapping=aes(x=EyeColor, fill=factor(Sex))) + 
   scale_fill_brewer(palette="Set2") +
      labs(
@@ -414,7 +496,12 @@ ggplot(data=daten) +
   ) +
   guides(fill=guide_legend(title="Geschlecht"))
 
-ggplot(data=daten) +
+plot1
+
+ggsave(filename="HairEyeStacked1.png", plot=plot1, device="png",
+       path="images/", width=16, height=9, units="cm")
+
+plot1 <- ggplot(data=daten.long) +
   geom_bar(mapping=aes(x=Sex, fill=factor(EyeColor))) + 
   scale_fill_brewer(palette="Set2") +
      labs(
@@ -424,11 +511,116 @@ ggplot(data=daten) +
   ) +
   guides(fill=guide_legend(title="Augenfarbe"))
 
+plot1
+
+ggsave(filename="HairEyeStacked2.png", plot=plot1, device="png",
+       path="images/", width=16, height=9, units="cm")
+
 ```
 
-## Hypothesentest
+Man sieht nicht wirklich ob wir eine statistische Abhängigkeit haben.
+Aber es geht auch darum die Darstellungen zu zeigen.
+Deshalb machen wir jetzt noch neben dem *stacked* eine *dodged*-Darstellung.
 
-Den Hypothesentest führen wir mit der Funktion aus datanovia durch. 
+```{r stacked, message=FALSE, echo=TRUE, warnings=TRUE}
+plot1 <- ggplot(data=daten.long) +
+  geom_bar(mapping=aes(x=EyeColor, fill=factor(Sex)),
+           position="dodge") + 
+  scale_fill_brewer(palette="Set2") +
+     labs(
+         title="HairEyeColor",
+         x="Augenfarbe",
+         y="Absolut Häufigkeiten"
+  ) +
+  guides(fill=guide_legend(title="Geschlecht"))
+
+plot1
+
+ggsave(filename="HairEyeDogded.png", plot=plot1, device="png",
+       path="images/", width=16, height=9, units="cm")
+```
+
+## Heatmaps
+Als Visualisierung der Werte in der Kontingenztabelle mit Hilfe von Farben
+erstellen wir eine Heatmap.
+
+
+```{r heatmap, message=TRUE, echo=TRUE, warnings=TRUE}
+ggplot(data=daten) +
+  scale_y_discrete(labels=c("Female", "Male")) + 
+  geom_tile(mapping=aes(y=Sex, x=EyeColor, fill=Frequency)) + 
+  scale_fill_distiller(type="seq", palette="Greens",
+                       guide="colorbar",
+                       breaks=c(0, 20, 40, 60, 80, 100, 120)) +
+    guides(fill=guide_colorbar(title="Häufigkeiten")) +
+  labs(
+    title="Heatmap für den Datensatz HairEyeColor", 
+    x="", 
+    y=""
+  )  
+```
+
+## Mosaik-Plots
+Statt Farben können wir auch Flächen für die Visualisierung einer Kontingenztabelle
+verwenden. Dazu verwenden wir die Variable *corrTable* und die Funktion *mosaic*,
+die im Package *vcd* enthalten ist.
+
+``` {r vcd1, warning=FALSE, message=FALSE}
+mosaic(corrTable, 
+       shade=TRUE, 
+       highlighting_fill=myPalette[1], 
+       highlighting = c(2), 
+       main="HairEyeColor - Mosaikplot",
+       direction=c("h", "v"),
+       spacing=spacing_equal(1.0),
+       alternate_labels=FALSE,
+       zero_shade=FALSE)
+```
+
+Bei beiden Darstellungen könnte man eine leichte Abhängigkeit ablesen,
+aber das muss noch weiter untersucht werden.
+
+# Hypothesentests
+
+Den Hypothesentest führen wir mit der Funktion aus *rstatix* durch. 
+Hier gibt es die Funktion *chisq_test*, der den Hypothesentest ausführt
+und mit *chi_sq_decriptives* können wir uns Einzelheiten, auch die
+bei Unabhängigkeit erwarteten Häufigkeiten, ausgeben lassen.
+Parallel dazu verwenden wir die Funktion *assocstats* aus dem Package *vcd*.
+Damit erhalten wir die Werte der Kontingenzkoeffizienten aus der beschreibenden
+Statistik.
+Als Eingabe verwenden wir die erstellte Kontingenztabelle.
+
+Zur Erinnerung: die Nullhypothese für die Tests ist, dass die
+beiden beobachteten Merkmale statisch unabhängig sind.
+
+``` {r assocchi, warning=TRUE, message=TRUE, echo=TRUE}
+res <- assocstats(corrTable)
+```
+
+Der korrigierte Kontintenzkoeffizient ist durch `r res$contingency` gegeben, er ist nahe bei 0, was für einen schwachen Zusammenhang spricht.
+
+Jetzt führen wir die Funktion *chisq_test* durch:
+
+``` {r chi2, warning=TRUE, message=TRUE, echo=TRUE}
+res.chi2 <- chisq_test(corrTable)
+
+kable(chisq_descriptives(res.chi2),
+            align="l",
+      caption="Tabelle 8: Ergebnisse von *chisqu_test*") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Der p-wert, den wir in der Ausgabe von *chisq_test* erhalten ist mit `r res.chi2$p` groß, so dass wir die Nullhypothese nicht verwerfen. Interessant sind die Werte in der Spalte
+*expected* - das sind die Häufigkeiten die wir erwarten würden wenn die beiden Merkmals unabhängig sind.
+
+
+Das Ergebnis wird in der Veröffentlichung von Froelich diskutiert. Dass hier nicht
+das medizinische Ergebnis der Unabhängigkeit herauskommt liegt an den Daten. 
+Man muss ich immer klar machen, dass Hypothesentests immer nur das repräsentieren können,
+was in den verwendeten Daten zu finden ist.
 
 # Die Daten als Grundgesamtheit
 Ob wir das in den Folien machen muss man sehen, aber im Paper wird das gemacht.

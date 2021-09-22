@@ -390,7 +390,6 @@ Datensatz verwenden wir wohnungen.long.
 
 ```{r heatWohnungen, message=FALSE}
 ggplot(data=wohnungen.long) +
-  #scale_y_discrete(limits=c(1, 2, 3, 4)) + 
   geom_tile(mapping=aes(x=Zimmer, y=Personen, fill=value)) + 
   scale_fill_distiller(palette="Dark2", guide="legend",
                        breaks=c(1,2,3)) +
@@ -402,8 +401,6 @@ ggplot(data=wohnungen.long) +
   )  
 ```
 
-Wir erzeugen eine Heatmap für den Datensatz Beruf und Sport. Dazu müssen wir
-oben die Daten in long-Format bringen!
 
 
 # Literaturverzeichnis
