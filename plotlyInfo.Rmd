@@ -1,7 +1,6 @@
 ---
 title: "Visualisierungen mit plotly"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 encoding: utf-8
 output:
   html_document:
@@ -230,11 +229,12 @@ h <- hist(frauen$Koerpergroesse, breaks="FD", plot=FALSE)
 
 plot_ly(x = h$mids, y = h$counts) %>%
   add_bars(
-    name = "FD",
     color=myPalette[3],
     stroke = I("black")
   ) %>%
-  layout(title="Histogramm für die Körpergrößen von Frauen mit Klassenbreiten nach Freedman-Diaconis")
+  layout(
+    title="Histogramm für die Körpergrößen von Frauen mit Klassenbreiten nach Freedman-Diaconis",
+    bargap = 0)
 ```
 
 Die *hist*-Funktion bietet die Möglichkeit wie gezeigt Klassenbreiten aus der Literatur zu verwenden. Mit der Option *breaks* können wir wie schon bei *ggplot* die Intervallgrenzen auch selbst angeben.
@@ -308,10 +308,6 @@ fig <- fig %>% layout(title = "Box Plot Styling Outliers")
 
 fig
 ```
-
-
-
-
 
 # Streuungsdiagramme
 Als Daten für Streuungsdiagramme verwenden wir den Datensatz *Luftfeuchtigkeit*. 
