@@ -12,6 +12,7 @@
 # Folders with binaries and not versioned files
 # We do not version the bitmaps!
 images/
+
 # Kartenmaterial
 karten/
 # RStudio

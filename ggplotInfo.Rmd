@@ -1,7 +1,6 @@
 ---
 title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 encoding: utf-8
 output:
   html_document:

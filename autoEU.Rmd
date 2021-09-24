@@ -1,10 +1,7 @@
 ---
-title: "Visualisierung mit ggplot"
+title: "Visualisierungen mit ggplot am Beispiel AutoEU"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
-  html_notebook:
-    
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -12,6 +9,8 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
+  html_notebook:
+    
 bibliography: literatur.bib    
 ---
 
@@ -21,13 +20,15 @@ library(knitr)
 library(kableExtra)
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
+library(rstatix)
+
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
 
-# Der Datensatz *autoEU*
+# Der Datensatz *AutoEU*
 Als Beispiel-Datensatz verwenden wir *autoEU*.
 Dieser Datensatz ist aus dem im Package *ISLR* ([@tibshirani_13]) enthaltenen Datensatz *auto*
 entstanden. Die Null-Werte wurden entfernt und die Einheiten und Bezeichnungen
@@ -36,13 +37,20 @@ Nach dem Einlesen stellen wir mit *as_factor* sicher, dass einige Merkmale
 korrekt als Faktoren interpretiert werden, was für die Visualisierung mit
 *ggplot* sehr hilfreich ist.
 
+Wir wählen mit Hilfe der Funktion *sample_by_n* aus *rstatix* einige
+Zeilen zufällig aus.
 
-```{r daten, message=FALSE, echo=TRUE}
+```{r daten, message=FALSE, echo=TRUE, warnings=FALSE}
 daten <- read_csv2(file="data/AutoEU.csv")
 daten$Region <- as_factor(daten$Region)
 daten$Zylinder <- as_factor(daten$Zylinder)
 daten$Baujahr <- as_factor(daten$Baujahr)
-glimpse(daten)
+
+kable(sample_n_by(daten, Region, size=2), 
+      align="l") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
 ```
 
 # Visualisierungen

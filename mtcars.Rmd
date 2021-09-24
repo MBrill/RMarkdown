@@ -1,7 +1,6 @@
 ---
-title: "Das Beispiel cars"
+title: "Das Beispiel mtcars"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
@@ -17,7 +16,9 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+library(rstatix)
+
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
@@ -30,7 +31,6 @@ Der Datensatz enthält Angaben über PKWs, die einer Ausgabe der Zeitschrift
 sind noch 10 weitere Merkmale aufgeführt. Es gibt Daten über 32 Automobile
 aus dem Modelljahr 1973-1974. Die Merkmale sind
 
-- Name
 - mpg - Verbrauch in miles per gallon
 - Anzahl der Zylinder
 - Hubraum
@@ -45,6 +45,12 @@ Zylinder in der Spalte *cyl* zu einem Faktor machen.
 ```{r daten, message=FALSE, echo=FALSE}
 data(mtcars)
 mtcars$cyl <- as.factor(mtcars$cyl)
+
+kable(sample_n_by(mtcars, cyl, size=2), 
+      align="l") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
 ```
 
 Der Datensatz mpg enthält ähnliche Daten über 38 Autos aus den Jahren 1999 bis 2008.

@@ -1,7 +1,6 @@
 ---
 title: "Das Beispiel Energieeffizienzklassen"
 author: "Manfred Brill"
-date: "Sommersemester 2019"
 output: 
   html_document: 
     fig_caption: yes
@@ -18,7 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(knitr)
 library(kableExtra)
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
@@ -38,6 +38,7 @@ Klassen: diese sind durch D, C, B, A, A+, A++ bis A+++ gegeben.
 Anschließend lesen wir die Daten ein und weisen die vorher definierten Level
 hinzu. Da wir später die Häufigkeiten grafisch darstellen möchten
 erzeugen wir entsprechende Variablen:
+
 ```{r daten, message=FALSE, echo=TRUE}
 stufen <- as.factor(c("D", "C", "B", "A", "A+", "A++", "A+++"))
 daten5 <- read_delim("data/energieEffizienz5.csv", 

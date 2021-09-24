@@ -1,40 +1,39 @@
 ---
 title: "Visualisierungen mit plotly"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 encoding: utf-8
 output: 
    slidy_presentation:
       highlight: pygments
       footer: "Datenanalyse mit R und RStudio --- Visualisierungen mit plotly"
-
 bibliography: literatur.bib
 ---
 
-```{r setup, include=TRUE, echo=FALSE, message=FALSE}
+```{r setup, include=TRUE, echo=FALSE, message=FALSE, warnings=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
 # Rmd bearbeiten
-library(knitr)
-library(kableExtra)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
 # Pipelines und mehr in Tidyverse
-suppressPackageStartupMessages(library(dplyr))
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 # plotly
-library(plotly)
+library(plotly, quietly=TRUE)
 # Farbpaletten
-library(RColorBrewer)
+library(RColorBrewer, quietly=TRUE)
 myPalette <- brewer.pal(5, "YlGn")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
+options(warn=0)
 ```
 
 
 ```{r daten, message=FALSE, echo=FALSE}
-liefer <- read_csv2("data/lieferzeiten.csv")
+liefer <- read_csv2("data/lieferzeiten.csv", show_col_types = FALSE)
 
-frauen <- read_csv2("data/koerpergroesse_frauen.csv")
+frauen <- read_csv2("data/koerpergroesse_frauen.csv", show_col_types = FALSE)
 
-wassergehalt <- read_csv2("data/wassergehalt.csv")
+wassergehalt <- read_csv2("data/wassergehalt.csv", show_col_types = FALSE)
 ```
 
 # Übersicht über plotly
@@ -57,30 +56,39 @@ ggplotly(plot) %>%
   layout(autosize=FALSE, width=400, height=400)
 ```
 
-# Ein weiteres Beispiel für ggplot und ggplotly
+# Noch ein Beispiel für ggplot und ggplotly
 
 ```{r bars5, message=FALSE, results='markup', warning=FALSE}
 plot <- ggplot(liefer) +
   geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
-  labs(title="Relative Häufigkeiten der Lieferzeiten", x="Tage", y="Anteile") +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(title="Relative Häufigkeiten der Lieferzeiten", 
+       x="Tage", y="Anteile in Prozent") +
   coord_flip()
 
-ggplotly(plot, width=400, height=400)
+ggplotly(plot) %>%
+  layout(autosize=FALSE, width=400, height=400)
 ```
-
 
 # Balkendiagramme
 
+Geben wir nicht an welche Visualisierung wir verwenden möchten übernimmt
+plotly die Entscheidung.
+
 ```{r liefer1, , message=FALSE, results='markup'}
-plot_ly(liefer, x = ~Lieferzeiten, width=400, height=400) 
+plot_ly(liefer, 
+        x = ~Lieferzeiten, 
+        width=400, height=400) 
 ```
 
 # Veränderung der Abbildung
 
 ```{r liefer2, message=FALSE, results='markup', warning=FALSE}
-plot_ly(liefer, x = ~Lieferzeiten, color=myPalette[2],  width=400, height=400)
+plot_ly(liefer, 
+        x = ~Lieferzeiten, 
+        color=myPalette[2],  
+        width=400, height=400)
 ```
 
 
@@ -121,7 +129,7 @@ liefer %>%
   layout(title="Der Datensatz Lieferzeiten")
 ```
 
-# Hinzufügen von Layer zu einer Abbildung
+# Hinzufügen eines Layers zu einer Abbildung
 
 ```{r liefer6, message=FALSE, results='markup', warning=FALSE}
 liefer %>%
