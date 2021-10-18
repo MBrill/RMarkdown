@@ -1,8 +1,14 @@
 ---
 title: "Visualisierungen mit plotly"
 author: "Manfred Brill"
+date: ""
 encoding: utf-8
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
   html_document:
     df_print: paged
     toc: yes
@@ -12,22 +18,17 @@ output:
     theme: cosmo
     number_sections: yes
     encoding: utf-8
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
 bibliography: literatur.bib
 ---
 
 ```{r setup, include=TRUE, echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
 # Rmd bearbeiten
-library(knitr)
-library(kableExtra)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
 # Pipelines und mehr in Tidyverse
-suppressPackageStartupMessages(library(dplyr))
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 # plotly
 library(plotly)
 # Farbpaletten

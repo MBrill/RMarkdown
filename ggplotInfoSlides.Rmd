@@ -1,7 +1,7 @@
 ---
 title: "Visualisierungen mit ggplot"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
+date: ""
 output:
   slidy_presentation:
     highlight: pygments
@@ -14,12 +14,12 @@ bibliography: literatur.bib
 
 ```{r setup, include=TRUE, echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
 # Rmd bearbeiten
-library(knitr)
-library(kableExtra)
-# ggplot, Pipelines und mehr in Tidyverse
-suppressPackageStartupMessages(library(dplyr))
-library(tidyverse)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
+# Pipelines und mehr in Tidyverse
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 # Farbpaletten
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "YlGn")
@@ -231,7 +231,7 @@ ggplot(liefer) +
   coord_flip()
 ```
 
-```
+```{r save2, echo=FALSE, results='markup', warning=FALSE, fig.height=3}
 ggsave(filename="saveExample.png", plot=last_plot(), 
        device="png",
        path="images/", 
