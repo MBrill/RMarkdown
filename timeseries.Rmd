@@ -1,7 +1,7 @@
 ---
 title: "Visualisierung von Zeitreihen mit ggplot"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
+date: ""
 output: 
   html_notebook: 
     highlight: pygments
