@@ -13,12 +13,12 @@ bibliography: literatur.bib
 
 ```{r setup, include=TRUE, echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
 # Rmd bearbeiten
-library(knitr)
-library(kableExtra)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
 # Pipelines und mehr in Tidyverse
-suppressPackageStartupMessages(library(dplyr))
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 # plotly
 library(plotly)
 # Farbpaletten
