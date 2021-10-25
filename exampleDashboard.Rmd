@@ -1,15 +1,15 @@
 ---
 title: "Dashboards mit flexdashboard"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
     flexdashboard::flex_dashboard
 encoding: utf-8
 ---
 
 ```{r setup, include = FALSE}
-library(ggplot2)
-library(dplyr)
+options(warn=-1)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
 
 diamonds.cut <- 2.5

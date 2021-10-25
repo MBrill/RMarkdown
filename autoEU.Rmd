@@ -2,6 +2,8 @@
 title: "Visualisierungen mit ggplot am Beispiel AutoEU"
 author: "Manfred Brill"
 output: 
+  html_notebook:
+    
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -9,8 +11,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook:
-    
 bibliography: literatur.bib    
 ---
 
