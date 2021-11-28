@@ -11,15 +11,15 @@ n <- 10000000
 results <- rep(42, n)
 
 print("Wir beginnen mit der Simulation")
-print("Anzahl der durchgeführten Versuche")
+print("Anzahl der durchgeführten Ziehungen")
 print(n)
 
-count <- results %>%
+frequency <- results %>%
   map_int(counter) %>%
   sum()
 
 print("Die Ergebnisse")
 print("Absolute Häufigkeit für die Zahl 42")
-print(count)
-print("Relative Häufigkeit für die Zaho 42")
-print(count/n)
+print(frequency)
+print("Relative Häufigkeit für die Zahl 42")
+print(frequency/n)
