@@ -1,0 +1,115 @@
+---
+title: "Konfidenzintervalle"
+author: "Manfred Brill"
+output: 
+
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Konfidenzintervalle
+Im Skript zu schließender Statistik führen wir Konfidenzintervalle ein
+und berechnen diese auch für Beispiele. In Excel gibt es eine Funktion
+*KONFIDENZ*, die das Intervall berechnet. Das fehlt in R, so dass in diesem
+Markdown die Berechnung als Funktion implementiert wird.
+
+Wir verwenden das Package *magrittr*, so dass die Pipelines in den Funktionen
+einfach zu implementieren sind.
+
+Die Funktionen stammen von der URL <https://www.r-bloggers.com/2021/04/calculating-confidence-interval-in-r/>.
+
+
+# Konfidenzintervall bei bekannter Varianz
+Wenn wir die Varianz kennen verwenden wir die Quantile der Normalverteilung
+für die Berechnung des Konfidenzintervalls. Wir implementieren zuerst 
+den  zweiseitigen Fall, einseitige Intervalle könnte man gut als Übung
+realisieren.
+
+
+```{r zintervall, echo=TRUE, warnings=TRUE}
+CI_z <- function (x, ci = 0.95)
+{
+`%>%` <- magrittr::`%>%`
+standard_deviation <- sd(x)
+sample_size <- length(x)
+Margin_Error <- abs(qnorm((1-ci)/2))* standard_deviation/sqrt(sample_size)
+df_out <- data.frame( sample_size=length(x), Mean=mean(x), sd=sd(x),
+Margin_Error=Margin_Error,
+'CI lower limit'=(mean(x) - Margin_Error),
+'CI Upper limit'=(mean(x) + Margin_Error)) %>%
+tidyr::pivot_longer(names_to = "Measurements", values_to ="values", 1:6 )
+return(df_out)
+}
+```
+
+# Konfidenzintervall für unbekannte Varianz
+Wenn wir die Varianz nicht kennen und sie mit Hilfe des berechneten Mittelwerts
+schätzen verwenden wir die Quantile der t-Verteilung für die Berechnung der Intervall.
+Ansonsten ist die neue Funktion nicht sehr unterschiedlich von der vorher.
+
+```{r tintervall, echo=TRUE, warnigs=TRUE}
+CI_t <- function (x, ci = 0.95)
+{
+`%>%` <- magrittr::`%>%`
+Margin_Error <- qt(ci + (1 - ci)/2, df = length(x) - 1) * sd(x)/sqrt(length(x))
+df_out <- data.frame( sample_size=length(x), Mean=mean(x), sd=sd(x),
+Margin_Error=Margin_Error,
+'CI lower limit'=(mean(x) - Margin_Error),
+'CI Upper limit'=(mean(x) + Margin_Error)) %>%
+tidyr::pivot_longer(names_to = "Measurements", values_to ="values", 1:6 )
+return(df_out)
+}
+```
+
+# Test
+In der URL werden Daten für den Test angegeben. Wir kopieren diese Daten in unser
+Dokument, dann können wir überprüfen, ob die Implementierung korrekt ist. 
+
+```{r testmitt, echo=TRUE, warnigs=TRUE}
+dat <- c(15.4,9.21,4.2,7.5,12.2,18.3,17.3,
+14.3,14.02, 20, 12.3, 14.1, 17.3, 15.4,
+12.2,11.4, 9.1,18,14.43,17,15.1,13.4,
+15.3, 12.2,13.3)
+
+CI_t(dat, ci = 0.95)
+## # A tibble: 6 x 2
+## Measurements values
+## <chr> <dbl>
+## 1 sample_size 25
+## 2 Mean 13.7
+## 3 sd 3.60
+## 4 Margin_Error 1.49
+## 5 CI.lower.limit 12.2
+## 6 CI.Upper.limit 15.2
+
+CI_z(dat, ci = 0.95)
+## # A tibble: 6 x 2
+## Measurements values
+## <chr> <dbl>
+## 1 sample_size 25
+## 2 Mean 13.7
+## 3 sd 3.60
+## 4 Margin_Error 1.41
+## 5 CI.lower.limit 12.3
+## 6 CI.Upper.limit 15.1
+```
+
+Die berechneten Werte stimmen mit den Werten in den Kommentaren überein.
