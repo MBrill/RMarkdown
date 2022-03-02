@@ -1,18 +1,17 @@
 ---
 title: "Das Anscombe Quartett"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output:
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
   html_document:
     toc: yes
     toc_float: yes
     df_print: paged
     theme: cosmo
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
 encoding: utf-8
 bibliography: literatur.bib
 ---
@@ -20,10 +19,13 @@ bibliography: literatur.bib
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
+library(kableExtra)
+
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(modelr)
-library(kableExtra)
+
+
 library(RColorBrewer)
 myPalette <- brewer.pal(5, "Set2")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
@@ -140,7 +142,8 @@ ggplot(one) +
     y="Y1"
   )
 
-ggsave(filename="anscombe1Reg.png", plot=last_plot(), 
+ggsave(filename="anscombe1Reg.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -156,7 +159,8 @@ ggplot(one) +
     y="Y1"
   )
 
-ggsave(filename="anscombe1.png", plot=last_plot(), 
+ggsave(filename="anscombe1.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -175,7 +179,8 @@ ggplot(two) +
     y="Y2"
   )
 
-ggsave(filename="anscombe2Reg.png", plot=last_plot(), 
+ggsave(filename="anscombe2Reg.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -191,7 +196,8 @@ ggplot(two) +
     y="Y2"
   )
 
-ggsave(filename="anscombe2.png", plot=last_plot(), 
+ggsave(filename="anscombe2.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -281,7 +287,7 @@ three <- three %>%
 four <- four %>%
   add_residuals(four_model)
 
-ggplot(one, aes(X, resid)) + 
+ggplot(data=one, aes(x=X, y=resid)) + 
   geom_ref_line(h=0) + 
   geom_point(size=2.0, color=myPalette[1]) +
   labs(
@@ -290,11 +296,55 @@ ggplot(one, aes(X, resid)) +
     y="Y1"
   ) 
 
-ggsave(filename="anscomberes1.png", plot=last_plot(), 
+ggsave(filename="anscomberes1.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
 
+ggplot(two, aes(X, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color=myPalette[1]) +
+  labs(
+    title="Residualplot für das lineare Modell X2 ~ Y2 im Anscombe Quartett", 
+    x="X2", 
+    y="Y2"
+  ) 
+
+ggsave(filename="anscomberes2.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(three, aes(X, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color=myPalette[1]) +
+  labs(
+    title="Residualplot für das lineare Modell X3 ~ Y3 im Anscombe Quartett", 
+    x="X3", 
+    y="Y3"
+  ) 
+
+ggsave(filename="anscomberes3.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+ggplot(four, aes(X, resid)) + 
+  geom_ref_line(h=0) + 
+  geom_point(size=2.0, color=myPalette[1]) +
+  labs(
+    title="Residualplot für das lineare Modell X4 ~ Y4 im Anscombe Quartett", 
+    x="X4", 
+    y="Y4"
+  ) 
+
+ggsave(filename="anscomberes4.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+# Alle Residuen
 ggplot(two, aes(X, resid)) + 
   geom_ref_line(h=0) + 
   geom_point(data = one, size=2.0, aes(color='1')) +
@@ -305,7 +355,7 @@ ggplot(two, aes(X, resid)) +
                      values=c('1'=myPalette[1], '2' = myPalette[2],
                               '3'=myPalette[3], '4'=myPalette[4])) +
   labs(
-    title="Residualplot für die linearen Modell Xi ~ Yi im Anscombe Quartett", 
+    title="Residualplot für die linearen Modelle Xi ~ Yi im Anscombe Quartett", 
     x="X", 
     y="Residuen"
   )

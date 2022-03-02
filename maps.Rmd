@@ -1,7 +1,6 @@
 ---
 title: "Visualisierung von georeferenzierten Daten"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
@@ -25,6 +24,7 @@ myPalette <- brewer.pal(8, "Accent")
 options(digits=3)
 
 # Packages für Karten
+library<(maps)
 library(sf)
 library(maptools)
 library(rgeos)
