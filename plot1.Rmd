@@ -1,0 +1,183 @@
+---
+title: "Lösung der Aufgabe plot1"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+library(plotly)
+
+library(MASS)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Daten
+Wir laden die Daten aus dem Package *MASS*. Dabei ist das Package selbst schon in *setup* importiert worden. Der Datensatz steht
+als *painters* zur Verfügung. Wir erstellen eine H äufigkeitstabelle des Merkmals *School*:
+
+```{r Daten, message=FALSE, echo=TRUE}
+school.freq <- table(painters$School)
+school.freq
+```
+Wir werden diese Aggregation später nicht benötigen,
+da das ggplot für uns erledigt. Für die Abbildungen 
+mit Plotly berechnen wir die absoluten Häufigkeiten
+mit der Funktion *count* direkt in der Pipeline.
+
+# ggplot
+Wir erstellen eine Lösung mit *ggplot*.
+
+```{r ggbarh, message=FALSE, echo=TRUE}
+bargg <- ggplot(painters, aes(x=School)) +
+     geom_bar(color = "black",
+              fill= "orange") +
+     labs(
+           title="Balkendiagramm für das Merkmal School im Datensatz painters",
+           x = "Schule",
+           y = "Absolute Häufigkeiten"
+     )
+
+bargg
+```
+Wir erstellen das Balkendiagramm vertikal, und in einer weiteren Version fügen wir aus dem Hilfetext die Bedeutungen der Buchstaben in die Skala ein.
+```{r ggbarv, message=FALSE, echo=TRUE}
+bargg + coord_flip()
+```
+Wir ersetzen die Codierung der Schulen mit den ausgeschriebenen
+englischen Bezeichnungen, die wir im Hilfetext finden.
+Das könnten wir mit *forcats* auch in einer Pipeline machen,
+aber darauf verzichten wir.
+
+```{r ggbarvSchools, message=FALSE, echo=TRUE}
+school.names <- c("Renaissance", "Mannerist", "Seicento", "Venetian", "Lombard", "Sixteenth Century", "Seventeenth Century", "French")
+
+ggplot(painters, aes(x=School)) +
+     geom_bar(color = "black",
+              fill= "orange") +
+     scale_x_discrete(labels=school.names) +
+     labs(
+           title="Balkendiagramm für das Merkmal School im Datensatz painters",
+           x = "Schule",
+           y = "Absolute Häufigkeiten"
+     ) +
+  coord_flip()
+```
+## Pareto-Diagramme
+Und noch eine Grafik, dieses Mal sortieren wir die Balken
+nach der Häufigkeit mit Hilfe von *forcats* und der Funktion
+*fct_infreq*. Wir könnten auch die Namen der Schulen korrekt umsortieren, dann müssten wir aber eine Pipeline
+verwenden, worauf wir jetzt verzichten.
+
+```{r ggbarvSchoolsOrdered, message=FALSE, echo=TRUE}
+ggplot(painters, aes(x=fct_infreq(School))) +
+     geom_bar(color = "black",
+              fill= "orange") +
+     labs(
+           title="Balkendiagramm für das Merkmal School im Datensatz painters",
+           x = "Schule",
+           y = "Absolute Häufigkeiten"
+     ) +
+  coord_flip()
+```
+Die Sortierung wäre für ein horizontales Bild so, dass wir
+ein Pareto-Diagramm erhalten. Durch der Vertauschen
+der Balken kommen die großen Häufigkeiten nach unten.
+Das können wir nochmal mit *forcats* kompensieren,
+wir packen noch die Funktion *fct_rev* davor, die die
+Ordnung umdreht.
+
+```{r ggbarvSchoolsVPareto, message=FALSE, echo=TRUE}
+ggplot(painters, aes(x=fct_rev(fct_infreq(School)))) +
+     geom_bar(color = "black",
+              fill= "orange") +
+     labs(
+           title="Balkendiagramm für das Merkmal School im Datensatz painters",
+           x = "Schule",
+           y = "Absolute Häufigkeiten"
+     ) +
+  coord_flip()
+```
+
+# ggplotly
+Jetzt verwenden wir *ggplot* und *ggplotly* und haben damit
+eine interaktive Grafik mit Hilfe von *ggplot* estellt.
+Wir verwenden eine der Grafiken oben und verwenden noch
+*ggplotly*. Wir lassen die Beschriftung *Schule* weg,
+da das nicht korrekt an die Achse geschrieben wird.
+
+```{r ggplotlySchools, message=FALSE, echo=TRUE}
+ggbar <- ggplot(painters, aes(x=School)) +
+     geom_bar(color = "black",
+              fill= "orange") +
+     scale_x_discrete(labels=school.names) +
+     labs(
+           title="Schulen im Datensatz painters",
+           x = "",
+           y = "Absolute Häufigkeiten"
+     ) +
+  coord_flip()
+
+ggplotly(ggbar)
+```
+
+# plotly
+Jetzt verwenden wir direkt *plotly*. Der wichtigste Unterschied
+zwischen *ggplot* und *plotly* bei den Balkendiagrammen ist,
+dass wir die Häufigkeiten selbst berechnen müssen. Das machen 
+wir in einer Pipeline und der Funktion *count*. Wir erzeugen wieder
+zwei Versionen, einmal einfach als Balkendiagramm, einmal als 
+Pareto-Diagramm. Das Sortieren können wir in *plotly*,
+im Layout, durchfüh
+ren.
+
+```{r plotlyBars, message=FALSE, results='markup', warning=FALSE}
+painters %>%
+  count(School) %>%
+  plot_ly() %>%
+  add_bars(
+    x = ~School,
+    y = ~n,
+    orientation='v',
+    color= I("orange"),
+    stroke = I("black")
+  ) %>%
+  layout(title="Schulen im Datensatz painters",
+         xaxis = list(title = 'Schulen'), 
+         yaxis = list(title = 'Absolute Häufigkeiten')
+  )
+```
+## Pareto
+Auch hier können wir die Balken wieder so anordnen, dass wir ein
+Pareto-Diagramm erhalten.
+
+```{r plotlyBarsPareto, message=FALSE, results='markup', warning=FALSE}
+painters %>%
+  count(School) %>%
+  plot_ly() %>%
+  add_bars(
+    x = ~School,
+    y = ~n,
+    color= I("orange"),
+    stroke = I("black")
+  ) %>%
+  layout(title="Schulen im Datensatz painters",
+         xaxis = list(title = 'Schulen',
+                      categoryorder = "total descending"), 
+         yaxis = list(title = 'Absolute Häufigkeiten')
+  )
+```

@@ -1,7 +1,6 @@
 ---
 title: "Lösung der Aufgabe plot7 und plot13"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -32,8 +31,8 @@ options(digits=3)
 
 ```{r ggbox, message=FALSE, echo=TRUE}
 ggplot(Auto, aes(group=cylinders, x=cylinders, y=mpg)) +
-    geom_boxplot(outlier.color = myPalette[5],
-        fill = myPalette[2],
+    geom_boxplot(outlier.color = "red",
+        fill = "orange",
        color = "black") +
   labs(
       title="Boxplot für den Datensatz Auto",
@@ -41,10 +40,10 @@ ggplot(Auto, aes(group=cylinders, x=cylinders, y=mpg)) +
        y = "Verbrauch (mpg)"
  )
 
-ggsave(filename="boxplotCar2.png", plot=last_plot(), 
-       device="png",
-       path="images/", 
-       width=16, height=9, units="cm")
+#ggsave(filename="boxplotCar2.png", plot=last_plot(), 
+       #device="png",
+       #path="images/", 
+       #width=16, height=9, units="cm")
 ```
 
 # ggplotly
@@ -52,7 +51,7 @@ ggsave(filename="boxplotCar2.png", plot=last_plot(),
 ```{r ggpbox, message=FALSE, echo=TRUE}
 autogg <- ggplot(Auto, aes(group=cylinders, x=cylinders, y=mpg)) +
     geom_boxplot(outlier.color = myPalette[5],
-        fill = myPalette[2],
+        fill = "orange",
        color = "black") +
   labs(
       title="Boxplot für den Datensatz Auto",
@@ -73,7 +72,7 @@ Auto %>%
   add_boxplot(
     x = ~cylinders,
     y = ~mpg,
-    color = myPalette[5], 
+    color = I("orange"), 
     stroke = I("black"), 
     name = "Boxplot"
   ) %>%
@@ -95,7 +94,7 @@ Auto %>%
     jitter = 0.3, 
     pointpos = -1.8, 
     boxpoints = 'all',
-    color = myPalette[5], 
+    color = I("orange"), 
     stroke = I("black"), 
     name = "Boxplot"
     ) %>%

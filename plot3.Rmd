@@ -1,0 +1,124 @@
+---
+title: "Lösung der Aufgabe plot3"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+library(plotly)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Histogramme mit ggplot
+
+
+```{r gghisto, message=FALSE, echo=TRUE}
+ggplot(faithful) +
+     geom_histogram(mapping = aes(x = waiting),
+                    color = "black",
+                    fill= "orange",
+                    breaks = seq(40.0, 100.0, 5.0)
+                    ) +
+     labs(
+           title="Das Merkmal waiting im Datensatz faithful",
+           x = "Wartezeit in Minuten",
+           y = "Absolute Klassenhäufigkeiten",
+           subtitle = "Klassenbreite: 5,0"
+     )
+```
+
+# ggplotly
+Wir verwenden die abgespeicherte Grafik aus dem letzten
+Chunk und wandeln die Ausgabe um.
+
+Das Vorgehen ist wie bisher, aber die Funktion **ggplotly** verschluckt den Untertitel in *subtitle*. Um das zu korrigieren muss sowohl
+Titel als auch Untertitel mit *layout* nach *ggplotly* hinzugefügt werden.
+Wenigstens ist das die Lösung, die man im Web findet.
+
+
+
+Hier die Version mit Titel und Untertitel:
+
+```{r ggphisto2, message=FALSE, echo=TRUE}
+gghist <- ggplot(faithful) +
+     geom_histogram(mapping = aes(x = waiting),
+                    color = "black",
+                    fill= "orange",
+                    breaks = seq(40.0, 100.0, 5.0)
+                    ) +
+     labs(
+           x = "wartezeit in Minuten",
+           y = "Absolute Klassenhäufigkeiten",
+     )
+
+ggplotly(gghist) %>%
+  layout(title = list(
+    text = paste0("Das Merkmal waiting im Datensatz faithful",                                  "<br>",
+                  "<sup>",
+                  "Default-Klassenbreite",
+                  "</sup>")
+                )
+        )
+```
+
+# Histogramme mit plot_ly
+
+plot_ly verwendet eine Default-Klassenbreite, bietet aber auch die Möglichkeit mehrere aus der
+Literatur bekannten Verfahren für die Klassenbreite einzusetzen. Und wir können die 
+gewünschte Klassenbreite übergeben.
+
+```{r plhisto, message=FALSE, results='markup', warning=FALSE}  
+faithful %>%
+  plot_ly %>%
+  add_histogram(
+    x = ~waiting,
+    color= I("orange"),
+    stroke = I("black")
+  ) %>%
+  layout(title = list(
+    text = paste0("Histogramm des Merkmals waiting im Datensatz faithful",                      "<br>",
+                  "<sup>",
+                  "Default-Klassenbreite",
+                  "</sup>")
+                )
+        )
+```
+
+Wenn wir eigene Intervalle
+verwenden möchten setzen wir die Funktion *hist* ein und übergeben das Ergebnis an *plot_ly*. Wir können auch eine der Optionen wie *FD* angeben, dann wird der
+Algorithmus von Freedman und Diaconis eingesetzt. Eine weitere Möglichkeit ist es,
+mit *nbinsx"* die gewünschte Anzahl der Klassen zu übergeben, was wir jetzt anwenden:
+
+```{r plhisto2, message=FALSE, results='markup', warning=FALSE}  
+faithful %>%
+  plot_ly %>%
+  add_histogram(
+    x = ~waiting,
+    nbinsx = 12,
+    color= I("orange"),
+    stroke = I("black")
+  ) %>%
+  layout(title = list(
+    text = paste0("Histogramm des Merkmals waiting im Datensatz faithful",                      "<br>",
+                  "<sup>",
+                  "Klassenbreite 5,0",
+                  "</sup>")
+                )
+        )
+```
+

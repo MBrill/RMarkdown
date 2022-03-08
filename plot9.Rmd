@@ -1,7 +1,6 @@
 ---
 title: "Lösung der Aufgabe plot9 und plot14"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
@@ -54,10 +53,9 @@ ggsave(filename="histCar2.png", plot=last_plot(),
 
 ## Ohne Untertitel
 
-Das Vorgehen ist wie bisher, aber die Funktion **ggplotly** verschluckt
-den Untertitel in *subtitle*. Um das zu korrigieren muss sowohl
+Das Vorgehen ist wie bisher, aber die Funktion **ggplotly** verschluckt den Untertitel in *subtitle*. Um das zu korrigieren muss sowohl
 Titel als auch Untertitel mit *layout* nach *ggplotly* hinzugefügt werden.
-Wenigstens ist das die Lösung, die man im WWW findet.
+Wenigstens ist das die Lösung, die man im Web findet.
 
 ```{r ggphisto, message=FALSE, echo=TRUE}
 autogg <- ggplot(Auto) +

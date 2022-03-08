@@ -1,0 +1,75 @@
+---
+title: "Lösung der Aufgabe plot4"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib      
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+
+library(tidyverse)
+
+library(plotly)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Streuungsdiagramme mit ggplot und plotly
+Wir verwenden den Datensatz *faithful* als Beispiel
+für die Erstellung von Streuungsdiagrammen.
+
+# ggplot
+
+```{r ggscatter, message=FALSE, echo=TRUE}
+ggs <- ggplot(faithful, aes(x=eruptions, y = waiting)) +
+  geom_point(color="darkgreen") +
+  labs(
+  title="Streuungsdiagramm für den Datensatz faithful",
+  x = "Ausbruchsdauer in Minuten",
+  y = "Zeit zwischen zwei Ausbrüchen in Minuten"
+  ) +
+  theme(legend.position="none")
+
+
+ggs
+
+#ggsave(filename="plot4gg.png", plot=last_plot(), 
+       #device="png",
+       #path="images/", 
+       #width=16, height=9, units="cm")
+```
+
+
+# ggplotly
+
+```{r ggpscatter, message=FALSE, echo=TRUE}
+ggplotly(ggs)
+```
+
+# plot_ly
+
+```{r plscatter, echo=TRUE, results='markup', warning=FALSE}
+faithful %>% 
+  plot_ly(x = ~eruptions, 
+          y = ~waiting,
+          color = I("darkgreen"), 
+          mode="markers", 
+          type="scatter"
+       ) %>%
+  layout(
+    title="Streuungsdiagramm für den Datensatz faithful",
+    xaxis = list(title = "Ausbruchsdauer in Minuten"),
+    yaxis = list(title = "Zeit zwischen zwei Ausbrüchen in Minuten")
+  )
+```

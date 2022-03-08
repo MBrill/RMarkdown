@@ -240,7 +240,6 @@ plot_ly(x = h$mids, y = h$counts) %>%
 
 Die *hist*-Funktion bietet die Möglichkeit wie gezeigt Klassenbreiten aus der Literatur zu verwenden. Mit der Option *breaks* können wir wie schon bei *ggplot* die Intervallgrenzen auch selbst angeben.
 
-
 # Box-Plots
 
 Möchten wir statt einem Balkendiagramm einen Box-Plot, dann verwenden wir
