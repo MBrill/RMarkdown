@@ -1,0 +1,135 @@
+---
+title: "Lösung für die Aufgabe maps1"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(tidyverse)
+
+library(leaflet)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# OpenStreetMap Karten mit Leaflet
+Georeferenzierte Daten möchten wir natürlich mit Hilfe von Karten, zum Beispiel aus OpenStreetMap, visualisieren. Dazu gibt es *Leaflet*.
+
+Wir speichen die Längen- und Breitengrade der drei
+Standorte in Variablen ab, da wir für die Übersichtskarte auch noch damit rechnen werden.
+Wir können das in ein Tibble legen,
+das wir *leaflet* übergeben. In einem solchen
+Tibble wird dann nach Spalten mit den Namen
+*lng* und *lat* gesucht und die Daten darin verwendet.
+
+```{r numbers, include=TRUE, echo=TRUE}
+lng <- c(7.75742, 7.60155, 7.36074)
+lat <- c(49.4469, 49.21171, 49.26265)
+name <- c("Campus Kaiserslautern", "Campus Pirmasens", "Campus Zweibrücken")
+          
+daten <- tibble(Campus=name, lng=lng, lat=lat)
+
+center_overview <- c(mean(lng), mean(lat))
+```
+
+# Übersicht
+Wir erstellen als erstes eine Übersicht mit einer Karte 
+der Westpfalz und den drei Standorten. Um die Karte 
+gut zu zentrieren verwenden wir die arithmetischen
+Mittel der Längen- und Breitengrade der drei Standorte.
+
+```{r overview, message=FALSE, echo=TRUE}
+map <- leaflet() %>%
+  setView(center_overview[1], center_overview[2], zoom = 9) %>% 
+  addTiles() %>%
+  addMarkers(daten, 
+             lng=lng, lat=lat,   
+             popup=paste0("<b>Hochschule  Kaiserslautern</b><br>", daten$Campus)                            )
+
+map
+```
+Wir verbinden die drei Standorte mit Linien. Damit das ein geschlossener Polygonzug wird müssen wir den Campus Kaiserslautern mit *add_row* nochmals einfügen.
+```{r overviewWithPolyline, message=FALSE, echo=TRUE}
+closed <- daten %>%
+  add_row(Campus="Campus Kaiserslautern",
+          lng=lng[1],
+          lat=lat[1]
+          )
+
+map %>%
+  addPolylines(lng=closed$lng, 
+               lat=closed$lat,
+               color="red", 
+               weight=3)
+```
+Jetzt markieren wir die Standorte mit einem Kreis.
+
+```{r overviewWithCircle, message=FALSE, echo=TRUE}
+map %>%
+  addCircles(lng=center_overview[1], 
+             lat=center_overview[2],
+             radius=27500, 
+             stroke=FALSE,
+             fill=TRUE,
+             fillColor="red",
+             fillOpacity=0.5
+  )
+```
+
+# Campus Kaiserslautern
+Die Geo-Koordinaten wurden in Google Maps abgelesen und
+in diesem Markdown interaktiv verändert, damit der Marker
+auf dem Platz zwischen Verwaltungsgebäude und Mensa platziert ist.
+
+```{r kl, message=FALSE, echo=TRUE}
+standort <- daten %>%
+  filter(Campus=="Campus Kaiserslautern")
+
+leaflet() %>%
+  setView(standort$lng, standort$lat, zoom = 15) %>% 
+  addTiles() %>%
+  addMarkers(kl, lng=lng, lat=lat,   
+             popup=paste0("<b>Hochschule  Kaiserslautern</b><br>", kl$Campus) ) 
+```
+
+# Campus Pirmasens
+Die Geo-Koordinaten wurden in Google Maps abgelesen und
+in diesem Markdown interaktiv verändert, damit der Marker
+auf dem Platz zwischen Verwaltungsgebäude und Mensa platziert ist.
+
+```{r ps, message=FALSE, echo=TRUE}
+standort <- daten %>%
+  filter(Campus=="Campus Pirmasens")
+
+leaflet() %>%
+  setView(standort$lng, standort$lat, zoom = 15) %>% 
+  addTiles() %>%
+  addMarkers(kl, lng=lng, lat=lat,   
+             popup=paste0("<b>Hochschule  Kaiserslautern</b><br>", kl$Campus) ) 
+```
+
+# Campus Zweibrücken
+Die Geo-Koordinaten wurden in Google Maps abgelesen.
+
+```{r zw, message=FALSE, echo=TRUE}
+standort <- daten %>%
+  filter(Campus=="Campus Zweibrücken")
+
+leaflet() %>%
+  setView(standort$lng, standort$lat, zoom = 15) %>% 
+  addTiles() %>%
+  addMarkers(standort, lng=lng, lat=lat,   
+             popup=paste0("<b>Hochschule  Kaiserslautern</b><br>", standort$Campus) ) 
+```
