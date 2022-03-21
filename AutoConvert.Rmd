@@ -1,7 +1,6 @@
 ---
 title: "Veränderung des Datensatz Auto"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output:
   html_document:
     df_print: paged

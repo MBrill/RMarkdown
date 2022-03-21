@@ -1,16 +1,14 @@
 ---
 title: "Die Größe von Diamanten"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
-   html_notebook : default
    html_document : default
+   html_notebook : default
 ---
 ```{r setup, include=TRUE, echo=TRUE, message=FALSE}
-library(dplyr)
-library(ggplot2)
-
-knitr::opts_chunk$set(eval = TRUE)
+options(warn=-1)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 ```
 
 

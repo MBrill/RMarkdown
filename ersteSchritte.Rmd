@@ -12,7 +12,9 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+options(warn=-1)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 ```
 
 # Vorbemerkungen
@@ -133,8 +135,8 @@ in anderen Formaten, zum Beispiel
 im *XML* oder *JSON*-Format. Auch dafür gibt es Packages, die man
 installiert haben sollte:
 ```{r micsLoad, include=TRUE, eval=TRUE}
-library(XML)
-library(RJSONIO)
+library(XML, warn.conflicts = FALSE, quietly=TRUE)
+library(RJSONIO, warn.conflicts = FALSE, quietly=TRUE)
 ```
 
 ## Installation von lokalen Packages
@@ -151,6 +153,6 @@ Im anschließend dargestellten Fenster wählen Sie bei *Install from:* die Optio
 Nach der Installation laden wir das Package wie gewohnt. Im Package finden wir einen
 Datensatz *College*, von dem wir die ersten Zeilen ausgeben:
 ```{r ISLRLoad, include=TRUE, eval=TRUE}
-library(ISLR)
+library(ISLR, warn.conflicts = FALSE, quietly=TRUE)
 head(College)
 ```

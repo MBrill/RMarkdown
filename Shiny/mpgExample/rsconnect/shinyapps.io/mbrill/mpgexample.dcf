@@ -1,0 +1,11 @@
+name: mpgexample
+title:
+username:
+account: mbrill
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5596603
+bundleId: 5552077
+url: https://mbrill.shinyapps.io/mpgExample/
+when: 1644238891.28314
+lastSyncTime: 1644238891.28314

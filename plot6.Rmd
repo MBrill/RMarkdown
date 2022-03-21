@@ -1,7 +1,6 @@
 ---
 title: "Lösung der Aufgabe plot6 und plot12"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes

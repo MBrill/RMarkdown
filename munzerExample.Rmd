@@ -1,0 +1,193 @@
+---
+title: "Visualisierung als Abbildung"
+author: "Manfred Brill"
+date: ""
+output: 
+  html_notebook: 
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+  html_document: 
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+    encoding: utf-8
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(kableExtra)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set3")
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Ein Beispiel aus Munzner
+In den Folien zum Abbildungsprozess gibt es
+ein Bild, das wir [@munzner_15] entnommen haben.  
+Dieses Bild wird hier mit Hilfe von R und ggplot selbst erstellt.
+Dabei erstellen wir die Daten aus der Abbildung und lesen sie nicht ein. Wir verwenden auch deutsche Bezeichnungen.
+
+```{r daten, message=FALSE, echo=TRUE}
+company <- c("Volkswagen", "Hyunda", "Pontiac", "Ford")
+model <- c("Fox", "Elantra", "Firebird", "Mustang")
+type <- c("Compact", "Compact", "Sport", "Sport")
+ps <- c(81.0, 124.0, 160.0, 105.0)
+price <- c(9100.0, 10000.0, 17000.0, 15900.0)
+airbags <- c(0, 0, 2, 1)
+
+daten <- tibble(Hersteller=company, 
+                Modell=model, 
+                Typ=type,
+                PS=ps,
+                Preis=price,
+                Airbags=airbags)
+
+daten$Hersteller <- as_factor(daten$Hersteller)
+daten$Modell <- as_factor(daten$Modell)
+daten$Typ <- as_factor(daten$Typ)
+daten$Airbags <- as_factor(daten$Airbags)
+
+daten
+```
+
+# Grafische Darstellung
+Wir erstellen wie in Healy eine Reihe von Abbildungen, die sukzessive
+den Abbildungsprozeß in ggplot zeigen.
+
+Wir verwenden zwei Attribute für die x- und y-Koordinaten. Auf die x-Achse
+bilden wir die Leistung in PS ab, der Preis kommt auf die y-Achse.
+Das Merkmal Typ wird auf Farben abgebildet. Das Modell wird auf die Größe der Marker abgebildet.
+
+```{r coordmapping, message=FALSE, echo=TRUE, results='asis'}
+vis <- ggplot(data=daten, mapping=aes(x=PS, y = Preis))
+              
+vis
+
+ggsave(filename="mapping1.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+```{r coordgeom, message=FALSE, echo=TRUE, results='asis'}
+vis <- vis + 
+  geom_point(size=5, color="green")
+              
+vis
+
+ggsave(filename="mapping2.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+```{r coordgeomColor, message=FALSE, echo=TRUE, results='asis'}
+vis <- ggplot(data=daten, 
+              mapping=aes(x=PS, 
+                          y = Preis,
+                          color=Typ)
+              ) +
+       geom_point(size=5)
+              
+vis
+
+ggsave(filename="mapping3.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+Der Preis für Autos vom Typ *Sport" ist deutlich höher als für die Kompaktautos.
+
+```{r coordgeomColorhape, message=FALSE, echo=TRUE, results='asis'}
+vis <- ggplot(data=daten, 
+              mapping=aes(x=PS, 
+                          y = Preis,
+                          color=Typ,
+                          shape=Airbags)
+              ) +
+       geom_point(size=5)
+              
+vis
+
+ggsave(filename="mapping4.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+An dieser Abbildung sehen wir gut, dass Autos vom Typ *Compact"
+im Datensatz keine Airbags haben!
+
+```{r coordgeomColorhapeSize, message=FALSE, echo=TRUE, results='asis'}
+vis <- ggplot(data=daten, 
+              mapping=aes(x=PS, 
+                          y = Preis,
+                          color=Typ,
+                          shape=Modell,
+                          size=Airbags)
+              ) +
+  geom_point()
+              
+vis
+
+ggsave(filename="mapping5.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=12, 
+       units="cm")
+```
+
+```{r labs, message=FALSE, echo=TRUE, results='asis'}
+vis <- ggplot(data=daten, 
+              mapping=aes(x=PS, 
+                          y = Preis,
+                          color=Typ,
+                          shape=Modell)
+              ) +
+        geom_point(size=5) +
+        scale_x_continuous(limits=c(70.0, 170.0),
+                       breaks=seq(70.0, 170.0, 10.0)) +
+        scale_y_continuous(limits=c(5000.0, 20000.0),
+                       breaks=seq(5000.0, 20000.0, 5000.0)) +
+        labs(
+            title="Beispiel aus Munzner",
+            x="Leistung in PS",
+            y="Preis in Dollar"
+        ) +
+        theme(axis.title = element_text(size = 16),
+              plot.title = element_text(size = 20)
+              )
+
+vis
+
+ggsave(filename="mapping6.png", plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+```
+
+# Literaturverzeichnis
+
+
+

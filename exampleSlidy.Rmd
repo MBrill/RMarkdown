@@ -1,14 +1,13 @@
 ---
 title: "Die erste HTML Präsentation mit Slidy"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-library(ggplot2)
-library(dplyr)
+library(ggplot2, warn.conflicts = FALSE, quietly=TRUE)
+library(dplyr, warn.conflicts = FALSE, quietly=TRUE)
 
 diamonds.cut <- 2.5
 smaller <- diamonds %>%

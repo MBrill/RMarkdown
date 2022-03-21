@@ -1,0 +1,84 @@
+---
+title: "Lösung für die Aufgabe plot19"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(kableExtra)
+
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+library(plotly)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Daten
+Der Datensatz *mtcars* ist in der Basis-Installation von R
+enthalten und enthält Angaben über Autos. Wir verzichten auf die Konvertierung in europäische Einheiten, wobei das nicht schwer wäre.
+
+```{r daten, echo=TRUE}
+daten <- mtcars %>%
+  select(Verbrauch=mpg, Zylinder=cyl) %>%
+  filter(Zylinder == 6)
+
+daten
+```
+
+# Box-Plot mit ggplot
+Wir erstellen jetzt einen Box-Plot für die Spalte
+*Verbrauch*.
+
+```{r ggbox, message=FALSE, echo=TRUE}
+ggbox <- ggplot(daten, aes(x = as_factor(Zylinder), y=Verbrauch)) +
+    geom_boxplot(outlier.color = "red",
+                 fill = "orange",
+                 color = "black") +
+    labs(
+      title="Boxplot für das Merkmal Verbrauch",
+       x = "Zylinder",
+       y = "Verbrauch Miles per Gallon"
+ )
+
+ggbox
+```
+
+# Box-Plot mit ggplotly
+Wir rufen einfach ggplotly auf.
+
+```{r ggplotlybox, message=FALSE, echo=TRUE}
+ggplotly(ggbox)
+```
+
+# Boxplots mit Plotly
+
+```{r plboxH, message=FALSE, results='markup', warning=FALSE}  
+daten %>%
+  plot_ly %>%
+  add_boxplot(
+    x = ~Zylinder,
+    y = ~Verbrauch,
+    color = I("orange"), 
+    stroke = I("black"), 
+    name = "Boxplot"
+  ) %>%
+  layout(
+    title="Box-Plot",
+    xaxis = list(title = "Zylinder"),
+    yaxis = list(title = "Verbrauch (in Miles per Gallon)")
+  )
+```

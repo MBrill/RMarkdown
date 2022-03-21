@@ -1,7 +1,6 @@
 ---
-title: "Dashboards mit flexdashboard"
+title: "Dashboards mit flexdashboard und Plotly"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
     flexdashboard::flex_dashboard
 encoding: utf-8

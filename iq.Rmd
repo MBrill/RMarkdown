@@ -1,0 +1,68 @@
+---
+title: "Faktoren im IQ-Beispiel"
+author: "Manfred Brill"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+  html_notebook: 
+
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+```
+
+# Daten
+Wir geben die Werde in der Aufgabenstellung an und erstellen
+hier einfach ein Feld mit den Werten.
+
+
+```{r daten, message=FALSE, echo=TRUE}
+IQ <- c(112, 103, 87, 86, 90, 101, 90, 89, 122, 103)
+
+IQcls <- IQ
+IQcls[IQ <= 100] <- 1
+IQcls[(IQ > 100) & (IQ <= 115)] <- 2
+IQcls[IQ > 115] <- 3
+
+IQdichotom <- ifelse(IQ < 100, "Low", "High")
+
+
+IQTibble <- tibble(Intelligenzquotient=IQ, 
+                   Codiert=as_factor(IQcls),
+                   Dichotom=as_factor(IQdichotom)
+                   )
+
+IQTibble
+```
+
+
+# Filtern
+Wir filtern jetzt noch einige Zeilen raus. Als Beispiel behalten wir nur die Einträge, bei denen der IQ als *3* codiert ist.
+
+```{r filtern, message=FALSE, echo=TRUE}
+IQTibble %>%
+  filter(Codiert==3) %>%
+  select(Intelligenzquotient, Dichotom)
+```
+
+# Literaturverzeichnis

@@ -1,7 +1,6 @@
 ---
 title: "Interaktive Dokumente und Anwendungen mit htmlwidgets"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
     flexdashboard::flex_dashboard
 encoding: utf-8

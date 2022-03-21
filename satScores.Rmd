@@ -1,7 +1,6 @@
 ---
 title: "Das Beispiel SAT Scores aus McClave-Benson"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_notebook:
     highlight: pygments
