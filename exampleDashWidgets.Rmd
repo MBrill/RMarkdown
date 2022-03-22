@@ -1,5 +1,5 @@
 ---
-title: "Interaktive Dokumente und Anwendungen mit htmlwidgets"
+title: "Dashboard mit HTMLwidgets"
 author: "Manfred Brill"
 output: 
     flexdashboard::flex_dashboard
@@ -7,15 +7,20 @@ encoding: utf-8
 ---
 
 ```{r setup, include = FALSE}
-library(dplyr)
-suppressPackageStartupMessages(library(dplyr))
-library(ggplot2)
+library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 library(plotly)
-knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+suppressPackageStartupMessages(library(plotly))
+library(dygraphs)
+suppressPackageStartupMessages(library(dygraphs))
+library(DT)
+suppressPackageStartupMessages(library(DT))
+library(leaflet)
+suppressPackageStartupMessages(library(leaflet))
+library(visNetwork)
+suppressPackageStartupMessages(library(visNetwork))
 
-diamonds.cut <- 2.5
-smaller <- diamonds %>%
-  filter(carat <= diamonds.cut)
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
 ```
 
 # Histogramm
@@ -61,25 +66,31 @@ leaflet() %>%
 
 # Visualisierung von Graphen mit visNetwork
 
-```{r network, message=TRUE, warning=TRUE, results='markup'}
-library(visNetwork)
-nodes <- data.frame(id = 0:4,
-                    shape = c("dot"),
+
+```{r tree, message=TRUE, warning=TRUE, , results='markup'}
+nodes <- data.frame(id = 0:7,
+                    level = c(1, 2, 2, 3, 3, 3, 3, 3),
+                    label = LETTERS[1:8],
+                    title = paste0(0:7),
+                    shape = c("circle"),
                     size = 5,
-                    title = paste0("<b>Knoten ", 0:4,"</b>"),
+                    title = paste0("<b>", 0:7,"</b>"),
+                    color = c("lightblue"))
+
+edges <- data.frame(from = c(0, 0, 1, 1, 1, 2, 2), 
+                    to = c(1, 2, 3, 4, 5, 6, 7),
+                    width = 4,
                     color = c("green"))
 
-edges <- data.frame(from = c(0, 0, 1, 2, 2, 3), 
-                    to = c(1, 2, 3, 3, 4, 4),
-                    title = paste0("Kante ", 0:5))
-
-visNetwork(nodes, edges) %>%
-  visOptions(highlightNearest = TRUE, 
-             width = "100%") %>%
+visNetwork(nodes, edges, 
+           height = "80%", 
+           width = "80%") %>%
+    visEdges(arrows = "to") %>%
+    visNodes(shadow=TRUE) %>%
     visInteraction(dragNodes = TRUE, 
                    dragView = TRUE, 
-                   zoomView = FALSE,
+                   zoomView = TRUE,
                    keyboard = TRUE,
                    navigationButtons = TRUE) %>%
-  visLayout(randomSeed = 42)
+  visHierarchicalLayout(levelSeparation = 250)
 ```

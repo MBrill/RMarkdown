@@ -23,25 +23,38 @@ library(dplyr)
 suppressPackageStartupMessages(library(dplyr))
 library(ggplot2)
 library(plotly)
-knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+library(dygraphs)
+suppressPackageStartupMessages(library(dygraphs))
+library(DT)
+suppressPackageStartupMessages(library(DT))
+library(leaflet)
+suppressPackageStartupMessages(library(leaflet))
+library(visNetwork)
+suppressPackageStartupMessages(library(visNetwork))
 
-diamonds.cut <- 2.5
-smaller <- diamonds %>%
-  filter(carat <= diamonds.cut)
+# Aspect Ratio und anderes für Abbildungen
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
 ```
 
-# HTMLWidgets
-Mit htmlwidgets können wir in notebooks oder Dashboards Javascript-Code integrieren,
-so dass wir auf dem Client Interaktivivät erhalten können.
+# Verwendete Packages
+Für die verwendung dieses Notebooks benötigen Sie die folgenden installatierten Packages:
+
+- tidyverse
+- plotly
+- dygraph
+- DT
+- leaflet
+- visNetwork
+
+Als Daten werden *diamonds* und *nh* verwendet. Die Daten über die Diamanten sind inn *tidyverse* enthalten,
+*nh* ist in der Default-Installation enthalten.
 
 # Interaktive Grafiken mit plotly
 Grafiken, die wir mit *plotly* erstellen sind interaktiv. Dabei können wir direkt
 *plotly* verwenden, oder eine Visualisierung mit ggplot2 erzeugen und anschließend
 *ggplotly* verwenden, wie es auch im Beispiel hier gemacht wurde.
 
-## Histogramm des Merkmals Schliff
-
-Wir erzeugen ein Histogramm und ggplot und verwenden anschließend ggplotly:
+Wir erzeugen ein Histogramm mit *ggplot* und verwenden anschließend *ggplotly*:
 
 ```{r schliff, message=TRUE, warning=TRUE}
 schliff <- ggplot(diamonds, aes(cut)) + 
@@ -54,27 +67,33 @@ schliff <- ggplot(diamonds, aes(cut)) +
 ggplotly(schliff)
 ```
 
-# Zeitreihen mit Dygraphs
-Daten, die von Zeitpunkten abhängen, *Zeitreihen*, treten sehr häufig in den Datensätzen auf. 
-Die Visualierung solcher Daten ist in der Regel durch einen Polygonzug gegeben, auf der
-horizontalen Achse wird die Zeit gelegt. Mit *dygraphs* können wir mit solchen
-Darstellungen interagieren. Als Daten verwenden wir hier *nhtemp*, Temperaturen 
-in New Haven. Dieser Datensatz ist ein R verfügbar.
+Wenn Sie mit der Maus über die Grafik gehen erhalten Sie ein Menu, in dem Sie zoomen und die Grafik auch abspeichern können.
 
-```{r timeseries}
-library(dygraphs)
+# Zeitreihen mit Dygraphs
+Daten, die von Zeitpunkten abhängen, sogenannte *Zeitreihen*, treten sehr häufig in den Datensätzen auf. Denken Sie an den Verlauf von Temperaturen oder Börsenkursen.
+
+Die Visualierung solcher Daten ist in der Regel durch einen Polygonzug gegeben, auf der
+horizontalen Achse wird die Zeit gelegt. 
+Mit *dygraphs* können wir mit solchen
+Darstellungen interagieren und das dargestellte Zeit-Intervall verändern. Als Daten verwenden wir hier *nhtemp*, Temperaturen 
+in New Haven. Dieser Datensatz ist ein R verfügbar ohne dass wir ein weiteres Package laden müssen.
+
+```{r timeseries, echo=TRUE}
 dygraph(nhtemp, main = "Temperaturen in New Haven (nhtemp)") %>% 
-  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
+  dyRangeSelector(
+    dateWindow = c("1920-01-01", "1960-01-01"))
 ```
 
-# Tabellen mit DataTables
-Auch wenn wir häufiger grafische Darstellungen unserer Datensätze erstellen macht es Sinn Tabellen in einem Dokument oder in einem Dashboard einzubauen. Dazu gibt es *DT*,
+# Interaktive Tabellen mit DT
+Auch wenn wir häufig grafische Darstellungen unserer Datensätze erstellen macht es Sinn Tabellen in einem Dokument oder in einem Dashboard einzubauen. Dazu gibt es das Package *DT*,
 mit dem wir interaktive Tabellen erhalten.
 
-## Tabelle der größten Diamanten
+Wir erstellen eine TAbelle von Diamanten, die wir absteigend nach den Karat-Angaben anordnen. In der Pipeline
+legen wir fest welche Spalten wir in der Tabelle 
+anzeigen möchten. Die Funktion *datatable* erzeugt
+abschließend die interaktive Tabelle.
 
 ```{r tabelle}
-library(DT)
 diamonds %>% 
   arrange(desc(carat)) %>% 
   head(50) %>% 
@@ -82,15 +101,19 @@ diamonds %>%
   datatable()
 ```
 
-# OpenStreetMap Karten mit Leaflet
+# Karten mit Leaflet
 Georeferenzierte Daten möchten wir natürlich mit Hilfe von Karten, zum Beispiel aus OpenStreetMap, visualisieren. Dazu gibt es *Leaflet*.
 
+Wir setzen die Geo-Koordinaten des Zentrums unserer Karte,
+die Zoom-Stufe und fügen als letzten Schritt Marker
+hinzu.
+
 ```{r leaflet}
-library(leaflet)
 leaflet() %>%
   setView(7.36, 49.262 , zoom = 15) %>% 
   addTiles() %>%
-  addMarkers(7.3611, 49.262, popup = "Campus Zweibrücken") 
+  addMarkers(7.3611, 49.262, 
+             popup = "Campus Zweibrücken") 
 ```
 
 # Visualisierung von Graphen mit visNetwork
@@ -100,12 +123,18 @@ eines Graphen enthält keinerlei Informationen über das Layout des Graphen.
 Dazu gibt es verschiedene Packages, auch ggplot2 enthält Funktionen für die Visualisierung
 von Graphen. Mit *visNetwork* erhalten wir eine Darstellung, mit der wir interagieren können und in der wir insbesondere das Layout verändern können.
 
-Das Layout wird mit Zufallszahlen beeinflusst, so dass es Sinn macht
-einen seed value für den Zufallszahlengenerator zu verwenden, um immer das
-gleiche Layout zu erhalten. 
+Sie sollten das Problem des Layouts für einen gegebenen Graphen nicht unterschätzen, dies ist immer noch ein Thema in der Forschung, insbesondere für sehr große Graphen.
+Das Layout in *visNetwork* wird wie auch in anderen Lösungen mit Hilfe von Zufallszahlen beeinflusst,.
+Um zu garantieren, dass wir bei diesem Notebook
+immer das gleiche Layout erhalten verwneden wir
+einen seed value für den Zufallszahlengenerator zu verwenden. 
+
+Als Beispiel für einen Graphen besetzen wir Felder
+mit den Knoten und Kanten und übergeben diese dann
+an den Layouter. Das Verhalten im Ergebnis können wir mit
+Funktionen aus dem Package einstellen und rufen als letzten Schritt in der Pipeline den Layouter auf.
 
 ```{r network, message=FALSE, warning=FALSE, results='markup'}
-library(visNetwork)
 nodes <- data.frame(id = 1:5,
                     shape = c("dot"),
                     size = 5,
@@ -117,18 +146,18 @@ edges <- data.frame(from = c(1, 1, 1, 3, 3, 4),
                     title = paste0("Kante ", 1:6))
 
 visNetwork(nodes, edges) %>%
-  visOptions(highlightNearest = TRUE, 
-             width = "100%") %>%
+    visOptions(highlightNearest = TRUE, 
+              width = "100%") %>%
     visInteraction(dragNodes = TRUE, 
                    dragView = TRUE, 
                    zoomView = FALSE,
                    keyboard = TRUE,
                    navigationButtons = TRUE) %>%
-  visLayout(randomSeed = 42)
+    visLayout(randomSeed = 42)
 ```
 
 Wir können auch gerichtete Graphen und Bäume, besser gesagt Hierarchien, darstellen.
-Im folgenden Beispiel wird ein Baum dargestellt.
+Im folgenden Beispiel wird ein Baum dargestellt, den wir wie im letzten Beispiel mit entsprechenden Feld definieren.
 
 ```{r tree, message=TRUE, warning=TRUE, , results='markup'}
 nodes <- data.frame(id = 0:7,
@@ -145,7 +174,9 @@ edges <- data.frame(from = c(0, 0, 1, 1, 1, 2, 2),
                     width = 4,
                     color = c("green"))
 
-visNetwork(nodes, edges, height = "500px", width = "100%") %>%
+visNetwork(nodes, edges, 
+           height = "500px", 
+           width = "100%") %>%
     visEdges(arrows = "to") %>%
     visNodes(shadow=TRUE) %>%
     visInteraction(dragNodes = FALSE, 
