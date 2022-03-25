@@ -1,5 +1,6 @@
 # Das erste Beispiel für ein Dashboard mit Shiny
 library(shinydashboard)
+library(tidyverse)
 
 ui <- dashboardPage(
     skin = "yellow",
