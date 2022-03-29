@@ -1,0 +1,193 @@
+---
+title: "Einführung in R"
+author: "Manfred Brill"
+output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+  html_document: 
+    
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+options(warn=-1)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE,
+        quietly=TRUE)
+```
+
+# Vorbemerkungen
+Dieser Text geht davon aus, dass Sie R installiert, ein Arbeitsverzeichnis angelegt und das Video 
+['Erste Schritte mit R'](https://www.youtube.com/watch?v=uaJkFNqWDEU&feature=youtu.be) gesehen haben. Sie sollten diesen Text mit Hilfe von R nachvollziehen.
+
+Im Folgenden finden Sie immer wieder Eingaben auf der Konsole, die in einem Kasten dargestellt sind:
+
+```{r showConsole, include=TRUE, tidy=TRUE}
+# In einer solchen Box finden Sie Eingaben an die Konsole.
+
+# Zeilen, die mit # beginnen sind Kommentare.
+```
+
+Direkt darunter finden Sie Ausgaben des Systems, wenn es solche gibt. Wenn Sie die Befehle in der Konsole, entweder in R oder in RStudio, eingeben, sollten Sie ähnliche oder identische Ausgaben erhalten.
+
+# Erste Eingaben auf der Konsole
+Eingaben in R werden interpretiert. Viele Konzepte, die Sie aus Programmiersprachen aus ihrem bisherigen Studium kennen sind in R genauso enthalten.
+Wir können Berechnungen durchführen, Zuweisungen machen
+und Standardfunktionen aufrufen:
+
+```{r read, echo=TRUE, warnings=FALSE}
+x <- 3+5
+y <- exp(1.0)
+z <- sin(pi)
+
+x
+y
+z
+```
+Es gibt eine *print*-Funktion, aber wenn wir den Namen einer Variablen auf der Konsole ausgeben wird der Wert ausgegeben. In RStudio finden wir den Wert auch im Tab *Environment*. Funktionen wie die Exponential- oder Sinus-Funktion sind einfach verfügbar, auch Konstanten wie die Zahl *pi* sind ohne weitere Aktionen verfügbar.
+Wir können auch das Zeichen *=* für eine Zuweisung verwenden, aber so gut wie alle R-Anwender verwenden 
+wie oben gezeigt den Operator *<-*.
+
+Mit der Funktion *ls* können wir uns auflisten lassen,welche Variablen wir aktuell besetzt haben.
+Mit *rm* können wir den Arbeitsbereich oder einzelne
+Variable löschen. Arbeiten wir in RStudio sind diese beiden Funktionen auch im User Interface im Tab *Environment* verfügbar.
+
+# Arbeitsverzeichnis
+R verwendet ein *Arbeitsverzeichnis*. Es ist wichtig
+zu Beginn einer Session, insbesondere in der Konsole, dieses Verzeichnis korrekt zu setzen. Dazu gibt es Funktionen in der Konsole, aber besser ist es, das Arbeitsverzeichnis in RStudio zu setzen. Dazu finden Sie unter *Session* die Funktion *Set Working Directory*. Dieses Verzeichnis können wir sehr gut
+im Tab *Files* anzeigen. Sie können den Arbeitsbereich am Ende einer Session abspeichern und in der nächsten Session wieder öffnen. Der Arbeitsbereich, also alle besetzten Variablen und eventuell auch eingelesene Daten, finden wir im korrekt gesetzten Arbeitsverzeichnis.
+
+# Vektoren
+Natürlich finden wir Arrays in R wieder. Wichtig für uns ist, dass Vektoren in R als Spaltenvektoren behandelt werden. Für das Anlegen von Vektoren gibt es die Funktion *c*, der wir einfach die Werte übergeben.
+
+```{r vektoren, echo=TRUE, warnings=FALSE}
+x <- c(1, 3, 2, 6)
+x
+```
+Der Vektor *x* wird als Zeile auf der Konsole ausgegeben. Aber wenn wir ihn später mit einer Matrix oder einem anderen Vektor multiplizieren möchten wird er als Spaltenvektor aufgefasst!
+
+Die Operatoren und Funktionen in R können direkt auf ein Feld angewandt werden. Wir können uns das wie eine *for*-Schleife vorstellen, in deren Rumpf die Funktion auf jedes Element angewandt wird. Wir vereinbaren
+einen weiteren Vektor, der die gleiche Länge wie *x* hat und überall den Wert 1 besitzt - dazu verwenden
+wir die nützliche Funktion *rep*.
+
+```{r vektorfunctions, echo=TRUE, warnings=FALSE}
+y <- rep(1, 4)
+x
+y
+
+x+y
+```
+Wir können sogar Vektoren addieren, die nicht die gleiche Länge besitzen. Dann wird der kürzere Vektor wieder von vorne durchlaufen. Das sollten wir nicht ausnutzen. Aber es sollte uns klar sein, dass dies möglich ist. Die Länge eines Vektors können wir mit der Funktion *length* abfragen.
+
+```{r vektorfunctions2, echo=TRUE, warnings=FALSE}
+length(x)
+
+z <- c(1, 2, 3)
+z
+x
+x+z
+```
+
+Neben den Grundrechenarten können wir auch mathematische Funktionen auf ein Feld anwenden.
+
+```{r vektorfunctions3, echo=TRUE, warnings=FALSE}
+pythagoras <- c(9,16,25)
+sqrt(pythagoras)
+
+wurzel <- sqrt(pythagoras)
+wurzel^2
+```
+
+Die Indices eines vektors beginnen mit 1, nicht wie sie das aus vielen Programmiersprachen kennen mit 0.
+Wir können Slicing durchführen, das bedeutet, dass wir
+einen Bereich von Indices angeben können. Und wir könnenlogisch indizieren. worauf wir später noch zurückkommen werden. Beispiele dafür folgen jetzt.
+Wir machen uns die Eingaben und die gezeigten Ergebnisse nochmals klar.
+
+```{r slicing, echo=TRUE, warnings=FALSE}
+x
+x[1]
+x[2:3]
+x[4:3]
+```
+
+# Matrizen
+Natürlich können wir nicht nur eindimensionale Felder in R vereinbaren. Mit den Funktionen **matrix* und *c* können wir
+auch Matrizen deklarieren. Dabei übergeben wir alle Werte als Vektor und übergeben die gewünschte Anzahl von Zeilen und Spalten.
+
+```{r matrix, echo=TRUE, warnings=FALSE}
+a <- matrix(data=c(1,2,3,4), nrow=2, ncol=2)
+a
+```
+Sehen wir uns das Ergebnis an erkennen wir, dass die werte *spaltenweise* in die Matrix abgelegt werden.
+Es gibt Optionen für die Funktion *matrix*, mit denen wir das ändern können. Mehr dazu finden sie im Hilfetext mit *?matrix*.
+
+Wir können die Bezeichner *nrow* und *ncol* auch weglassen, so lange wir die korrekte Reihenfolge einhalten:
+```{r matrix2, echo=TRUE, warnings=FALSE}
+b <- matrix(data=c(1,2,3,4), 2, 2)
+b
+```
+
+Wir können wieder Funktionen elementweise anwenden und wir können Matrizen vergleichen. Das Ergebnis eines Vergleichs ist eine Matrix mit logischen Werten.
+
+```{r matrixfunctions, echo=TRUE, warnings=FALSE}
+c <- matrix(c(1,4,16,25), 2, 2)
+c
+
+sqrt(c)
+
+a == c
+```
+Wir können auch selbst Matrizen mit solchen logischen werten besetzen und damit Werte aus einem Feld
+herausschneiden:
+
+```{r matrixSlicing, echo=TRUE, warnings=FALSE}
+loA <- matrix(c(TRUE, FALSE, FALSE, TRUE), 2, 2)
+loA
+
+a
+a[loA]
+```
+Mit den logischen Werten wie im Beispiel erhalten
+wir einen Vektor, der die Diagonalelemente enthält.
+
+# Funktionen
+Natürlich können wir in R Funktionen implementieren und damit ständig verwendete Anweisungen zusammenfassen und wiederverwenden. Dazu implementieren wir eine Funktion, die die euklidische Länge eines Vektors berechnet.
+
+Wir bauen diese Funktion schrittweise zusammen. Erst sammeln wir die Anweisungen auf der Konsole, überzeugen uns davon, dass alles korrekt verläuft und
+anschließend implementieren wir eine Funktion.
+
+```{r pythagoras, echo=TRUE, warnings=FALSE}
+v <- c(3, 4)
+v
+v^2
+sum(v^2)
+sqrt(sum(v^2))
+```
+
+Das Ergebnis in der letzten Zeile ist der Wert, den wir in einer Funktion berechnen möchten. Für die Werte 3 und 4 kommt hier 5 als Ergebnis. Wir sehen in den Anweisungen einige sehr nützliche Funktionen. Dass wir alle Elemente eines Vektors quadieren können haben wir bereits festgehalten. Mit der Funktion *sum* können wir die Summe alle Elemente eines Felds berechnen.
+Und anschließend wenden wir die Wurzel darauf an - so berechnen wir die euklidische Länge eines Vektors.
+
+Eine Funktion ist in R eine Variable, der wir mit Hilfe von *function* eine Funktion zuweisen. Die Rückgabe der Funktion können wir mit Hilfe von *return* definieren. Häufig wird jedoch verwendet, dass das Ergebnis der letzten Anweidung im Rumpf der Funktion der Rückgabewert der Funktion ist.
+
+```{r euklidFunction, echo=TRUE, warnings=FALSE}
+euklid <- function(v)
+  sqrt(sum(v^2))
+```
+
+Nach diesen beiden Zeilen finden wir im Tab *Environment* in RStudio unter *Functions* die Funktion euklid. Wir können Sie jetzt, wie deklariert,
+mit einem Parameter aufrufen.
+
+```{r euklidCall, echo=TRUE, warnings=FALSE}
+v
+
+euklid(v)
+```
