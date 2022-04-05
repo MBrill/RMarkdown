@@ -48,6 +48,8 @@ Als Datensatz für die Histogramme  verwenden wir den Datensatz
 Für die Erstellung von Streuungsdiagrammen, scatter plots, benötigen
 wir Daten mit mindestens zwei kardinalen Merkmalen. Hier
 verwenden wir den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92].
+Zusätzlich verwenden wir den Datensatz *mpg*,
+der in der R-Installation als Default vorhanden ist.
 
 ```{r daten, message=FALSE, echo=TRUE}
 liefer <- read_csv2("data/lieferzeiten.csv")
@@ -65,13 +67,13 @@ ist eine formale und strukturierte Sicht auf grafische Ausgaben.
 Diese formale Herangehensweise macht es zu Beginn nicht unbedingt einfach, sich mit *ggplot* anzufreunden. Aber wenn Sie sich auf die Struktur
 einlassen, dann erhalten Sie Abbildungen von einer hohen Qualität und ein sehr mächtiges Werkzeug. Und insbesondere arbeitet *ggplot* hervorragend mit *Tidyverse* zusammen. Aktuell wird *ggplot* überarbeitet, um die Entwicklungen aus den anderen *Tidyverse*-Paketen auch in *ggplot* zu finden.
  
-Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
+Eine Visualisierung ist ein Abbildung, eine Beziehung zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. Daten sind qualitativ oder quantitativ, während die visuellen Eigenschaften durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben werden.
 
+# Ein erstes Beispiel
 Wir betrachten ein erstes Beispiel. Um *ggplot* zu verwenden müssen wir
 das Package laden, mit *library(ggplot2)*. Oder wir laden einfach
-mit *library(tidyverse)* nicht nur *ggplot*, sondern auch die restlichen
-Packages.
+mit *library(tidyverse)* nicht nur *ggplot*, sondern auch die restlichen Packages aus diesem Projekt.
 
 *ggplot* geht davon aus, dass die Daten im *wide*-Format vorliegen. Das bedeutet,
 dass jede Zeile ein Individuum beschreibt, mit den Merkmalen als Spalte. Dies ist
@@ -84,10 +86,10 @@ ggplot(liefer) +
 ```
 
 Wir beginnen eine Grafik damit, dass wir *ggplot* mitteilen, mit welchem
-Datensatz wir arbeiten. Ähnlich wie eine *Tidyverse*-Pipeline können wir anschließend sukzessive weiteren Anweisungen hinzufügen. Achten Sie unbedingt darauf, dass das Zeichen *+* als letztes in einer Zeile stehen muss, wenn Sie die Anweisungen fortsetzen möchten. *ggplot* bietet sogenannte *geoms* an. Damit sind Primitive
+Datensatz wir arbeiten. Ähnlich wie eine *Tidyverse*-Pipeline können wir anschließend sukzessive weitere Anweisungen hinzufügen. Achten Sie unbedingt darauf, dass das Zeichen *+* als letztes in einer Zeile stehen muss, wenn Sie die Anweisungen fortsetzen möchten. *ggplot* bietet sogenannte *geoms* an. Damit sind Primitive
 gemeint, auf die wir unsere Daten abbilden können. Mit *geom_bar* legen wir fest, dass wir ein Balkendiagramm verwenden möchten. Auf die *x*-Achse legen wir die
 Daten, die in der Spalte *Lieferzeiten* im Datensatz stehen. Das Schlüsselwort
-*aes* steht für *aestethics*.
+*aes* steht für *aesthetics*.
 
 Jetzt übergeben wir die Information, dass wir eine andere Farbe für
 die Balken verwenden möchten. Dazu gibt es für *geom_bar*
@@ -168,9 +170,10 @@ ggplot(liefer) +
   ) +
   coord_flip()
 ```
+
 Wenn wir statt einer horizontalen eine vertikale Ausgabe möchten fügen wir einfach
 *coord_flip()* hinzu. Damit werden x- und y-Achsen getauscht. *ggplot* kennt
-auch weitere Koordinatensysteme wie Polarkoordinaten für die Ausgabe.
+auch weitere Koordinatensysteme wie logarithmische Achsen oder Polarkoordinaten. Darauf werden wir in der Veranstaltung noch eingehen.
 
 # Box-Plots, Verteilungsfunktion und Histogramme
 ## Box-Plots
@@ -223,7 +226,7 @@ Diese Werte können wir vorher mit Hilfe der Funktionen *min* und
 *max* berechnen und bei Bedarf auch auf eine Variable speichern.
 Damit legen wir den minimalen
 und maximalen Wert für die Achse in der grafischen Ausgabe fest.
-Wir erstellen zuerst ein Balkendiagrammm an, um uns zu überzeugen, dass ein Histogramm
+Wir erstellen zuerst mit *geom_bar* ein Balkendiagrammm, um uns zu überzeugen, dass ein Histogramm
 deutlich sinnvoller ist.
 
 ```{r FrauenBars, message=FALSE, results='markup'}
@@ -231,12 +234,16 @@ ggplot(frauen)  +
   geom_bar(mapping=aes(x=Koerpergroesse),
            fill=myPalette[3]) +
   scale_x_continuous(limits=c(150.0, 185.0)) +
+  scale_y_continuous(limits=c(0.0, 2.0), breaks=c(0.0, 1.0, 2.0)) +
   labs(
     title="Absolute Häufigkeiten der Körpergroße von Frauen", 
     x="Körpergröße in cm", 
     y="Häufigkeiten"
   )
 ```
+
+In dieser Darstellung wurde auch die y-Achse bearbeitet,
+denn es mach eigentlich keinen Sinn Markierungen wie 0.5 oder 1.5 für absolute Häufigkeiten anzugeben.
 
 In der Abbildung ist gut zu erkennen, dass wir besser ein Histogramm verwenden.
 Dazu gibt es im Package
@@ -259,8 +266,8 @@ ggplot(frauen) +
 ```
 
 *ggplot* weist uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders glücklich ist.
-Verwenden wir andere Klassengrenzen möchten übergeben wir diese mit
-Hilfe der Option *breaks* an *geom_historgram*. Wir erzeugen einen Vektor mit den Grenzen
+Möchten wir andere Klassengrenzen verwenden übergeben wir diese mit
+Hilfe der Option *breaks* an *geom_histogram*. Wir erzeugen einen Vektor mit den Grenzen
 der Klassen mit *seq(152, 182, 3)*. Wir geben also den minimalen und maximalen Wert an und die Schrittweite, die gewünschte Klassenbreite.
 Wir können alternativ die Klassenbreite mit *binwidth* angeben, dann sucht
 *ggplot* geeignete Minima und Maxima.
@@ -312,15 +319,40 @@ ggplot(wassergehalt) +
   ) 
 ```
 
-Wir erkennen im Streuungsdiagramm gut, dass es eine Korrelation zwischen
+Wir erkennen im Streuungsdiagramm gut, dass es eine gewisse  Korrelation zwischen
 der Luftfeuchtigkeit und dem Wassergehalt der Wolle gibt.
 
+Das folgende Beispiel zeigt wie
+wir Streuungsdiagramme erstellen können und auch eine Legende
+hinzufügen. Dabei wird die Farbe der Marker nicht wie bisher global festgelegt, sondern wir bilden ein qualitatives
+Merkmal, die Anzahl der Zylinder, auf Farben ab.
+Die Wahl der Farben überlassen wir *plotly*.
+Die grafischen Eigenschaften der Punkte stellen wir dabei
+mit *add_markers* ein, die Legende erhalten wir mit Hilfe der Funktion *colorbar*.
+Als Datensatz verwenden wir hier *mpg*.
+Mit *factor(cyl)* stellen wir sicher, dass *ggplot*
+diese Angaben als Werte mit dem Datentyp *factor*
+interpretiert. Dies beeinflusst die Wahl der Farben, 
+die *ggplot* für uns durchführt.
+
+```{r scattermpg, echo=TRUE, results='markup'}
+ggplot(mpg) +
+  geom_point(mapping=aes(x=cty, 
+                         y=hwy, 
+                         color=factor(cyl))) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz mpg", 
+    x="Verbrauch in der Stadt", 
+    y="Verbrauch auf dem Highway",
+    color="Anzahl der Zylinder"
+  ) 
+```
 # Abspeichern von Abbildungen
 Für das Abspeichern von Abbildungen gibt es zwei Möglichkeiten.
 Einmal können wir ein Markdown-Dokument erstellen. Dann sind die
 erstellten Abbildungen im erzeugten Ausgabeformat enthalten.
 
-Oder wir verwenden die Funktion *ggsave*.
+Oder wir verwenden die Funktion *ggsave*:
 
 ```{r save, echo=TRUE, results='markup'}
 example <- ggplot(liefer) +

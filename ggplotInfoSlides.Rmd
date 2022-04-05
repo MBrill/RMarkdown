@@ -36,10 +36,19 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 # Übersicht über ggplot
 
 - ggplot implementiert die *grammar of graphics* [@wilkinson_05]. 
-- Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
+- Eine Visualisierung ist eine Abbildung , eine Beziehung, zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. 
 - Daten sind qualitativ oder quantitativ. 
 - Die visuellen Eigenschaften der Daten werden durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben.
+
+# Verwendete Daten und Packages
+In diesen Folien verwenden wir drei Datensätze, die in OLAT verfügbar sind:
+
+- Lieferzeiten in Tagen (liefer)
+- Körpergröße von Frauen (frauen)
+- Luftfeuchtigkeit und Wassergehalt in Wolle
+
+Wir verwenden neben dem Package *ggplot* das Package *RColorBrewer* und *tidyverse*.
 
 # Ein erstes Beispiel
 
@@ -231,7 +240,7 @@ ggplot(liefer) +
   coord_flip()
 ```
 
-```{r save2, echo=FALSE, results='markup', warning=FALSE, fig.height=3}
+```{r save2, echo=TRUE, results='markup', warning=FALSE, fig.height=3}
 ggsave(filename="saveExample.png", plot=last_plot(), 
        device="png",
        path="images/", 
@@ -240,7 +249,7 @@ ggsave(filename="saveExample.png", plot=last_plot(),
 
 # Unklarheiten? Fragen? Bemerkungen?
 
-![image info](./images/bigdata.png)
+![](./images/bigdata.png)
 
 # Literaturverzeichnis
 

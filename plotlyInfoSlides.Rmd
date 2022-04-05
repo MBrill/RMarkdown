@@ -5,7 +5,7 @@ encoding: utf-8
 output: 
    slidy_presentation:
       highlight: pygments
-      footer: "Datenanalyse mit R und RStudio --- Visualisierungen mit plotly"
+      footer: "Visualisierungen mit plotly"
 bibliography: literatur.bib
 ---
 
@@ -38,7 +38,7 @@ wassergehalt <- read_csv2("data/wassergehalt.csv", show_col_types = FALSE)
 
 # Übersicht über plotly
 - plotly implementiert wie ggplot die *grammar of graphics* [@wilkinson_05]. 
-- Wir können entweder direkt die Funktion *plot_ly* verwenden.
+- Wir setzen die Funktion *plot_ly* ein
 - Oder wir erstellen mit *ggplot* eine Abbildung und verwenden *ggplotly*.
 - plotly verwendet das Package *htmlwidgets*.
 - Gute Einführung: [@sievert_19]
@@ -218,44 +218,6 @@ liefer %>%
 ```
 
 
-```{r outlier, echo=FALSE, results='markup', warning=FALSE}
-y1 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-       8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y2 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y3 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y4 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-
-fig <- plot_ly(type = 'box')
-fig <- fig %>% add_boxplot(y = y1, jitter = 0.3, pointpos = -1.8, boxpoints = 'all',
-              marker = list(color = 'rgb(7,40,89)'),
-              line = list(color = 'rgb(7,40,89)'),
-              name = "All Points")
-
-fig <- fig %>% add_boxplot(y = y2, name = "Only Whiskers", boxpoints = FALSE,
-              marker = list(color = 'rgb(9,56,125)'),
-              line = list(color = 'rgb(9,56,125)'))
-fig <- fig %>% add_boxplot(y = y3, name = "Suspected Outlier", boxpoints = 'suspectedoutliers',
-              marker = list(color = 'rgb(8,81,156)',
-                            outliercolor = 'rgba(219, 64, 82, 0.6)',
-                            line = list(outliercolor = 'rgba(219, 64, 82, 1.0)',
-                                        outlierwidth = 2)),
-              line = list(color = 'rgb(8,81,156)'))
-
-fig <- fig %>% add_boxplot(y = y4, name = "Whiskers and Outliers", boxpoints = 'outliers',
-              marker = list(color = 'rgb(107,174,214)'),
-              line = list(color = 'rgb(107,174,214)'))
-fig <- fig %>% layout(title = "Box Plot Styling Outliers")
-```
-
-# Einstellungen für Box-Plots
-
-```{r outlierFigure, echo=FALSE, results='markup', warning=FALSE}
-fig
-```
-
 
 
 # Streuungsdiagramme
@@ -277,12 +239,13 @@ wassergehalt %>%
 ```{r scatter2, echo=TRUE, results='markup', warning=FALSE}
 mpg %>%
   plot_ly(x = ~cty, y = ~hwy,
-          width=600, height=400 ) %>%
+          width=600, height=400) %>%
   add_markers(color = ~factor(cyl), 
               showlegend = TRUE) %>%
-  layout(title= "Streuungsdiagramm", 
-         xaxis = list(title = "Stadt"),
-         yaxis = list(title = "Highway")
+  layout(title= "<b> Streuungsdiagramm für den Datensatz mpg</b>", 
+         xaxis = list(title = "Verbrauch in der Stadt"),
+         yaxis = list(title = "Verbrauch auf dem Highway"),
+         legend = list(title=list(text='Anzahl Zylinder '))
          )
 ```
 
@@ -297,20 +260,22 @@ Farben einzusetzen verwenden wir *cyl* als z-Koordinate.
 
 ```{r scatter3d, echo=TRUE, results='markup', warning=FALSE}
 legendtitle <- list(x=1.1, y=1.05, 
-                    text="Zylinder",
+                    text="Anzahl der Zylinder",
                     showarrow=FALSE)
-fig <- plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
-            add_markers(color= ~factor(cyl),
-                        showlegend = TRUE) %>%
-            layout(title= "3D Scatter Plot", annotations=legendtitle,
-                  scene = list(
-                  xaxis = list(title = "Stadt"),
-                  yaxis = list(title = "Highway"),
-                  zaxis = list(title = "Zylinder")
-                  ))
+fig <- plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl,
+               width=900, height=600) %>%
+       add_markers(color= ~factor(cyl),
+                   showlegend = TRUE) %>%
+       layout(title= "<b>3D Scatter Plot für den Datensatz mpg</b>", annotations=legendtitle,
+              scene = list(
+                xaxis = list(title = "Verbrauch in der Stadt"),
+                yaxis = list(title = "Verbrauch auf dem Highway"),
+                zaxis = list(title = "Zylinder")
+              ))
 ```
 
-# Das Ergebnis 
+# 3D Scatter Plot
+
 ```{r scatter3dbild, echo=FALSE, results='markup', warning=FALSE}
 fig
 ```
