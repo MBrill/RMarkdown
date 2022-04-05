@@ -60,7 +60,7 @@ wassergehalt <- read_csv2("data/wassergehalt.csv")
 ```
 
 # Übersicht über plotly
-Das Package *plotly* verwendet die *htmlwidgets* und produziert
+Das Package *plotly* verwendet das Package *htmlwidgets* und produziert
 visualisierung, die in einem Browser oder in der Vorschau in RStudio dargestellt
 werden. 
 Genauso wie in *ggplot* wird auch mit *plotly* eine *grammar of graphics* implementiert, wie sie von Leland Wilkinson in [@wilkinson_05] beschrieben wird. Das Ergebnis
@@ -69,10 +69,10 @@ ist eine formale und strukturierte Sicht auf grafische Ausgaben.
 Eine gute Einführung in plotly finden wir in [@sievert_19]. Einen Link
 auf die Online-Version dieses Buchs finden Sie auf der Lernplattform.
 plotly kann nicht nur in R, sondern auch mit Python eingesetzt werden. 
-Oder wir können direkt, ohne R und Python, die JavaScript-Bibliothek *plotly.js*einsetzen
-und eine Web-aAnwendung implementieren.
+Oder wir können direkt, ohne R und Python, die JavaScript-Bibliothek *plotly.js* einsetzen
+und eine Web-Anwendung implementieren.
 
-Eine Visualisierung ist ein Abbildung (im mathematischen Sinn), eine Beziehung zwischen den Daten und
+Eine Visualisierung ist ein Abbildung, eine Beziehung zwischen den Daten und
 den visuellen Eigenschaften in einer grafischen Ausgabe. Daten sind qualitativ oder quantitativ, während die visuellen Eigenschaften durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben werden.
 
 # plotly und ggplot
@@ -95,10 +95,10 @@ ggplotly(plot)
 Wie schon im Dokument zu *ggplot* beschrieben erzeugen wir ein Balkendiagramm.
 Verglichen mit der Darstellung, die wir mit *ggplot* erstellen erhalten wir oberhalt der Abbildung ein User Interface. Damit können wir in der Abbildung zoomen, wir können
 Werte ansehen während wir mit der Maus über die Abbildung gehen. 
-wir können die Abbildung auch als png-Datei abspeichern.
+Und wir können die Abbildung als png-Datei abspeichern.
 
 Wir erzeugen gleich noch eine weitere Abbildung, wie wir das auch mit *ggplot*
-durchgeführt haben.
+durchgeführt haben:
 
 ```{r bars5, message=FALSE, results='markup', warning=FALSE}
 plot <- ggplot(liefer) +
@@ -234,7 +234,7 @@ plot_ly(x = h$mids, y = h$counts) %>%
     stroke = I("black")
   ) %>%
   layout(
-    title="Histogramm für die Körpergrößen von Frauen mit Klassenbreiten nach Freedman-Diaconis",
+    title="Körpergrößen von Frauen mit Klassenbreiten nach Freedman-Diaconis",
     bargap = 0)
 ```
 
@@ -272,42 +272,6 @@ liefer %>%
   )
 ```
 
-Ob wir nur die Whiskers oder auch die Aussen- und Fernpunkte sehen können wir mit
-Option *boxpoints* steuern. Das folgende Beispiele ist der Online-Dokumentation
-von *plotly* entnommen. In diesem Beispiel können wir auch gut erkennen wie wir eine 
-Legende erzeugen.
-
-```{r outlier, echo=TRUE, results='markup', warning=FALSE}
-y1 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-       8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y2 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y3 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-y4 <- c(0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15,
-        8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25)
-
-fig <- plot_ly(type = 'box')
-fig <- fig %>% add_boxplot(y = y1, jitter = 0.3, pointpos = -1.8, boxpoints = 'all',
-              marker = list(color = 'rgb(7,40,89)'),
-              line = list(color = 'rgb(7,40,89)'),
-              name = "All Points")
-fig <- fig %>% add_boxplot(y = y2, name = "Only Whiskers", boxpoints = FALSE,
-              marker = list(color = 'rgb(9,56,125)'),
-              line = list(color = 'rgb(9,56,125)'))
-fig <- fig %>% add_boxplot(y = y3, name = "Suspected Outlier", boxpoints = 'suspectedoutliers',
-              marker = list(color = 'rgb(8,81,156)',
-                            outliercolor = 'rgba(219, 64, 82, 0.6)',
-                            line = list(outliercolor = 'rgba(219, 64, 82, 1.0)',
-                                        outlierwidth = 2)),
-              line = list(color = 'rgb(8,81,156)'))
-fig <- fig %>% add_boxplot(y = y4, name = "Whiskers and Outliers", boxpoints = 'outliers',
-              marker = list(color = 'rgb(107,174,214)'),
-              line = list(color = 'rgb(107,174,214)'))
-fig <- fig %>% layout(title = "Box Plot Styling Outliers")
-
-fig
-```
 
 # Streuungsdiagramme
 Als Daten für Streuungsdiagramme verwenden wir den Datensatz *Luftfeuchtigkeit*. 
@@ -330,12 +294,15 @@ plot_ly(wassergehalt,
      layout(title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit")
 ```
 
-Wir erkennen im Streuungsdiagramm gut, dass es eine Korrelation zwischen
+Wir erkennen im Streuungsdiagramm gut, dass es eine gewisse Korrelation zwischen
 der Luftfeuchtigkeit und dem Wassergehalt der Wolle gibt.
 
-Das folgende Beispiel, das der Online-Dokumentation von *plotly* entnommen ist zeigt wie
-wir eine Reihe von Streuungsdiagramme erstellen könnan und auch eine Legende
-hinzufügen. Die grafischen Eigenschaften der Punkte stellen wir dabei
+Das folgende Beispiel zeigt wie
+wir Streuungsdiagramme erstellen können und auch eine Legende
+hinzufügen. Dabei wird die Farbe der Marker nicht wie bisher global festgelegt, sondern wir bilden ein qualitatives
+Merkmal, die Anzahl der Zylinder, auf Farben ab.
+Die Wahl der Farben überlassen wir *plotly*.
+Die grafischen Eigenschaften der Punkte stellen wir dabei
 mit *add_markers* ein, die Legende erhalten wir mit Hilfe der Funktion *colorbar*.
 Als Datensatz verwenden wir hier *mpg*.
 
@@ -345,9 +312,10 @@ mpg %>%
           width=600, height=400 ) %>%
   add_markers(color = ~factor(cyl), 
               showlegend = TRUE) %>%
-  layout(title= "Streuungsdiagramm", 
-         xaxis = list(title = "Stadt"),
-         yaxis = list(title = "Highway")
+  layout(title= "<b> Streuungsdiagramm für den Datensatz mpg</b>", 
+         xaxis = list(title = "Verbrauch in der Stadt"),
+         yaxis = list(title = "Verbrauch auf dem Highway"),
+         legend = list(title=list(text='Anzahl Zylinder '))
          )
 ```
 
@@ -362,15 +330,15 @@ Farben einzusetzen verwenden wir *cyl* als z-Koordinate.
 
 ```{r scatter3d, echo=TRUE, results='markup', warning=FALSE}
 legendtitle <- list(x=1.1, y=1.05, 
-                    text="Zylinder",
+                    text="Anzahl der Zylinder",
                     showarrow=FALSE)
 fig <- plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
        add_markers(color= ~factor(cyl),
                    showlegend = TRUE) %>%
-       layout(title= "3D Scatter Plot", annotations=legendtitle,
+       layout(title= "<b>3D Scatter Plot für den Datensatz mpg</b>", annotations=legendtitle,
               scene = list(
-                xaxis = list(title = "Stadt"),
-                yaxis = list(title = "Highway"),
+                xaxis = list(title = "Verbrauch in der Stadt"),
+                yaxis = list(title = "Verbrauch auf dem Highway"),
                 zaxis = list(title = "Zylinder")
               ))
 
