@@ -2,6 +2,7 @@
 title: "Veränderung des Datensatz Auto"
 author: "Manfred Brill"
 output:
+  html_notebook: 
   html_document:
     df_print: paged
     toc: yes
@@ -10,8 +11,6 @@ output:
     highligh: pygments
     theme: cosmo
     number_sections: yes
-  html_notebook: 
-
 bibliography: literatur.bib 
 ---
 
@@ -43,7 +42,7 @@ Dazu verwenden wir *tidyverse*.
 # Metrische Einheiten
 Wir erzeugen mit Hilfe der Umrechnungsformeln in der Aufgabenstellung
 neue Spalten und löschen am Ende die ursprünglichen Merkmale.
-Dabei benennen wir auch Spalten, die wir nicht verändern um,
+Dabei benennen wir auch Spalten um, die wir nicht verändern,
 um eine einheitliche Sprache zu verwenden (Beispiel: wir verändern den
 Namen der Spalte *cyl* zu *Zylinder*).
 
@@ -93,15 +92,17 @@ als csv-Datei ab. Spaltentrenner ist das Semikolon, als Dezimaltrenner
 wird das Komma verwendet.
 
 ```{r export, echo='false', message=FALSE, results='asis'}
-write_csv2(Auto2, path="data/AutoEU.csv", col_names = TRUE)
+write_csv2(Auto2, file="data/AutoEU.csv", col_names = TRUE)
 ```
 
-# Grafiken
+# Streuungsdiagramm
 
-Wir erstellen Grafiken, um einen Eindruck über den Datensatz zu erhalten.
+Wir erstellen ein Streuungsdiagramm, um einen Eindruck über den Datensatz zu erhalten.
 
 ```{r grafiken, message=FALSE, echo=TRUE}
-ggplot(Auto2, aes(x = Hubraum, y = PS, color = Region)) + 
+ggplot(Auto2, aes(x = Hubraum, 
+                  y = PS, 
+                  color = Region)) + 
   geom_point() +
   labs(
     title="Streuungsdiagramm für den überarbeiteten Datensatz Auto",
@@ -110,20 +111,6 @@ ggplot(Auto2, aes(x = Hubraum, y = PS, color = Region)) +
   )   
 
 #ggsave(filename="autoeu.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
-```
-
-
-```{r grafiken2, message=FALSE, echo=TRUE}
-ggplot(Auto2, aes(x = Hubraum, y = PS, color = Region, size=Baujahr)) + 
-  geom_point() +
-  labs(
-    title="Streuungsdiagramm für den überarbeiteten Datensatz Auto",
-    x = "Hubraum in Liter",
-    y = "Leistung in PS"
-  )   
-
-#ggsave(filename="autoeu2.png", plot=last_plot(), device="png",
        #path="images/", width=16, height=9, units="cm")
 ```
 
