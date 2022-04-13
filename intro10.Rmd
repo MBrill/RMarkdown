@@ -1,0 +1,52 @@
+---
+title: "Lösung der Aufgabe intro10"
+author: "Manfred Brill"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    highligh: pygments
+    theme: cosmo
+    number_sections: yes
+bibliography: literatur.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+```
+
+# Daten
+Wir betrachten den Datensatz *mpg*, der direkt in R verfügbar ist. 
+
+Wir verwenden eine Pipeline, in der wir Zeilen filtern
+und Spalten auswählen und umbenennen.
+
+# Pipeline
+```{r daten, message=FALSE, echo=TRUE}
+mtcars$cyl <- as_factor(mtcars$cyl)
+mtcars$gear <- as_factor(mtcars$gear)
+
+mttibble <- as_tibble(mtcars) %>%
+            filter(am==0) %>%
+            select(cyl, hp, gear) %>%
+            rename(Zylinder=cyl, PS=hp, anzahlGänge=gear)
+```
+
+
+```{r tabelle, echo='false', message=FALSE, results='asis'}
+mttibble
+```
+
+
