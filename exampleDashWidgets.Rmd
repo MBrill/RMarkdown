@@ -23,7 +23,7 @@ suppressPackageStartupMessages(library(visNetwork))
 knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
 ```
 
-# Histogramm
+# Grafik mit ggplot und plotly
 
 ```{r schliff, message=TRUE, warning=TRUE}
 schliff <- ggplot(diamonds, aes(cut)) + 
@@ -32,6 +32,9 @@ schliff <- ggplot(diamonds, aes(cut)) +
     x = "Schliff",
     y = ""
   )
+
+#chliff
+
 ggplotly(schliff)
 ```
 
