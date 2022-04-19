@@ -55,23 +55,27 @@ ggplotly(ergebnis)
 ### Histogramm des Merkmals Schliff
 
 ```{r schliff}
-ggplot(diamonds, aes(cut)) + 
+cut <- ggplot(diamonds, aes(cut)) + 
   geom_bar( fill="orange", color="black") +
   labs(
     x = "Schliff",
     y = ""
   )
+
+ggplotly(cut)
 ```
 
 ### Histogramm des Merkmals Farbe
 
 ```{r farbe}
-ggplot(diamonds, aes(color)) + 
+col <- ggplot(diamonds, aes(color)) + 
   geom_bar(fill="yellow", color="black") +
   labs(
     x = "Farbe",
     y = ""
   )
+
+ggplotly(col)
 ```
 
 # Dashboards mit flexdashboard

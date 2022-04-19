@@ -1,7 +1,6 @@
 ---
 title: "Beispiel für die Verwendung von eurostat und NUTS"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_document: 
     fig_caption: yes
