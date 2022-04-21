@@ -1,0 +1,52 @@
+---
+title: "Lösung für die Aufgabe dt1"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
+library(DT)
+suppressPackageStartupMessages(library(DT))
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz faithful
+Der Datensatz *faithful* ist in der Standardinstallation von R enthalten. 
+Enthalten sind zwei Spalten mit Daten über den Geysir Old Faithful im Yellowstone Nationalpark.
+Einmal die Dauer einer Eruption, und zweitens die Wartezeit bis zur anschließenden Eruption.
+
+```{r data, include=TRUE, echo=TRUE}
+head(faithful)
+```
+
+# Tabelle
+Wir verwenden das Package DT und erstellen eine interaktive Tabelle für den Datensatz.
+
+```{r tabelle, results='markup'}
+faithful %>% 
+  select(Ausbruchsdauer = eruptions, Intervall=waiting) %>% 
+  datatable()
+```
+Wenn wir die Pipeline um die Sortierung ergänzen erhalten wir das folgende Ergebnis:
+
+```{r tabellesort, results='markup'}
+faithful %>% 
+  arrange(desc(waiting)) %>% 
+  select(Ausbruchsdauer = eruptions, Intervall=waiting) %>% 
+  datatable()
+```

@@ -1,0 +1,57 @@
+---
+title: "Lösung für die Aufgabe graph1"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
+library(visNetwork)
+suppressPackageStartupMessages(library(visNetwork))
+
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Daten für den Graphen
+Wir erstellen Vektoren mit den Knoten und den Kanten des Graphen.
+
+```{r graph, results='markup'}
+nodes <- data.frame(id = 1:6,
+                    shape = c("dot"),
+                    size = 5,
+                    title = paste0("<b>Knoten ", 1:6,"</b>"),
+                    color = c("green"))
+
+edges <- data.frame(from = c(1, 1, 2, 2, 3, 4, 4, 5), 
+                    to = c(2, 3, 3, 4, 5, 5, 6, 6),
+                    title = paste0("Kante ", 1:8))
+```
+
+# Visualisierung
+
+```{r vis, results='markup'}
+visNetwork(nodes, edges) %>%
+  visOptions(highlightNearest = TRUE, 
+             width = "100%") %>%
+    visInteraction(dragNodes = TRUE, 
+                   dragView = TRUE, 
+                   zoomView = FALSE,
+                   keyboard = TRUE,
+                   navigationButtons = TRUE) %>%
+  visLayout(randomSeed = 42)
+```

@@ -1,0 +1,47 @@
+---
+title: "Lösung für die Aufgabe ts1"
+author: "Manfred Brill"
+encoding: utf-8
+output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+bibliography: literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
+library(dygraphs)
+suppressPackageStartupMessages(library(dygraphs))
+
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz AirPassengers
+Der Datensatz *AirPassengers* ist in der Standardinstallation von R enthalten. 
+Darin finden wir eine Zeitreihe mit der Anzahl der Passagierzahlen von internationalen Airlines.
+Wir überzeugen uns mit *class*, dass eine Zeitreihe vorliegt. Mit *start* und *end*
+erhalten wir den ersten  und den letzten Wert. Die Daten liegen monatlich vor, von 1949 bis 1960.
+
+```{r data, include=TRUE, echo=TRUE}
+class(AirPassengers)
+start(AirPassengers)
+end(AirPassengers)
+```
+
+# Zeitreihen mit Dygraphs
+
+```{r timeseries, results='markup'}
+AirPassengers %>%
+  dygraph(main = "Monatliche Passagierzahlen im Datensatz AirPassengers", width=800,
+          ylab="Anzahl der Passagiere") %>% 
+  dyRangeSelector(dateWindow = c("1952-01-01", "1958-12-31"))
+```
