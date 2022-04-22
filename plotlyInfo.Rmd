@@ -309,7 +309,8 @@ Als Datensatz verwenden wir hier *mpg*.
 ```{r scatter2, echo=TRUE, results='markup', warning=FALSE}
 mpg %>%
   plot_ly(x = ~cty, y = ~hwy,
-          width=600, height=400 ) %>%
+          width=600, height=400 
+          ) %>%
   add_markers(color = ~factor(cyl), 
               showlegend = TRUE) %>%
   layout(title= "<b> Streuungsdiagramm für den Datensatz mpg</b>", 
