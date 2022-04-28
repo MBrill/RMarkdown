@@ -1,22 +1,17 @@
 ---
 title: "Fallstudie Iris"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
-output: 
+output:
   html_notebook:
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
-    encoding: utf-8   
-  html_document: 
-    fig_caption: yes
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
+    encoding: utf-8
+  html_document:
     toc: yes
-    toc_float: yes
-bibliography: literatur.bib    
+    df_print: paged
+bibliography: literatur.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -26,6 +21,10 @@ library(kableExtra)
 
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
+library(GGally)
+
+library(viridis)
+
 library(RColorBrewer)
 myPalette <- brewer.pal(8, "Set2")
 library(MASS)
@@ -37,52 +36,70 @@ options(digits=3)
 Dieser Datensatz ist in R einfach verfügbar, im Package *datasets*, das bereits
 beim Start geladen wird. 
 Der Datensatz ist als data.frame *iris* verfügbar. Diese Variable enthält
-150 Zeilen und 5 Spalten+. Die ersten vier Spalten enthalten die Messwerte, in Spalte
+150 Zeilen und 5 Spalten. Die ersten vier Spalten enthalten die Messwerte, in Spalte
 5 finden wir die Angabe über die Spezies.
+Als Messwerte liegen Angaben über die Länge und Breite
+von Kelch- und Kronblatt vor. Im Datensatz
+finden wir diese Angaben als *Petal* und *Sepal*.
+
+Wir stellen sicher, dass diese Spalte ein Faktor ist.
+Da wir später klassifizieren möchten erzeugen wir
+einen Tibble, der die Information über die Spezies
+nicht mehr enthält.
 
 ```{r daten, message=FALSE, echo=TRUE}
-#iris <- as_tibble(datasets::iris)
 iris$Species <- as_factor(iris$Species)
 
+irisValues <- iris[,-5]
+```
+
+In der folgenden Tabelle finden wir die ersten 6 Zeilen
+des Datensatzes. Insgesamt liegen 150 Zeilen vor, dabei gehören jeweils 50 zu jeder der drei Spezies.
+
+```{r datentab, message=FALSE, echo=FALSE}
 kable(head(iris), align="l",
       caption="Tabelle 1: Die ersten Werte im Datensatz Iris") %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                 full_width = T, 
                 position = "center")
-
-# Die Spalte mit den Spezies ausschließen für die Algorithmen
-irisValues <- iris[,-5]
 ```
 
-# Quellen
-Die Darstellung der Verfahren orientiert sich an [@tibshirani_13] und [@kabacoff_15].
+Die folgende Darstellung der Verfahren orientiert sich an [@tibshirani_13] und [@kabacoff_15].
 
 # Visualisierungen
-Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,
-dass wir Iris Setosa gut von den beiden anderen Spezies unterscheiden können.
 
-```{r scatterSPLOM, message=FALSE, echo=TRUE}
-# Drei Farben aus unserer Farbpalette für das Markieren der drei Spezies speichern
-species_col <- myPalette[unclass(iris$Species)]
+## Streuungsdiagramme
+Wir erzeugen einige Streuungsdiagramme, um die vier
+möglichen Merkmale und ihren Zusammenhang zu visualisieren.
 
+```{r scatter0, message=FALSE, echo=TRUE}
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Sepal.Length, 
+                         y = Sepal.Width, 
+                         color = Petal.Length)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_distiller(palette="BuGn") +
+  labs(
+         title="Streuungsdiagramm  Datensatz Iris",
+         x = "Länge des Kelchblatts",
+         y = "Breite des Kelchblatts",
+         color = "Länge des Kronblatts"
+  ) 
 
-pairs(iris[1:4], 
-      main = "SPLOM für den Datensatz iris",
-      pch = 21, 
-      cex.labels=2,
-      bg = species_col,
-      lower.panel=NULL)
-
-par(xpd = TRUE)
-legend(x=0.05, y=0.4, 
-       legend=c("Setosa", "Versicolor", "Virginica"),
-       fill=unique(species_col))
-par(xpd = NA)
+ggsave(filename="irisScatterSepalPetal.png",
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
-```{r scatter, message=FALSE, echo=TRUE}
+```{r scatter1, message=FALSE, echo=TRUE}
 ggplot(iris) + 
-  geom_point(mapping=aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point(mapping=aes(x = Sepal.Length, 
+                         y = Sepal.Width, 
+                         color = Species)) +
   scale_x_continuous(breaks = seq(0.0, 8.0)) + 
   scale_color_brewer(palette = "Set1") +
   labs(
@@ -91,15 +108,20 @@ ggplot(iris) +
          y = "Breite des Kelchblatts"
   ) 
 
-ggsave(filename="irisScatterSepal.png", plot=last_plot(), 
+ggsave(filename="irisScatterSepal.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, 
        height=9, 
        units="cm")
+```
 
-petal.Plot <- ggplot(iris) + 
-  geom_point(mapping=aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+```{r scatter2, message=FALSE, echo=TRUE}
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Petal.Length, 
+                         y = Petal.Width, 
+                         color = Species)) +
   scale_x_continuous(breaks = seq(0.0, 8.0)) + 
   scale_color_brewer(palette = "Set1") +
   labs(
@@ -108,14 +130,29 @@ petal.Plot <- ggplot(iris) +
          y = "Breite des Kronblatts"         
   ) 
 
-petal.Plot
-
-ggsave(filename="irisScatterPetal.png", plot=last_plot(), 
+ggsave(filename="irisScatterPetal.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, 
        height=9, 
        units="cm")
+```
+
+## SPLOM
+Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,
+dass wir Iris Setosa gut von den beiden anderen Spezies unterscheiden können.
+Dazu verwenden wir die Funktion *ggpairs*
+im Package *GGally*, einer Erweiterung von *ggplot*.
+
+```{r scatterSPLOM, message=FALSE, echo=TRUE}
+ggpairs(iris,
+         columns=1:4,
+         title="Scatterplot-Matrix für den Datensatz Iris",
+         aes(color = Species),
+         legend = c(2,1),
+         diag = "blank",
+         upper = "blank")
 ```
 
 # Eine naive Klassifizierung
@@ -773,6 +810,6 @@ ggsave(filename="irisKMScatter.png", plot=last_plot(),
        width=16, height=9, units="cm")
 ```
 
-# Literatur
+# Literaturverzeichnis
 
 
