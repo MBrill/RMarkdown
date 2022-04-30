@@ -1,0 +1,107 @@
+---
+title: "Lösung Aufgabe plot17"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+library(DT, warn.conflicts = FALSE, quietly=TRUE)
+library(plotly)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(3, "Set2")
+
+options(digits=3)
+```
+
+# Ein Beispiel aus McClave Benson
+Wir verwenden Daten aus [@mcclave_91] als Einstiegsbeispiel für einen gepaarten t-Test.
+
+```{r daten, message=FALSE, echo=TRUE}
+daten <- read_csv2(file="data/restaurants.csv",
+                   show_col_types = FALSE)
+
+daten$Restaurant <- as_factor(daten$Restaurant)
+datatable(daten)
+```
+
+
+# Vorbereitung
+Wir haben Daten aus 12 Tagen, die wir jetzt als Strings generieren und dem Tibble hinzufügen. Damit können wir
+anschließend die grafische Ausgabe einfacher erstellen.
+
+```{r tage, message=FALSE, echo=TRUE}
+days <- c("Montag1",
+          "Dienstag1",
+          "Mittwoch1",
+          "Donnerstag1",
+          "Freitag1",
+          "Samstag1",
+          "Montag2",
+          "Dienstag2",
+          "Mittwoch2",
+          "Donnerstag2",
+          "Freitag2",
+          "Samstag2")
+
+days_double <- c(days, days)
+
+daten <- tibble(Tage=as_factor(days_double), 
+                Umsatz=daten$Umsatz, 
+                Restaurant=daten$Restaurant)
+
+
+datatable(daten)
+```
+
+# Dot-Plot mit plotly
+
+```{r dotplot, message=FALSE, echo=TRUE}
+daten1 <- daten %>%
+  filter(Restaurant == 1)
+
+daten2 <- daten %>%
+  filter(Restaurant == 2)
+
+plot_ly(daten1,
+         x = ~Umsatz, 
+         y = ~Tage,
+         mode = "markers",
+         type = "scatter",
+         color = myPalette[1],
+         name = "Restaurant 1"
+       ) %>%
+       add_trace(daten2,
+         x = ~Umsatz, 
+         y = ~Tage,
+         mode = "markers",
+         type = "scatter",
+         color = myPalette[2],
+         name = "Restaurant 2"
+  ) %>%
+  layout(title= "<b> Umsätze in zwei Restaurants</b>", 
+         xaxis = list(title = "Umsatz in Euro"),
+         yaxis = list(title = "Wochentage"),
+         marker = list(color = brewer.pal(3, "Set2")),
+         showlegend = TRUE,
+         legend = list(title=list(text='Restaurant '))
+         )
+
+#
+
+```
+# Literaturverzeichnis
+
+
+

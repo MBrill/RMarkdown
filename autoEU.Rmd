@@ -20,6 +20,8 @@ library(knitr)
 library(kableExtra)
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
+library(GGally)
+
 library(rstatix)
 
 library(RColorBrewer)
@@ -154,49 +156,50 @@ ggsave(filename="autoEUBox5.png", plot=last_plot(), device="png",
 ```
 
 ## SPLOM
-Wir erstellen Scatterplot-Matrizen mit diesem Datensatz. Dabei
-verwenden wir neben *ggplot* auch *pairs* aus dem Default-Package *plot*.
+Wir erstellen Scatterplot-Matrizen mit diesem Datensatz. 
+Dabei verwenden wir neben *ggplot* auch *ggpairs* aus dem Package *GGally*, einer Erweiterung zu *ggplot*.
 Im zweiten Bild filtern wir mit *subset* die Anzahl der dargestellten Zeilen.
-Wir könnten noch eine Legende hinzufügen, was man bei *plot* aber manuell
-durchführen muss, weshalb wir darauf verzichten.
-Wir rufen *pairs* zweimal auf. Einmal für die Ausgabe im Markdown
-und ein zweites Mal für das Speichern in einem png-File.
 
-```{r pairs, message=FALSE, results='markup'}
-pairs(data = daten,  ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
-      pch=21, bg = myPalette,
-      main="SPLOM mit pairs für den Datensatz autoEU", lower.panel=NULL)
+```{r ggpairs, message=FALSE, results='markup'}
+ggpairs(daten,
+        columns=5:9,
+        title="Scatterplot-Matrix für den Datensatz AutoEU",
+        aes(color = myPalette[3]),
+        diag = "blank",
+        upper = "blank"
+        )
 
-pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
-      subset = Hubraum < 1.3,
-      pch=21, bg = myPalette,
-      main="SPLOM mit pairs für den Datensatz autoEU (Hubraum < 1300 l)",
-      lower.panel=NULL)
+ggsave(filename="autoEUpairs1.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, 
+       units="cm")
 
-png(file="images/autoEUpairs1.png",
-    units = "cm", width=16, height=9, res=300)
-pairs(data = daten,  ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
-      pch=21, bg = myPalette,
-      main="SPLOM mit pairs für den Datensatz autoEU", lower.panel=NULL)
+daten %>%
+  filter(Hubraum < 1.3) %>%
+  ggpairs(columns=5:9,
+          title="Scatterplot-Matrix für den Datensatz AutoEU (Hubraum < 1300 l)",
+          aes(color = myPalette[3]),
+          diag = "blank",
+          upper = "blank")  
 
-
-png(file="images/autoEUpairs2.png",
-    units = "cm", width=16, height=9, res=300)
-pairs(data = daten, ~ Verbrauch + Hubraum + Gewicht + PS + Beschleunigung, 
-      subset = Hubraum < 1.3,
-      pch=21, bg = myPalette,
-      main="SPLOM mit pairs für den Datensatz autoEU (Hubraum < 1300 l)",
-      lower.panel=NULL)
-dev.off()
+ggsave(filename="autoEUpairs2.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, 
+       units="cm")
 ```
 
 In *ggplot* können wir sogenannte Facets mit *facet_grid* und *facet_wrap* verwenden.
-Schon in [@chang_18] findet man die Bemerkung, dass SPLOMS in *ggplot*
-nicht gut zu machen sind.
 
 ```{r facetgrid, message=FALSE, results='markup'}
 # Basisplot
-auto_plot <- ggplot(daten, aes(x = Hubraum, y = Verbrauch, color=Region)) + 
+auto_plot <- ggplot(daten, 
+                    aes(x = Hubraum, 
+                        y = Verbrauch,
+                        color=Region)) + 
   geom_point(shape=20, size=2.5) + 
   scale_color_brewer(palette="Set3", aesthetics="fill")
 
@@ -208,8 +211,12 @@ auto_plot +
     y="Verbrauch in l/100 km"
   )
 
-ggsave(filename="autoEUGrid0.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUGrid0.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, 
+       units="cm")
 
 # Jetzt erzeugen wir einen grid
 # Zylinder erzeugt Spalten
