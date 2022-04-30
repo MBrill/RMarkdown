@@ -23,10 +23,9 @@ suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(GGally)
 
-library(viridis)
-
 library(RColorBrewer)
 myPalette <- brewer.pal(8, "Set2")
+
 library(MASS)
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
@@ -118,7 +117,7 @@ ggsave(filename="irisScatterSepal.png",
 ```
 
 ```{r scatter2, message=FALSE, echo=TRUE}
-ggplot(iris) + 
+petal.Plot <- ggplot(iris) + 
   geom_point(mapping=aes(x = Petal.Length, 
                          y = Petal.Width, 
                          color = Species)) +
@@ -129,6 +128,8 @@ ggplot(iris) +
          x = "Länge des Kronblatts",
          y = "Breite des Kronblatts"         
   ) 
+
+petal.Plot
 
 ggsave(filename="irisScatterPetal.png",
        plot=last_plot(), 
@@ -147,12 +148,20 @@ im Package *GGally*, einer Erweiterung von *ggplot*.
 
 ```{r scatterSPLOM, message=FALSE, echo=TRUE}
 ggpairs(iris,
-         columns=1:4,
-         title="Scatterplot-Matrix für den Datensatz Iris",
-         aes(color = Species),
-         legend = c(2,1),
-         diag = "blank",
-         upper = "blank")
+        columns=1:4,
+        title="Scatterplot-Matrix für den Datensatz Iris",
+        aes(color = Species),
+        legend = c(2,1),
+        diag = "blank",
+        upper = "blank")
+
+ggsave(filename="irisggSPLOM.png",
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 # Eine naive Klassifizierung
