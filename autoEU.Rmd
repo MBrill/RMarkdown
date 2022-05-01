@@ -14,6 +14,17 @@ output:
 bibliography: literatur.bib    
 ---
 
+# Benötigte Packages für diese Datei
+In diesem Markdown-Dokument werden die folgenden Packages eingesetzt:
+
+- tidyverse
+- kableEtra
+- RColorBrewer
+- GGally
+- rstatix
+
+Als Datensatz betrachten wir *AutoEU*.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
@@ -31,7 +42,6 @@ options(digits=3)
 ```
 
 # Der Datensatz *AutoEU*
-Als Beispiel-Datensatz verwenden wir *autoEU*.
 Dieser Datensatz ist aus dem im Package *ISLR* ([@tibshirani_13]) enthaltenen Datensatz *auto*
 entstanden. Die Null-Werte wurden entfernt und die Einheiten und Bezeichnungen
 auf unseren Sprachgebrauch angepasst.
@@ -39,8 +49,7 @@ Nach dem Einlesen stellen wir mit *as_factor* sicher, dass einige Merkmale
 korrekt als Faktoren interpretiert werden, was für die Visualisierung mit
 *ggplot* sehr hilfreich ist.
 
-Wir wählen mit Hilfe der Funktion *sample_by_n* aus *rstatix* einige
-Zeilen zufällig aus.
+Wir wählen mit Hilfe der Funktion *sample_by_n* aus *rstatix* einige Zeilen zufällig aus.
 
 ```{r daten, message=FALSE, echo=TRUE, warnings=FALSE}
 daten <- read_csv2(file="data/AutoEU.csv")

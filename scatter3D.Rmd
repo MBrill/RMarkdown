@@ -1,0 +1,124 @@
+---
+title: "Visualisierung von multidimensionalen Daten mit 3D Scatterplots"
+author: "Manfred Brill"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    
+bibliography: literatur.bib    
+---
+
+# Benötigte Packages für diese Datei
+In diesem Markdown-Dokument werden die folgenden Packages eingesetzt:
+
+- tidyverse
+- RColorBrewer
+- plotly
+
+Wir verwenden den Datensatz AutoEU und Iris.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(plotly)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+## Der Datensatz *AutoEU*
+
+Wir lesen die Daten ein und sorgen dafür, dass die Spalten
+*Region*, *Zylinder* und *Baujahr* als Faktoren vorhanden sind.
+
+```{r autoDaten, message=FALSE, echo=TRUE, warnings=FALSE}
+auto <- read_csv2(file="data/AutoEU.csv")
+auto$Region <- as_factor(auto$Region)
+auto$Zylinder <- as_factor(auto$Zylinder)
+auto$Baujahr <- as_factor(auto$Baujahr)
+```
+
+## Der Datensatz Iris
+Der Datensatz ist als data.frame *iris* direkt verfügbar. 
+Enthalten sind
+150 Zeilen und 5 Spalten. Die ersten vier Spalten enthalten die Messwerte, in Spalte
+5 finden wir die Angabe über die Spezies.
+Als Messwerte liegen Angaben über die Länge und Breite
+von Kelch- und Kronblatt vor. Im Datensatz
+finden wir diese Angaben als *Petal* und *Sepal*.
+
+Wir stellen sicher, dass diese Spalte ein Faktor ist.
+
+```{r irisDaten, message=FALSE, echo=TRUE}
+iris$Species <- as_factor(iris$Species)
+```
+
+# Dreidimensionale Scatterplots
+Mit *plotly* erhalten wir interaktive dreidimensionale Scatterplots. Diese Darstellung ist häufig nicht sehr effizient,
+vor allem stellt sich das Problem welches Attribut wir auf welche der drei Achsen abbilden.
+
+## AutoEU
+Wir legen den Hubraum auf die x-, das Gewicht auf die y- und den Verbrauch auf die z-Achse. Zusätzlich färben wir die Punkte
+an Hand der Anzahl der Zylinder.
+
+```{r auto3D, message=FALSE, echo=TRUE, warnings=FALSE}
+legendtitle <- list(x=1.1, y=1.05, 
+                    text="Anzahl der Zylinder",
+                    showarrow=FALSE)
+fig <- plot_ly(auto, 
+               x = ~Hubraum, 
+               y = ~Gewicht, 
+               z = ~Verbrauch) %>%
+       add_markers(color= ~Zylinder,
+                   size=1,
+                   showlegend = TRUE) %>%
+       layout(title= "<b>3D Scatter Plot für den Datensatz AutoEU</b>", annotations=legendtitle,
+              scene = list(
+                xaxis = list(title = "Hubraum"),
+                yaxis = list(title = "Gewicht"),
+                zaxis = list(title = "Verbrauch")
+              ))
+
+fig
+```
+
+## Iris
+Wir hatten bereits zweidimensionale Scatterplots für Iris
+erstellt. Dabei haben wir entweder die Information über die Spezies oder eine der Längenangaben für das Färben verwendet.
+Das können wir jetzt mit einem 3D-Plot kombinieren.
+
+DAs löst aber nicht das Grundproblem, dass wir vier kardinale
+Merkmale haben und uns fragen, ob wir aus allen vier Merkmalen
+Rückschlüssen auf die Species ziehen können.
+
+```{r iris3D, message=FALSE, echo=TRUE, warnings=FALSE}
+legendtitle <- list(x=1.1, y=1.05, 
+                    text="Spezies",
+                    showarrow=FALSE)
+fig <- plot_ly(iris, 
+               x = ~Sepal.Length, 
+               y = ~Sepal.Width, 
+               z = ~Petal.Length) %>%
+       add_markers(color= ~Species,
+                   size=1,
+                   showlegend = TRUE) %>%
+       layout(title= "<b>3D Scatter Plot für den Datensatz Iris</b>", annotations=legendtitle,
+              scene = list(
+                xaxis = list(title = "Länge des Kelchblatts"),
+                yaxis = list(title = "Breite des Kelchblatts"),
+                zaxis = list(title = "Länge des Kronblatts")
+              ))
+
+fig
+```

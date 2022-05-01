@@ -1,7 +1,6 @@
 ---
 title: "Einführungsbeispiel für die Verwendung von parallelen Koordinaten"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_notebook:
     highlight: pygments
