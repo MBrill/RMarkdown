@@ -1,8 +1,13 @@
 ---
 title: "Parallele Koordinaten mit ggglot"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8  
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -11,24 +16,18 @@ output:
     toc: yes
     toc_float: yes
     encoding: utf-8  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8  
 bibliography: literatur.bib    
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
-library(kableExtra)
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
+
 library(RColorBrewer)
-myPalette <- brewer.pal(8, "Accent")
-library(plotly)
+myPalette <- brewer.pal(8, "Set1")
+
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
@@ -46,25 +45,23 @@ daten
 # Daran denken, die Namen der Punkte nicht mit zu zählen
 # Anzahl der Punkte im Datensatz
 N <- ncol(daten) - 1
-N
 
-# Dimension des Raums, den wir visualisieren
+# Anzahl der Punkte, die wir visualisieren
 k <- nrow(daten)
-k
 ```
 
 Wir verändern die Daten mit Hilfe von *gather* und schreiben alle Koordinaten in eine Spalte.
 
 ```{r prepareData, message=FALSE, echo=FALSE}
 datenLF <- daten %>%
-  gather("Punkt", "Koordinate", -Achse )
+  gather("Achse", "Koordinate", -Punkt )
 
 datenLF
 ```
 
 # Ein einführendes Beispiel
 
-Der Datensatz enthält `r N` Punkte in einem `r k`-dimensionalen Raum. 
+Der Datensatz enthält `r k` Punkte in einem `r N`-dimensionalen Raum. 
 Die Koordinaten stehen in den Zeilen. Es gibt eine Spalte *Achse*  mit Werten von 1 bis `r k`.
 Die Punkte haben die Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)[3]`*, *`r colnames(daten)[4]`*, *`r colnames(daten)[5]`*, *`r colnames(daten)[6]`*, *`r colnames(daten)[7]`* und *`r colnames(daten)[8]`*.
 
@@ -73,8 +70,8 @@ Die Punkte haben die Bezeichnungen *`r colnames(daten)[2]`*, *`r colnames(daten)
 parLength <- 1.0
 
 axisX <- tibble(
-  xValues = seq(0.0, k-1, by = 1.0),
-  xBreaks = seq(1.0, k, by = 1.0),
+  xValues = seq(0.0, N-1, by = 1.0),
+  xBreaks = seq(1.0, N, by = 1.0),
   xNames = as.character(xBreaks)
 )
 ```
@@ -94,7 +91,6 @@ axisX
 Wir stellen als Test diese Achsen mit Hilfe von *geom_vline* mit *ggplot* dar:
 
 ```{r plotAxis, message=FALSE, echo=TRUE, results='asis'}
-
 plot <- ggplot(axisX, aes(xValues)) + 
   geom_vline(xintercept =  axisX$xBreaks, 
              color = myPalette[1],
@@ -109,7 +105,8 @@ plot +
       y=""
    )  
 
-ggsave(filename="parCoordR4.png", plot=last_plot(), 
+ggsave(filename="parCoordR4.png", 
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -134,7 +131,8 @@ plot  +
       y=""
    )  
 
-ggsave(filename="parCoordPoint1.png", plot=last_plot(), 
+ggsave(filename="parCoordPoint1.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -151,7 +149,8 @@ plot  +
       y=""
    )  
 
-ggsave(filename="parCoordPoint2.png", plot=last_plot(), 
+ggsave(filename="parCoordPoint2.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -168,7 +167,8 @@ plot  +
       y=""
    )  
 
-ggsave(filename="parCoordPoint3.png", plot=last_plot(), 
+ggsave(filename="parCoordPoint3.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
@@ -179,7 +179,9 @@ Wir verwenden die Daten im long-Format, die wir mit *gather* erzeugt haben.
 Damit können wir alle Punkte im Datensatz in einer Grafik darstellen.
 
 ```{r firstPoint, message=FALSE, echo=TRUE, results='asis'}
-ggplot(datenLF, aes(x = Achse, y = Koordinate, group = Punkt)) +
+ggplot(datenLF, aes(x = Achse, 
+                    y = Koordinate, 
+                    group = Punkt)) +
   geom_path(aes(color = Punkt),
             alpha = 0.5,
             size = 1.5,
@@ -194,7 +196,8 @@ ggplot(datenLF, aes(x = Achse, y = Koordinate, group = Punkt)) +
       y="Koordinaten"
   ) 
 
-ggsave(filename="parCoordExample.png", plot=last_plot(), 
+ggsave(filename="parCoordExample.png",
+       plot=last_plot(), 
        device="png",
        path="images/", 
        width=16, height=9, units="cm")
