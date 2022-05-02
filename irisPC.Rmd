@@ -1,7 +1,6 @@
 ---
 title: "Visualisierungen für den Iris-Datensatz"
 author: "Manfred Brill"
-date: "Sommersemester 2021"
 output: 
   html_notebook:
     highlight: pygments
@@ -21,8 +20,10 @@ bibliography: literatur.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
-library(kableExtra)
+
 library(tidyverse)
+library(GGally)
+
 library(RColorBrewer)
 # MASS für die Funktion parcoord
 library(MASS)
@@ -31,8 +32,18 @@ myPalette <- brewer.pal(8, "Set2")
 options(digits=3)
 ```
 
+# Packages
+Für die Ausführung dieser Markdown-Datei benötigen
+wir die folgenden Packages:
+
+- tidyverse, insbesondere ggplot
+- MASS
+- GGally
+
 # Der Datensatz *Iris*
-Dieser Datensatz ist in R einfach verfügbar, in *datasets*. Der Datensatz enthält
+Dieser Datensatz ist in R einfach verfügbar, im Package *datasets*, das in der Default-Installation von R enthalten ist. 
+
+Der Datensatz enthält
 5 Spalten und 150 Zeilen. Die ersten vier Spalten enthalten die Messwerte, in Spalte
 5 finden wir die Angabe über die Spezies.
 
@@ -48,19 +59,66 @@ species_labels <- iris[,5]
 species_col <- myPalette[as.numeric(species_labels)]
 ```
 
-# SPLOM
-Wir erzeugen eine Scatterplot-Matrix für den Datensatz. Hier sehen wir schon,
-dass wir Iris Setosa gut von den beiden anderen Spezies unterscheiden können.
+# Streuungsdiagramme und ein SPLOM
+Wir erzeugen einige Streuungsdiagramme, um die vier möglichen Merkmale und ihren Zusammenhang zu visualisieren.
 
-```{r splom, message=FALSE, echo=TRUE}
-# Eine Scatterplot Matrix mit Legende ausgeben
-pairs(iris2, col=species_col,
-      lower.panel = NULL,
-      cex.labels=2, pch=19)
+```{r scatter0, message=FALSE, echo=TRUE}
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Sepal.Length, 
+                         y = Sepal.Width, 
+                         color = Petal.Length)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_distiller(palette="BuGn") +
+  labs(
+         title="Streuungsdiagramm  Datensatz Iris",
+         x = "Länge des Kelchblatts",
+         y = "Breite des Kelchblatts",
+         color = "Länge des Kronblatts"
+  )
+```
 
-par(xpd = TRUE)
-legend(x=0.05, y=0.4, legend=as.character(levels(species_labels)),
-       fill=unique(species_col))
+```{r scatter1, message=FALSE, echo=TRUE}
+ggplot(iris) + 
+  geom_point(mapping=aes(x = Sepal.Length, 
+                         y = Sepal.Width, 
+                         color = Species)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  labs(
+         title="Streuungsdiagramm  Datensatz Iris",
+         x = "Länge des Kelchblatts",
+         y = "Breite des Kelchblatts"
+  ) 
+```
+
+```{r scatter2, message=FALSE, echo=TRUE}
+petal.Plot <- ggplot(iris) + 
+  geom_point(mapping=aes(x = Petal.Length, 
+                         y = Petal.Width, 
+                         color = Species)) +
+  scale_x_continuous(breaks = seq(0.0, 8.0)) + 
+  scale_color_brewer(palette = "Set1") +
+  labs(
+         title="Streuungsdiagramm Datensatz Iris",
+         x = "Länge des Kronblatts",
+         y = "Breite des Kronblatts"         
+  ) 
+
+petal.Plot
+```
+
+Wir erzeugen eine Scatterplot-Matrix für den Datensatz. 
+Dazu verwenden wir die Funktion *ggpairs*
+im Package *GGally*, einer Erweiterung von *ggplot*.
+
+```{r scatterSPLOM, message=FALSE, echo=TRUE}
+ggpairs(iris,
+        columns=1:4,
+        title="Scatterplot-Matrix für den Datensatz Iris",
+        aes(color = Species),
+        legend = c(2,1),
+        diag = "blank",
+        upper = "blank")
 ```
 
 # Parallele Koordinaten mit *parcoord*
