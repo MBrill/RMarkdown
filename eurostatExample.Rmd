@@ -2,6 +2,12 @@
 title: "Beispiel für die Verwendung von eurostat und NUTS"
 author: "Manfred Brill"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8      
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -10,23 +16,28 @@ output:
     toc: yes
     toc_float: yes
     encoding: utf-8  
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8      
 bibliography: literatur.bib    
 ---
+
+# Packages
+Dieses Beispiel verwendet die folgenden Packages:
+
+- tidyverse, insbesondere ggplot
+- eurostat
+
+Die Kartendaten werden online abgefragt, was beim ersten Ausführen zu einer Wartezeit führen kann. Anschließend
+werden die Daten im Cache von RMarkdown gehalten.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
+
 suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
+
 library(RColorBrewer)
-myPalette <- brewer.pal(8, "Accent")
+myPalette <- brewer.pal(8, "Set3")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 
@@ -106,3 +117,5 @@ ggsave(filename="eurostatExample.png", plot=last_plot(),
        device="png",
        path="images/", 
        width=16, height=16, units="cm")
+```
+
