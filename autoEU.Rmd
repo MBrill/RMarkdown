@@ -21,7 +21,6 @@ In diesem Markdown-Dokument werden die folgenden Packages eingesetzt:
 - kableEtra
 - RColorBrewer
 - GGally
-- rstatix
 
 Als Datensatz betrachten wir *AutoEU*.
 
@@ -33,10 +32,8 @@ suppressPackageStartupMessages(library(dplyr))
 library(tidyverse)
 library(GGally)
 
-library(rstatix)
-
 library(RColorBrewer)
-myPalette <- brewer.pal(5, "YlGn")
+myPalette <- brewer.pal(8, "Pastel2")
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
 ```
@@ -53,11 +50,12 @@ Wir wählen mit Hilfe der Funktion *sample_by_n* aus *rstatix* einige Zeilen zuf
 
 ```{r daten, message=FALSE, echo=TRUE, warnings=FALSE}
 daten <- read_csv2(file="data/AutoEU.csv")
+
 daten$Region <- as_factor(daten$Region)
 daten$Zylinder <- as_factor(daten$Zylinder)
 daten$Baujahr <- as_factor(daten$Baujahr)
 
-kable(sample_n_by(daten, Region, size=2), 
+kable(head(daten), 
       align="l") %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                 full_width = T, 
@@ -74,9 +72,12 @@ von Boxplots die Leistung in PS dar.
 
 
 ```{r plotBox1, message=FALSE, results='markup'}
-box <- ggplot(daten, aes(x=Region, y=Verbrauch)) + 
-  geom_boxplot( fill=myPalette[3], color="black",
-                outlier.colour = myPalette[5]) +
+box <- ggplot(daten, 
+              aes(x=Region, y=Verbrauch, fill=Region)) + 
+  geom_boxplot(color="black",
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Pastel2") +
+  scale_x_discrete(limits=c("Europa", "Japan", "USA"))
   labs(
     title="Datensatz autoEU", 
     subtitle="",
@@ -92,14 +93,15 @@ ggsave(filename="autoEUBox1.png", plot=last_plot(), device="png",
 box + coord_flip()
 ```
 
-Wir können die Kategorien auf der x-Achse auch verändern, indem wir
-zum Beispiel *x=Zylinder* zuweisen.
+Wir können die Kategorien auf der x-Achse auch verändern, indem wir zum Beispiel *x=Zylinder* zuweisen.
 
 
 ```{r plotBox2, message=FALSE, results='markup'}
-ggplot(daten, aes(x=Zylinder, y=Verbrauch)) + 
-  geom_boxplot( fill= myPalette[3], color="black",
-                outlier.colour = myPalette[5]) +
+ggplot(daten, 
+       aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot(fill= myPalette[1], 
+               color="black",
+              outlier.colour = "black") +
   labs(
     title="Datensatz autoEU", 
     subtitle="",
@@ -107,11 +109,12 @@ ggplot(daten, aes(x=Zylinder, y=Verbrauch)) +
     y = "Verbrauch in l/100 km"
   ) 
 
-ggsave(filename="autoEUBox2.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUBox2.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 
 ```
-
 Wir fügen die Region noch für die Füllfarbe ein. Dabei verwenden wir
 *geom_boxplot* in einer Pipeline, in der wir filtern. Zusätzlich sorgen wir mit
 *scale_y_continous* dafür, dass wir gleiche y-Achsen haben! Achten Sie bei solchen
@@ -127,19 +130,23 @@ daten %>%
     Region == wanted
   ) %>%
   ggplot(aes(x=Zylinder, y=Verbrauch)) + 
-  geom_boxplot( fill=myPalette[3], color="black",
-                outlier.colour = myPalette[5]) +
-  labs(
+  geom_boxplot( fill=myPalette[3], 
+                color="black",
+                outlier.colour = "black") +
+   scale_y_continuous(limits = c(5, 30)) +
+   labs(
     title="Datensatz autoEU", 
     subtitle="Verbrauch für europäische PKW",
     x = "Anzahl der Zylinder",
     y = "Verbrauch in l/100 km"
   ) +
-  scale_y_continuous(limits = c(5, 30)) +
   theme(legend.position = "none")
 
-ggsave(filename="autoEUBox4.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUBox4.png", 
+       plot=last_plot(), 
+       device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 
 wanted <- "USA"
 
@@ -149,22 +156,50 @@ daten %>%
     Region == wanted
   ) %>%
   ggplot(aes(x=Zylinder, y=Verbrauch)) + 
-  geom_boxplot( fill=myPalette[2], color="black",
-                outlier.colour = myPalette[5]) +
+  geom_boxplot( fill=myPalette[1], 
+                color="black",
+                outlier.colour = "black") +
+  scale_y_continuous(limits = c(5, 30)) +
   labs(
     title="Datensatz autoEU", 
     subtitle="Verbrauch für US-amerikanische PKW",
     x = "Anzahl der Zylinder",
     y = "Verbrauch in l/100 km"
   ) +
-  scale_y_continuous(limits = c(5, 30)) +
   theme(legend.position = "none")
 
-ggsave(filename="autoEUBox5.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUBox5.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
+
+wanted <- "Japan"
+
+daten %>%
+  group_by(Region) %>%
+  filter(
+    Region == wanted
+  ) %>%
+  ggplot(aes(x=Zylinder, y=Verbrauch)) + 
+  geom_boxplot( fill=myPalette[2], 
+                color="black",
+                outlier.colour = "black") +
+  scale_y_continuous(limits = c(5, 30)) +
+  labs(
+    title="Datensatz autoEU", 
+    subtitle="Verbrauch für japanische PKW",
+    x = "Anzahl der Zylinder",
+    y = "Verbrauch in l/100 km"
+  ) +
+  theme(legend.position = "none")
+
+ggsave(filename="autoEUBox6.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 ```
 
-## SPLOM
+## SPLOM mit ggpairs
 Wir erstellen Scatterplot-Matrizen mit diesem Datensatz. 
 Dabei verwenden wir neben *ggplot* auch *ggpairs* aus dem Package *GGally*, einer Erweiterung zu *ggplot*.
 Im zweiten Bild filtern wir mit *subset* die Anzahl der dargestellten Zeilen.
@@ -174,7 +209,7 @@ ggpairs(daten,
         columns=5:9,
         title="Scatterplot-Matrix für den Datensatz AutoEU",
         aes(color = myPalette[3]),
-        diag = "blank",
+        #diag = "blank",
         upper = "blank"
         )
 
@@ -190,7 +225,7 @@ daten %>%
   ggpairs(columns=5:9,
           title="Scatterplot-Matrix für den Datensatz AutoEU (Hubraum < 1300 l)",
           aes(color = myPalette[3]),
-          diag = "blank",
+          #diag = "blank",
           upper = "blank")  
 
 ggsave(filename="autoEUpairs2.png", 
@@ -201,6 +236,7 @@ ggsave(filename="autoEUpairs2.png",
        units="cm")
 ```
 
+## SPLOM mit ggplot und facets
 In *ggplot* können wir sogenannte Facets mit *facet_grid* und *facet_wrap* verwenden.
 
 ```{r facetgrid, message=FALSE, results='markup'}
@@ -210,7 +246,7 @@ auto_plot <- ggplot(daten,
                         y = Verbrauch,
                         color=Region)) + 
   geom_point(shape=20, size=2.5) + 
-  scale_color_brewer(palette="Set3", aesthetics="fill")
+  scale_color_brewer(palette="Set1")
 
 auto_plot +
     labs(
@@ -230,7 +266,8 @@ ggsave(filename="autoEUGrid0.png",
 # Jetzt erzeugen wir einen grid
 # Zylinder erzeugt Spalten
 auto_plot + 
-  facet_grid(. ~ Zylinder, labeller = label_both) +
+  facet_grid(. ~ Zylinder, 
+             labeller = label_both) +
   labs(
     title="Datensatz autoEU", 
     subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern",
@@ -238,12 +275,15 @@ auto_plot +
     y="Verbrauch in l/100 km"
   )
 
-ggsave(filename="autoEUGrid1.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUGrid1.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 
 # Zylinder erzeugt Zeilen
 auto_plot + 
-  facet_grid(Zylinder ~ ., labeller = label_both) +
+  facet_grid(Zylinder ~ ., 
+             labeller = label_both) +
   labs(
     title="Datensatz autoEU", 
     subtitle="SPLOM Hubraum ~ Verbrauch nach Zylindern",
@@ -251,8 +291,10 @@ auto_plot +
     y="Verbrauch in l/100 km"
   )  
 
-ggsave(filename="autoEUGrid2.png", plot=last_plot(), device="png",
-       path="images/", width=16, height=9, units="cm")
+ggsave(filename="autoEUGrid2.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 
 # Beides
 auto_plot + 
