@@ -4,28 +4,38 @@ library(shinyWidgets)
 library(plotly)
 #library(tidyverse)
 
+# ID fuer den Namespace des 3D-Tabs
 ID3D <- "3d"
 
+# MenuItem fuer die Sidebar
 sidebar3D <- function() {
   menuItem("3D",
            tabName = ID3D,
            icon = icon("map"))
 }
 
+# TabItem fuer den 3D-Tab
 tab3D <- function() {
   tabItem(tabName = ID3D,
           fluidPage(ui3D()))
 }
 
+# UI fuer den 3D-Tab
 ui3D <- function(id = ID3D) {
+  # Festlegen des Namespace.
+  # Somit kann im weiteren Verlauf mit ns("variable")
+  # anstelle von NS(id, "variable") gearbeitet werden.
   ns <- NS(id)
+
+  # Liste an Tags, die die UI aufbauen. In diesem Fall
+  # Sidebar und MainPanel.
   tagList(
     titlePanel("", windowTitle = "Iris Interaktiv"),
-    
+
     sidebarLayout(
       sidebarPanel(
         h2("Einstellungen"),
-        
+
         checkboxInput("options", "Einstellungen anzeigen"),
         conditionalPanel(
           condition = "input.options == true",
@@ -63,12 +73,13 @@ ui3D <- function(id = ID3D) {
         plotlyOutput(outputId = ns("plot")),
         width = 9
       )
-      
+
     )
   )
-  
+
 }
 
+# Server fuer den 3D-Tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
     # Variable fuer eine Option bei der kein Parameter gewaehlt wird
@@ -76,7 +87,7 @@ server3D <- function(id = ID3D) {
     # Auswahlmoeglichkeiten für Dropdownmenues festlegen
     # Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
     options <- c(noneFiller, colnames(iris))
-    
+
     # reactive observer
     # Jeder Parameter soll jeweils nur einmal verwendet werden koennen
     # Ausnahme: noneFiller
@@ -95,7 +106,7 @@ server3D <- function(id = ID3D) {
         choicesOpt = list(disabled = options %in% xSelected),
         options = pickerOptions(noneSelectedText = noneFiller)
       )
-      
+
       ySelected <- c(input$xaxis, input$zaxis, input$color)
       ySelected <- ySelected[ySelected != noneFiller]
       updatePickerInput(
@@ -106,7 +117,7 @@ server3D <- function(id = ID3D) {
         choicesOpt = list(disabled = options %in% ySelected),
         options = pickerOptions(noneSelectedText = noneFiller)
       )
-      
+
       zSelected <- c(input$xaxis, input$yaxis, input$color)
       zSelected <- zSelected[zSelected != noneFiller]
       updatePickerInput(
@@ -117,7 +128,7 @@ server3D <- function(id = ID3D) {
         choicesOpt = list(disabled = options %in% zSelected),
         options = pickerOptions(noneSelectedText = noneFiller)
       )
-      
+
       colorSelect <- c(input$xaxis, input$yaxis, input$zaxis)
       colorSelect <- colorSelect[colorSelect != noneFiller]
       updatePickerInput(
@@ -129,7 +140,7 @@ server3D <- function(id = ID3D) {
         options = pickerOptions(noneSelectedText = noneFiller)
       )
     })
-    
+
     output$plot <- renderPlotly({
       # Aktuell gewaehlte Parameter
       selection <-

@@ -7,4 +7,5 @@ source("server.R")
 
 #source("Tablayout/hideLayout.R")
 
-shinyApp(ui2, server)
+# Erstellt eine Shiny App mit Hilfe eines UI/Server-Paares
+shinyApp(uiNavbar, server)
