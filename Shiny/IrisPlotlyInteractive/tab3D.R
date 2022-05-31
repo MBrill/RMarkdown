@@ -7,19 +7,6 @@ library(plotly)
 # ID fuer den Namespace des 3D-Tabs
 ID3D <- "3d"
 
-# MenuItem fuer die Sidebar
-sidebar3D <- function() {
-  menuItem("3D",
-           tabName = ID3D,
-           icon = icon("map"))
-}
-
-# TabItem fuer den 3D-Tab
-tab3D <- function() {
-  tabItem(tabName = ID3D,
-          fluidPage(ui3D()))
-}
-
 # UI fuer den 3D-Tab
 ui3D <- function(id = ID3D) {
   # Festlegen des Namespace.
