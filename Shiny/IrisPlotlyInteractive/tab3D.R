@@ -1,63 +1,81 @@
+# TODO Zusammenfassung
+
+
+
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 library(plotly)
+library(purrr)
 #library(tidyverse)
 
 # ID fuer den Namespace des 3D-Tabs
 ID3D <- "3d"
+# Parameter fuer das Erstellen von UI-Elementen
+vars <- list(
+  # NamespaceID
+  ID3D,
+  # ID-Liste
+  list("xaxis",
+       "yaxis",
+       "zaxis",
+       "color"),
+  # Label-Liste
+  list("x-Achse",
+       "y-Achse",
+       "z-Achse",
+       "Färbung"),
+  # List mit den Default-Werten der UI-Elemente
+  list("Sepal.Length",
+       "Sepal.Width",
+       "Petal.Length",
+       "Species")
+)
+# Erstellt die entsprechenden UI-Elemente
+pickerInput3D <- function(namespaceID, id, label, selected){
+  # Festlegen des Namespace.
+  # ns <- NS(namespaceID)
+  # Somit kann im weiteren Verlauf mit ns("variable")
+  # anstelle von NS(id, "variable") gearbeitet werden.
+  # TODO Erklärung: Warum Namespace
+  pickerInput(
+    inputId = NS(namespaceID, id),
+    label = label,
+    choices = colnames(iris),
+    selected = selected
+  )
+}
+
+# Erstellt die pickerInput-Elemente der UI mithilfe der zur
+# Verfuegung gestellten Parameter.
+# Verwendet die purrr-library.
+pickers <- pmap(vars, pickerInput3D)
+
 
 # UI fuer den 3D-Tab
 ui3D <- function(id = ID3D) {
-  # Festlegen des Namespace.
-  # Somit kann im weiteren Verlauf mit ns("variable")
-  # anstelle von NS(id, "variable") gearbeitet werden.
-  ns <- NS(id)
-
   # Liste an Tags, die die UI aufbauen. In diesem Fall
   # Sidebar und MainPanel.
   tagList(
     titlePanel("", windowTitle = "Iris Interaktiv"),
-
     sidebarLayout(
       sidebarPanel(
         h2("Einstellungen"),
-
         checkboxInput("options", "Einstellungen anzeigen"),
+        # Dieses Panel wird nur angezeigt, wenn die entsprechende
+        # Bedingung erfuellt ist
         conditionalPanel(
           condition = "input.options == true",
-
-          pickerInput(
-            inputId = ns("xaxis"),
-            label = "x-Achse:",
-            choices = colnames(iris),
-            selected = "Sepal.Length"
-          ),
-          pickerInput(
-            inputId = ns("yaxis"),
-            label = "y-Achse:",
-            choices = colnames(iris),
-            selected = "Sepal.Width"
-          ),
-          pickerInput(
-            inputId = ns("zaxis"),
-            label = "z-Achse:",
-            choices = colnames(iris),
-            selected = "Petal.Length"
-          ),
-          pickerInput(
-            inputId = ns("color"),
-            label = "Färbung:",
-            choices = colnames(iris),
-            selected = "Species"
-          ),
+          pickers
+          # TODO
           # kein Output = kein OutputOptions()
+          # outputOptions Erklärung
         ),
         width = 3
       ),
       mainPanel(
         h2("ScatterPlot ", align = "center"),
-        plotlyOutput(outputId = ns("plot")),
+        plotlyOutput(outputId = NS(ID3D,"plot")),
         width = 9
       )
 
