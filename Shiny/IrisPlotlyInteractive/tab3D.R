@@ -78,7 +78,7 @@ ui3D <- function(id = ID3D) {
   # Liste an Tags, die die UI aufbauen. In diesem Fall
   # Sidebar und MainPanel.
   tagList(
-    titlePanel("", windowTitle = "Iris Interaktiv"),
+    #titlePanel("", windowTitle = "Iris Interaktiv"),
     sidebarLayout(
       sidebarPanel(
         h2("Einstellungen"),
