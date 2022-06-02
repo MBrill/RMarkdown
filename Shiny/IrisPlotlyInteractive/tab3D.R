@@ -31,6 +31,12 @@ vars <- list(
        "Petal.Length",
        "Species")
 )
+# Variable fuer eine Option bei der kein Parameter gewaehlt wird
+noneFiller <- "None"
+# Auswahlmoeglichkeiten für Dropdownmenues festlegen
+# Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
+options <- c(noneFiller, colnames(iris))
+
 # Erstellt die entsprechenden UI-Elemente
 pickerInput3D <- function(namespaceID, id, label, selected){
   # Festlegen des Namespace.
@@ -51,6 +57,21 @@ pickerInput3D <- function(namespaceID, id, label, selected){
 # Verwendet die purrr-library.
 pickers <- pmap(vars, pickerInput3D)
 
+pickerUpdate <- function(session, id, selected, selection, options, noneFiller){
+  # Der ausgewaehlte Parameter soll nicht deaktiviert werden
+  selection <- selection[selection != selected]
+
+  # Update des entsprechenden UI-Elements
+  updatePickerInput(
+    session,
+    id,
+    choices = options,
+    selected = selected,
+    # Deaktivieren der entsprechenden Elemente
+    choicesOpt = list(disabled = options %in% selection),
+    options = pickerOptions(noneSelectedText = noneFiller)
+  )
+}
 
 # UI fuer den 3D-Tab
 ui3D <- function(id = ID3D) {
@@ -87,63 +108,20 @@ ui3D <- function(id = ID3D) {
 # Server fuer den 3D-Tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
-    # Variable fuer eine Option bei der kein Parameter gewaehlt wird
-    noneFiller <- "None"
-    # Auswahlmoeglichkeiten für Dropdownmenues festlegen
-    # Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
-    options <- c(noneFiller, colnames(iris))
-
     # reactive observer
     # Jeder Parameter soll jeweils nur einmal verwendet werden koennen
     # Ausnahme: noneFiller
     observe({
       # Aktuell gewaehlte Parameter, die im Dropdownmenue deaktiviert werden sollen
-      xSelected <- c(input$yaxis, input$zaxis, input$color)
-      # noneFiller soll immer verfuegbar sein und darf somit nicht deaktiviert werden
-      xSelected <- xSelected[xSelected != noneFiller]
-      # Update des entsprechenden UI-Elements
-      updatePickerInput(
-        session,
-        "xaxis",
-        choices = options,
-        selected = input$xaxis,
-        # Deaktivieren der entsprechenden Elemente
-        choicesOpt = list(disabled = options %in% xSelected),
-        options = pickerOptions(noneSelectedText = noneFiller)
-      )
+      selection <- c(input$xaxis, input$yaxis, input$zaxis, input$color)
+      # noneFiller soll bei der Auswahl immer verfuegbar sein und darf somit nicht deaktiviert werden
+      selection <- selection[selection != noneFiller]
 
-      ySelected <- c(input$xaxis, input$zaxis, input$color)
-      ySelected <- ySelected[ySelected != noneFiller]
-      updatePickerInput(
-        session,
-        "yaxis",
-        choices = options,
-        selected = input$yaxis,
-        choicesOpt = list(disabled = options %in% ySelected),
-        options = pickerOptions(noneSelectedText = noneFiller)
-      )
-
-      zSelected <- c(input$xaxis, input$yaxis, input$color)
-      zSelected <- zSelected[zSelected != noneFiller]
-      updatePickerInput(
-        session,
-        "zaxis",
-        choices = options,
-        selected = input$zaxis,
-        choicesOpt = list(disabled = options %in% zSelected),
-        options = pickerOptions(noneSelectedText = noneFiller)
-      )
-
-      colorSelect <- c(input$xaxis, input$yaxis, input$zaxis)
-      colorSelect <- colorSelect[colorSelect != noneFiller]
-      updatePickerInput(
-        session,
-        "color",
-        choices = options,
-        selected = input$color,
-        choicesOpt = list(disabled = options %in% colorSelect),
-        options = pickerOptions(noneSelectedText = noneFiller)
-      )
+      # Update der Auswahloptionen der PickerInput-UI-Elemente
+      pickerUpdate(session, "xaxis", input$xaxis, selection, options, noneFiller)
+      pickerUpdate(session, "yaxis", input$yaxis, selection, options, noneFiller)
+      pickerUpdate(session, "zaxis", input$zaxis, selection, options, noneFiller)
+      pickerUpdate(session, "color", input$color, selection, options, noneFiller)
     })
 
     output$plot <- renderPlotly({
