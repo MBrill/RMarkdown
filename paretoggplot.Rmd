@@ -1,0 +1,123 @@
+---
+title: "Pareto-Diagramme mit ggplot"
+author: "Manfred Brill"
+output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8  
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Die Daten
+Der verwendete Datensatz enthält Angaben über den Familienstand einer Gruppe von befragten Personen und ist dem Buch
+von Benesch [@benesch_13] entnommen.
+
+```{r daten, message=FALSE, echo=TRUE, warnings=FALSE}
+daten <- read_csv2("data/familienstand.csv", show_col_types = FALSE)
+```
+
+Der Datensatz enthält bereits absolute Häufigkeiten für die verschiedenen Familienstände.
+In Tabelle 1 finden wir die absoluten Häufigkeiten:
+```{r tabelleAbs, message=FALSE, results='markup', echo=FALSE}
+kable(daten,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Familienstand",
+        col.names=c("Ausprägungen", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+
+# Pareto-Diagramm
+Jetzt geben wir die Daten grafisch aus. Wir beginnen mit Balkendiagrammen
+für die absoluten Häufigkeiten. In der ersten Ausgabe 
+verwenden wir auf der x-Achse die Reihenfolge wie sie
+im Datensatz vorgegeben ist.
+Da *ggplot* als Default versucht Häufigkeiten zu zählen
+verwenden wir *stat="identity"*, denn hier sind die Häufigkeiten ja bereits berechnet.
+
+```{r plotOrig, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut),
+           stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c("ledig", "verheiratet", "verwitwet", "geschieden")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Reihenfolge im Datensatz",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+```
+
+
+Wenn wir die Merkmale auf x-Achse absteigend nach der absoluten Häufigkeit anordnen
+erhalten wir die folgende grafische Ausgabe - ein Pareto-Diagramm
+Wir können bei *ggplot* die Funktion *scale_x_discrete*
+verwenden und die gewünschte Ordnung
+übergeben. Das machen wir als erster Schritt. 
+
+```{r plotParetoManuell, message=FALSE, results='markup'}
+ggplot(daten) + 
+  geom_bar(mapping=aes(x=Familienstand, y = absolut), stat="identity",
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c("verheiratet", "ledig", "geschieden", "verwitwet")) +  
+  labs(
+    title="Familienstand", 
+    subtitle="Absteigend sortiert nach Häufigkeit",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+```
+
+
+Ziel dieses Dokuments ist aber zu zeigen
+wie wir das mit Hilfe der Häufigkeiten in der zweiten
+Spalte erzeugen.
+Übergeben wir für die x-Achse eine Spalte vom Typ factor,
+dann wird von *ggplot* die Reihenfolge der Levels für die x-Achse
+verwendet. Wir verändern die Reihenfolge der Levels
+direkt in *geom_bar*, mit Hilfe der Funktion
+*fct_reorder* aus dem *forcats*-Package.
+Dabei müssen wir die Option *.desc* auf TRUE setzen,
+sonst wird aufsteigend sortiert.
+Die Funktion *fct_reorder* sortiert die Levels eines Faktors
+an Hand der Werte einer weiteren Spalte - genau das was wir benötigen.
+
+
+```{r plotPareto, message=FALSE, results='markup'}
+daten %>%
+  ggplot() + 
+      geom_bar(mapping=aes(x=fct_reorder(Familienstand, absolut, .desc=TRUE), 
+                           y = absolut),
+               stat="identity",
+               fill=myPalette[3]) +
+  labs(
+    title="Paretodiagramm", 
+    subtitle="Absteigend sortiert nach Häufigkeit mit fct_reorder",
+    x="",
+    y="Absolute Häufigkeit"
+  ) 
+```
+
+
+# Literaturverzeichnis
+
+
+

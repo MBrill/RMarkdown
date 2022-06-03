@@ -1,0 +1,142 @@
+---
+title: "Pareto-Diagramme mit plotly"
+author: "Manfred Brill"
+output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8  
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(dplyr, warn.conflicts = FALSE, quietly=TRUE)
+library(forcats, warn.conflicts = FALSE, quietly=TRUE)
+
+library(plotly)
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Die Daten
+Der verwendete Datensatz enthält Angaben über den Familienstand einer Gruppe von befragten Personen und ist dem Buch
+von Benesch [@benesch_13] entnommen.
+
+```{r daten, message=FALSE, echo=TRUE, warnings=FALSE}
+daten <- read_csv2("data/familienstand.csv", show_col_types = FALSE)
+```
+
+Der Datensatz enthält bereits absolute Häufigkeiten für die verschiedenen Familienstände.
+In Tabelle 1 finden wir die absoluten Häufigkeiten:
+```{r tabelleAbs, message=FALSE, results='markup', echo=FALSE}
+kable(daten,
+        align="l",
+        caption="Tabelle 1: Absolute Häufigkeiten im Datensatz Familienstand",
+        col.names=c("Ausprägungen", "Häufigkeiten")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+
+# Pareto-Diagramm
+Jetzt geben wir die Daten grafisch aus. Wir beginnen mit Balkendiagrammen
+für die absoluten Häufigkeiten. In der ersten Ausgabe 
+verwenden wir auf der x-Achse die Reihenfolge wie sie
+im Datensatz vorgegeben ist.
+
+
+```{r plotOrig, message=FALSE, results='markup', warning=FALSE}
+plot_ly(daten) %>%
+  add_bars(
+    x = ~Familienstand,
+    y = ~absolut,
+    color=myPalette[2],
+    stroke = I("black")
+  ) %>%
+  layout(title="Balkendiagramm für den Datensatz Familienstand")
+```
+
+
+Vergleichen wir diese Ausgabe mit dem Ergebnis von *ggplot*
+erkennen wir, dass *plotly* die Reihenfolge auf der
+x-Achse umdreht. Das können wir mit Hilfe einer Umwandlung
+der Spalte *Familienstand* in einen Faktor
+und einer
+Umsortierung der levels korrigieren. Aber darauf verzichten wir
+hier.
+
+Wir wandeln wie schon für *ggplot* die Spalte *Familienstand*
+in einen Faktor um, da wir wieder die Funktion *fct_reorder*
+aus *forcats* einsetzen wollen. Diese Funktion setzen
+wir im Trace *add_bars* ein, ähnlich wie wir das schon für
+*ggplot* gemacht haben.
+
+Wir erzeugen die Listen für die Achsen ausserhalb
+von *layout*, aber das dient ausschließlich der Übersichtlichkeit.
+
+```{r plotOrig2, message=FALSE, results='markup', warning=FALSE}
+daten$Familienstand <- as_factor(daten$Familienstand)
+
+ax <- list(
+  title = "Familienstand",
+  showgrid = TRUE,
+  showline = TRUE,
+  autorange = TRUE,
+  showticklabels = TRUE,
+  ticks = "outside",
+  tickangle = 0
+)
+
+ay <- list(
+  title = "Absolute Häufigkeiten",
+  range = c(0, 50),
+  dtick = 10,
+  showgrid = TRUE,
+  showline = TRUE,
+  autorange = FALSE,
+  showticklabels = TRUE,
+  ticks = "outside",
+  tickangle = 0
+)
+
+plot_ly(daten) %>%
+  add_bars(
+    x = ~fct_reorder(Familienstand, absolut, .desc=TRUE),
+    y = ~absolut,
+    color=myPalette[2],
+    stroke = I("black")
+  ) %>%
+  layout(title="Paretodiagramm für den Datensatz Familienstand",
+         xaxis = ax,
+         yaxis = ay
+         )
+```
+
+
+
+
+```{r example, message=FALSE, results='markup'}
+ x <- c("giraffes", "orangutans", "monkeys")
+ y <- c(20, 14, 23)
+
+plot_ly(
+  x = ~reorder(x,y),
+  y = ~y,
+  name = "SF Zoo",
+  type = "bar"
+  ) 
+```
+
+
+# Literaturverzeichnis
+
+
+
