@@ -24,7 +24,7 @@ vars <- list(
   list("x-Achse",
        "y-Achse",
        "z-Achse",
-       "F√§rbung"),
+       "F‰rbung"),
   # List mit den Default-Werten der UI-Elemente
   list("Sepal.Length",
        "Sepal.Width",
@@ -33,7 +33,7 @@ vars <- list(
 )
 # Variable fuer eine Option bei der kein Parameter gewaehlt wird
 noneFiller <- "None"
-# Auswahlmoeglichkeiten f√ºr Dropdownmenues festlegen
+# Auswahlmoeglichkeiten fuer Dropdownmenues festlegen
 # Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
 options <- c(noneFiller, colnames(iris))
 
@@ -43,7 +43,7 @@ pickerInput3D <- function(namespaceID, id, label, selected){
   # ns <- NS(namespaceID)
   # Somit kann im weiteren Verlauf mit ns("variable")
   # anstelle von NS(id, "variable") gearbeitet werden.
-  # TODO Erkl√§rung: Warum Namespace
+  # TODO Erkl‰rung: Warum Namespace
   pickerInput(
     inputId = NS(namespaceID, id),
     label = label,
@@ -90,7 +90,7 @@ ui3D <- function(id = ID3D) {
           pickers
           # TODO
           # kein Output = kein OutputOptions()
-          # outputOptions Erkl√§rung
+          # outputOptions Erklaerung
         ),
         width = 3
       ),
@@ -133,7 +133,7 @@ server3D <- function(id = ID3D) {
         iris %>%
           plot_ly(
             type = "scatter3d",
-            # Interpretiere aktuell, in xaxis, gew√§hlten Parameter als Formel
+            # Interpretiere aktuell, in xaxis, gew‰hlten Parameter als Formel
             x = ~ get(input$xaxis),
             y = ~ get(input$yaxis),
             z = ~ get(input$zaxis),
