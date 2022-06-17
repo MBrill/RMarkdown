@@ -4,4 +4,5 @@ library(shiny)
 server <- shinyServer(function(input, output) {
   serverData()
   server3D()
+  serverSources()
 })

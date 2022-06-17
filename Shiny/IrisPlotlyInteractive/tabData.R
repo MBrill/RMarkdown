@@ -12,7 +12,10 @@ uiData <- function(id = IDDATA) {
       HTML(
         '<center><img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Logo_of_Hochschule_Kaiserslautern.png" height= "100" width= "200"></center>'
       ),
-      titlePanel("Title"),
+      titlePanel("Iris"),
+      br(),
+      p("Beschreibung Datensatz"),
+      br(),
       tableOutput(ns("table")),
       HTML(
         '<center><img src="https://www.oreilly.com/library/view/python-artificial-intelligence/9781789539462/assets/462dc4fa-fd62-4539-8599-ac80a441382c.png" height= "353" width= "469"></center>'

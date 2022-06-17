@@ -1,7 +1,5 @@
 # TODO Zusammenfassung
 
-
-
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
@@ -36,6 +34,8 @@ noneFiller <- "None"
 # Auswahlmoeglichkeiten fuer Dropdownmenues festlegen
 # Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
 options <- c(noneFiller, colnames(iris))
+
+disableButton <-reactiveVal(T)
 
 # Erstellt die entsprechenden UI-Elemente
 pickerInput3D <- function(namespaceID, id, label, selected){
@@ -87,10 +87,12 @@ ui3D <- function(id = ID3D) {
         # Bedingung erfuellt ist
         conditionalPanel(
           condition = "input.options == true",
-          pickers
+          pickers,
           # TODO
           # kein Output = kein OutputOptions()
           # outputOptions Erklaerung
+          actionButton(NS(ID3D, "reset"), "Zurücksetzen"),
+          actionButton(NS(ID3D, "showPlot"), "Plot anzeigen")
         ),
         width = 3
       ),
@@ -114,6 +116,16 @@ server3D <- function(id = ID3D) {
     observe({
       # Aktuell gewaehlte Parameter, die im Dropdownmenue deaktiviert werden sollen
       selection <- c(input$xaxis, input$yaxis, input$zaxis, input$color)
+
+      # Sobald der noneFiller ausgewaehlt wird, soll der Button,
+      # fuer das Aktualisieren des Plots, deaktiviert werden.
+      if (all(selection != noneFiller)) {
+        disableButton(F)
+      }
+      else {
+        disableButton(T)
+      }
+
       # noneFiller soll bei der Auswahl immer verfuegbar sein und darf somit nicht deaktiviert werden
       selection <- selection[selection != noneFiller]
 
@@ -124,47 +136,42 @@ server3D <- function(id = ID3D) {
       pickerUpdate(session, "color", input$color, selection, options, noneFiller)
     })
 
-    output$plot <- renderPlotly({
-      # Aktuell gewaehlte Parameter
-      selection <-
-        c(input$xaxis, input$yaxis, input$zaxis, input$color)
-      # Der Plot wird ausschliesslich dann erstellt, wenn vier gueltige Paramerter gewaehlt sind
-      if (all(selection != "None")) {
+    plot <- reactive({
+      # Durch das Aufrufen von input$showPlot erstellt das reaktive
+      # Objekt eine Abhaengigkeit. Sobald sich der Wert von
+      # input$showPlot aendert, wird der folgende Code erneut ausgefuehrt.
+      input$showPlot
+
+      # Entkopplung des Plots und der Variablen von dem reaktiven Kontext.
+      # Dieser Code wird ausschliesslich dann ausgefuehrt, wenn sich input$showPlot aendert.
+      isolate({
+        # TODO iris pipe
         iris %>%
           plot_ly(
             type = "scatter3d",
-            # Interpretiere aktuell, in xaxis, gewählten Parameter als Formel
-            x = ~ get(input$xaxis),
-            y = ~ get(input$yaxis),
-            z = ~ get(input$zaxis),
-            color = ~ get(input$color),
+            # Interpretiere den aktuell, in xaxis, gewaehlten Parameter als Formel
+            x = ~ get(isolate(input$xaxis)),
+            y = ~ get(isolate(input$yaxis)),
+            z = ~ get(isolate(input$zaxis)),
+            color = ~ get(isolate(input$color)),
             mode = "markers"
           )  %>%
           layout(
             scene = list(
-              xaxis = list(title = input$xaxis),
-              yaxis = list(title = input$yaxis),
-              zaxis = list(title = input$zaxis)
+              xaxis = list(title = isolate(input$xaxis)),
+              yaxis = list(title = isolate(input$yaxis)),
+              zaxis = list(title = isolate(input$zaxis))
             ),
             paper_bgcolor = 'lightgrey',
             plot_bgcolor = 'lightgrey'
           )
-      }
-      # Alternativer Plot
-      else{
-        plotly_empty(type = "scatter3d", mode = "markers") %>%
-          layout(
-            annotations = list(
-              xanchor = "center",
-              yanchor = "center",
-              text = "Weisen Sie vier Parameter zu!",
-              showarrow = F,
-              font = list(size = 28, color = "red")
-            ),
-            paper_bgcolor = 'lightgrey',
-            plot_bgcolor = 'lightgrey'
-          )
-      }
+      })
+    })
+
+    output$plot <- renderPlotly({
+      # Der Plot wird ausschliesslich dann aktiviert,
+      # wenn valide Parameter ausgewaehlt sind.
+      if(!disableButton()) plot()
     })
   })
 }
