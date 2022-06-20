@@ -169,9 +169,11 @@ server3D <- function(id = ID3D) {
     })
 
     output$plot <- renderPlotly({
-      # Der Plot wird ausschliesslich dann aktiviert,
+      # Der Plot wird ausschliesslich dann aktualisiert,
       # wenn valide Parameter ausgewaehlt sind.
-      if(!disableButton()) plot()
+      if(!disableButton()) {
+        plot()
+      }
     })
   })
 }
