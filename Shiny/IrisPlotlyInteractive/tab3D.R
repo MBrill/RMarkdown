@@ -36,6 +36,7 @@ noneFiller <- "None"
 options <- c(noneFiller, colnames(iris))
 
 disableButton <-reactiveVal(T)
+resetPlot <- reactiveVal(F)
 
 # Erstellt die entsprechenden UI-Elemente
 pickerInput3D <- function(namespaceID, id, label, selected){
@@ -57,9 +58,11 @@ pickerInput3D <- function(namespaceID, id, label, selected){
 # Verwendet die purrr-library.
 pickers <- pmap(vars, pickerInput3D)
 
-pickerUpdate <- function(session, id, selected, selection, options, noneFiller){
+pickerUpdate <- function(session, id, selected, selection, options, noneFiller, default, reset){
   # Der ausgewaehlte Parameter soll nicht deaktiviert werden
   selection <- selection[selection != selected]
+
+  if(reset) selected <- default
 
   # Update des entsprechenden UI-Elements
   updatePickerInput(
@@ -110,6 +113,11 @@ ui3D <- function(id = ID3D) {
 # Server fuer den 3D-Tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
+
+    observeEvent(input$reset,{
+      resetPlot(!resetPlot())
+    })
+
     # reactive observer
     # Jeder Parameter soll jeweils nur einmal verwendet werden koennen
     # Ausnahme: noneFiller
@@ -130,10 +138,14 @@ server3D <- function(id = ID3D) {
       selection <- selection[selection != noneFiller]
 
       # Update der Auswahloptionen der PickerInput-UI-Elemente
-      pickerUpdate(session, "xaxis", input$xaxis, selection, options, noneFiller)
-      pickerUpdate(session, "yaxis", input$yaxis, selection, options, noneFiller)
-      pickerUpdate(session, "zaxis", input$zaxis, selection, options, noneFiller)
-      pickerUpdate(session, "color", input$color, selection, options, noneFiller)
+      pickerUpdate(session, "xaxis", input$xaxis, selection, options, noneFiller,
+                   vars[[4]][1], resetPlot())
+      pickerUpdate(session, "yaxis", input$yaxis, selection, options, noneFiller,
+                   vars[[4]][2], resetPlot())
+      pickerUpdate(session, "zaxis", input$zaxis, selection, options, noneFiller,
+                   vars[[4]][3], resetPlot())
+      pickerUpdate(session, "color", input$color, selection, options, noneFiller,
+                   vars[[4]][4], resetPlot())
     })
 
     plot <- reactive({
