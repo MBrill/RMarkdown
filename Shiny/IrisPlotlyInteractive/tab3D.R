@@ -22,7 +22,7 @@ vars <- list(
   list("x-Achse",
        "y-Achse",
        "z-Achse",
-       "Färbung"),
+       "FÃ¤rbung"),
   # List mit den Default-Werten der UI-Elemente
   list("Sepal.Length",
        "Sepal.Width",
@@ -34,17 +34,12 @@ noneFiller <- "None"
 # Auswahlmoeglichkeiten fuer Dropdownmenues festlegen
 # Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
 options <- c(noneFiller, colnames(iris))
-
-disableButton <-reactiveVal(T)
+# Plot zurÃ¼cksetzen?
 resetPlot <- reactiveVal(F)
+
 
 # Erstellt die entsprechenden UI-Elemente
 pickerInput3D <- function(namespaceID, id, label, selected){
-  # Festlegen des Namespace.
-  # ns <- NS(namespaceID)
-  # Somit kann im weiteren Verlauf mit ns("variable")
-  # anstelle von NS(id, "variable") gearbeitet werden.
-  # TODO Erklärung: Warum Namespace
   pickerInput(
     inputId = NS(namespaceID, id),
     label = label,
@@ -58,11 +53,18 @@ pickerInput3D <- function(namespaceID, id, label, selected){
 # Verwendet die purrr-library.
 pickers <- pmap(vars, pickerInput3D)
 
+# Aktualisiert die Picker
 pickerUpdate <- function(session, id, selected, selection, options, noneFiller, default, reset){
+  # Zuruecksetzen der ausgewaehlten Parameter
+  if(reset) {
+    # Den gewuenschten Wert fuer das Zuruecksetzen festlegen
+    selected <- default
+    # Die entsprechenden Auswahlmoeglichkeiten festlegen
+    selection <- unlist(vars[[4]])
+  }
+
   # Der ausgewaehlte Parameter soll nicht deaktiviert werden
   selection <- selection[selection != selected]
-
-  if(reset) selected <- default
 
   # Update des entsprechenden UI-Elements
   updatePickerInput(
@@ -70,14 +72,22 @@ pickerUpdate <- function(session, id, selected, selection, options, noneFiller, 
     id,
     choices = options,
     selected = selected,
-    # Deaktivieren der entsprechenden Elemente
-    choicesOpt = list(disabled = options %in% selection),
+    # Deaktivieren der entsprechenden Elemente und hervorheben des noneFiller
+    choicesOpt = list( content = paste("<div style='color: red;'>", noneFiller,"</div>"),
+                       disabled = options %in% selection),
     options = pickerOptions(noneSelectedText = noneFiller)
   )
 }
 
 # UI fuer den 3D-Tab
 ui3D <- function(id = ID3D) {
+  # Festlegen des Namespace.
+  # ns <- NS(namespaceID)
+  # Somit kann im weiteren Verlauf mit ns("variable")
+  # anstelle von NS(id, "variable") gearbeitet werden.
+  # Der Namespace wird verwendet um die Inputs und Outputs der Tabs
+  # der navbarPage zu separieren.
+  ns <- NS(ID3D)
   # Liste an Tags, die die UI aufbauen. In diesem Fall
   # Sidebar und MainPanel.
   tagList(
@@ -85,23 +95,21 @@ ui3D <- function(id = ID3D) {
     sidebarLayout(
       sidebarPanel(
         h2("Einstellungen"),
-        checkboxInput("options", "Einstellungen anzeigen"),
-        # Dieses Panel wird nur angezeigt, wenn die entsprechende
-        # Bedingung erfuellt ist
-        conditionalPanel(
-          condition = "input.options == true",
-          pickers,
-          # TODO
-          # kein Output = kein OutputOptions()
-          # outputOptions Erklaerung
-          actionButton(NS(ID3D, "reset"), "Zurücksetzen"),
-          actionButton(NS(ID3D, "showPlot"), "Plot anzeigen")
-        ),
+        actionButton(ns("reset"), "ZurÃ¼cksetzen"),
+        actionButton(ns("showPlot"), "Plot anzeigen"),
+        pickers,
         width = 3
       ),
       mainPanel(
         h2("ScatterPlot ", align = "center"),
-        plotlyOutput(outputId = NS(ID3D,"plot")),
+        # Der Plot wird erst erstellt, wenn der Nutzer den entsprechenden
+        # Button betaetigt
+        conditionalPanel(
+          # Im conditionalPanel wird der Namespace mittels ns=<Namespace>
+          # festgelegt
+          condition = "input.showPlot > 0", ns = ns,
+          addSpinner(plotlyOutput(ns("plot")), spin = "circle", color = "#0000DD")
+          ),
         width = 9
       )
 
@@ -113,79 +121,84 @@ ui3D <- function(id = ID3D) {
 # Server fuer den 3D-Tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
-
+    # Verwalten der Variable fuer das Zuruecksetzen des Plots
     observeEvent(input$reset,{
-      resetPlot(!resetPlot())
+      resetPlot(T)
     })
 
-    # reactive observer
     # Jeder Parameter soll jeweils nur einmal verwendet werden koennen
     # Ausnahme: noneFiller
-    observe({
-      # Aktuell gewaehlte Parameter, die im Dropdownmenue deaktiviert werden sollen
-      selection <- c(input$xaxis, input$yaxis, input$zaxis, input$color)
-
-      # Sobald der noneFiller ausgewaehlt wird, soll der Button,
-      # fuer das Aktualisieren des Plots, deaktiviert werden.
-      if (all(selection != noneFiller)) {
-        disableButton(F)
-      }
-      else {
-        disableButton(T)
-      }
-
-      # noneFiller soll bei der Auswahl immer verfuegbar sein und darf somit nicht deaktiviert werden
+    updatePickers <- function(selection, reset){
       selection <- selection[selection != noneFiller]
 
-      # Update der Auswahloptionen der PickerInput-UI-Elemente
       pickerUpdate(session, "xaxis", input$xaxis, selection, options, noneFiller,
-                   vars[[4]][1], resetPlot())
+                   vars[[4]][1], reset)
       pickerUpdate(session, "yaxis", input$yaxis, selection, options, noneFiller,
-                   vars[[4]][2], resetPlot())
+                   vars[[4]][2], reset)
       pickerUpdate(session, "zaxis", input$zaxis, selection, options, noneFiller,
-                   vars[[4]][3], resetPlot())
+                   vars[[4]][3], reset)
       pickerUpdate(session, "color", input$color, selection, options, noneFiller,
-                   vars[[4]][4], resetPlot())
+                   vars[[4]][4], reset)
+
+
+    }
+    # Die aktuell gewaehlten Parameter
+    listenTo <- reactive({
+      c(input$xaxis, input$yaxis, input$zaxis, input$color)
     })
 
-    plot <- reactive({
-      # Durch das Aufrufen von input$showPlot erstellt das reaktive
-      # Objekt eine Abhaengigkeit. Sobald sich der Wert von
-      # input$showPlot aendert, wird der folgende Code erneut ausgefuehrt.
-      input$showPlot
+    # Button fuer das Zuruecksetzen
+    observeEvent(input$reset,{
+      resetPlot(T)
+    })
 
-      # Entkopplung des Plots und der Variablen von dem reaktiven Kontext.
-      # Dieser Code wird ausschliesslich dann ausgefuehrt, wenn sich input$showPlot aendert.
-      isolate({
-        # TODO iris pipe
-        iris %>%
-          plot_ly(
-            type = "scatter3d",
-            # Interpretiere den aktuell, in xaxis, gewaehlten Parameter als Formel
-            x = ~ get(isolate(input$xaxis)),
-            y = ~ get(isolate(input$yaxis)),
-            z = ~ get(isolate(input$zaxis)),
-            color = ~ get(isolate(input$color)),
-            mode = "markers"
-          )  %>%
-          layout(
-            scene = list(
-              xaxis = list(title = isolate(input$xaxis)),
-              yaxis = list(title = isolate(input$yaxis)),
-              zaxis = list(title = isolate(input$zaxis))
-            ),
-            paper_bgcolor = 'lightgrey',
-            plot_bgcolor = 'lightgrey'
-          )
-      })
+    # Aktualisierung der UI
+    observeEvent(c(listenTo(), input$reset), {
+      if(resetPlot()){
+        updatePickers(listenTo(), T)
+        resetPlot(F)
+      }else{
+        updatePickers(listenTo(), F)
+      }
+    })
+
+    # Erstellen des Plots in Abhaengigkeit von dem entsprechenden Button
+    plot <- eventReactive(input$showPlot,{
+      # Der Plot wird nur angezeigt oder aktualisiert, wenn die entsprechende
+      # Bedingung erfuellt ist
+      req(all(listenTo() != noneFiller), cancelOutput = T)
+
+      # Plot erstellen
+      iris %>%
+        plot_ly(
+          type = "scatter3d",
+          # Interpretiere den aktuell, in xaxis, gewaehlten Parameter
+          # als Formel und vermeide die Abhaengigkeit des Plots
+          # von der Aenderung der Parameter
+          x = ~ get(isolate(input$xaxis)),
+          y = ~ get(isolate(input$yaxis)),
+          z = ~ get(isolate(input$zaxis)),
+          color = ~ get(isolate(input$color)),
+          mode = "markers"
+        )  %>%
+        layout(
+          scene = list(
+            xaxis = list(title = isolate(input$xaxis)),
+            yaxis = list(title = isolate(input$yaxis)),
+            zaxis = list(title = isolate(input$zaxis))
+          ),
+          paper_bgcolor = 'lightgrey',
+          plot_bgcolor = 'lightgrey'
+        )
     })
 
     output$plot <- renderPlotly({
       # Der Plot wird ausschliesslich dann aktualisiert,
       # wenn valide Parameter ausgewaehlt sind.
-      if(!disableButton()) {
-        plot()
-      }
+      plot()
     })
+    # Wird das conditionalPanel nicht angezeigt, wird das output-Objekt
+    # nicht ausgefuehrt
+    outputOptions(output, "plot")
   })
 }

@@ -27,24 +27,24 @@ uiData <- function(id = IDDATA) {
 
         # TODO add columns + size
         p(
-          "Dieser Datensatz wurde von R.A. Fisher 1936 für das Paper
+          "Dieser Datensatz wurde von R.A. Fisher 1936 fÃ¼r das Paper
         \"The Use of Multiple Measurements in Taxonomic Problems\"
-        verwendet und dient als einer der Standarddatensätze,
-        die für Clusteranalyse bzw. Musteranalyse verwendet wird."
+        verwendet und dient als einer der StandarddatensÃ¤tze,
+        die fÃ¼r Clusteranalyse bzw. Musteranalyse verwendet wird."
         ),
 
         p(
           "Enthalten sind 150 Beobachtungen von vier Attributen
           dreier Arten von Schwertlilien. Hierbei wurden jeweils
-          die Längen und Breiten der Kelchblätter (Sepalum) und der
-          Kronblätter (Petalum) in Zentimeter aufgelistet.
+          die LÃ¤ngen und Breiten der KelchblÃ¤tter (Sepalum) und der
+          KronblÃ¤tter (Petalum) in Zentimeter aufgelistet.
           Zudem wurde die entsprechende Spezies zu den Messwert angegeben."
         ),
 
         p(
-          "Dieser Datensatz eignet sich für Klassifizierung,
+          "Dieser Datensatz eignet sich fÃ¼r Klassifizierung,
           da eine Spezies aufgrund ihres Wertebereichs eindeutig
-          identifiziert werden kann, während die anderen beiden nur
+          identifiziert werden kann, wÃ¤hrend die anderen beiden nur
           schwer bzw. nicht, aufgrund der Messwerte, zu trennen sind."
         ),
         br()
@@ -57,6 +57,7 @@ uiData <- function(id = IDDATA) {
         6,
         align = "center",
         p(),
+        # TODO setosa an Petal.Width erkennbar?
         actionButton(ns("updateTable"), "Tabelle aktualisieren", icon = icon("redo")),
         tableOutput(ns("table")),
         textOutput(ns("text")),
@@ -70,7 +71,7 @@ uiData <- function(id = IDDATA) {
 }
 
 serverData <- function(id = IDDATA) {
-  # Der Namespace für den Code des Servers wird mit der ID festgelegt.
+  # Der Namespace fuer den Code des Servers wird mit der ID festgelegt.
   # Somit ist es nicht notwendig die entsprechenden Element mittels
   # NS(id, "<id_name>") anzusprechen.
   moduleServer(id, function(input, output, session) {
