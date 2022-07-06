@@ -7,109 +7,97 @@ library(plotly)
 library(purrr)
 #library(tidyverse)
 
-# ID fuer den Namespace des 3D-Tabs
+# ID for the namespace of the 3D tab.
 ID3D <- "3d"
-# Parameter fuer das Erstellen von UI-Elementen
+# Parameters for creating the UI elements.
 vars <- list(
-  # NamespaceID
+  # NamespaceID.
   ID3D,
-  # ID-Liste
+  # ID-list.
   list("xaxis",
        "yaxis",
        "zaxis",
        "color"),
-  # Label-Liste
-  list("x-Achse",
-       "y-Achse",
-       "z-Achse",
-       "Färbung"),
-  # List mit den Default-Werten der UI-Elemente
+  # Label list.
+  list("x-Axis",
+       "y-Axis",
+       "z-Axis",
+       "Color"),
+  # List with the default values of the UI elements.
   list("Sepal.Length",
        "Sepal.Width",
        "Petal.Length",
        "Species")
 )
-# Variable fuer eine Option bei der kein Parameter gewaehlt wird
+# Variable for an option where no parameter is chosen.
 noneFiller <- "None"
-# Auswahlmoeglichkeiten fuer Dropdownmenues festlegen
-# Hinzufuegen einer Option die immer verfuegbar ist: noneFiller
-options <- c(noneFiller, colnames(iris))
-# Plot zurücksetzen?
+# Define selection options for dropdown menus.
+# Adding an option that is always available: noneFiller.
+options <- c(noneFiller, colnames(data))
+# reactiveVal, boolean.
 resetPlot <- reactiveVal(F)
 
 
-# Erstellt die entsprechenden UI-Elemente
+# Creates the corresponding UI elements.
 pickerInput3D <- function(namespaceID, id, label, selected){
   pickerInput(
     inputId = NS(namespaceID, id),
     label = label,
-    choices = colnames(iris),
+    choices = colnames(data),
     selected = selected
   )
 }
 
-# Erstellt die pickerInput-Elemente der UI mithilfe der zur
-# Verfuegung gestellten Parameter.
-# Verwendet die purrr-library.
+# Creates the UI's pickerInput elements using the provided parameters.
+# Uses the purrr library.
 pickers <- pmap(vars, pickerInput3D)
 
-# Aktualisiert die Picker
+# Updates the pickers
 pickerUpdate <- function(session, id, selected, selection, options, noneFiller, default, reset){
-  # Zuruecksetzen der ausgewaehlten Parameter
+  # Reset the selected parameters?
   if(reset) {
-    # Den gewuenschten Wert fuer das Zuruecksetzen festlegen
+    # Specify the desired value for the reset.
     selected <- default
-    # Die entsprechenden Auswahlmoeglichkeiten festlegen
+    # Set the appropriate choices.
     selection <- unlist(vars[[4]])
   }
 
-  # Der ausgewaehlte Parameter soll nicht deaktiviert werden
+  # The selected parameter should not be deactivated.
   selection <- selection[selection != selected]
 
-  # Update des entsprechenden UI-Elements
+  # Update the corresponding UI element.
   updatePickerInput(
     session,
     id,
     choices = options,
     selected = selected,
-    # Deaktivieren der entsprechenden Elemente und hervorheben des noneFiller
+    # Deactivate the corresponding elements and mark noneFiller.
     choicesOpt = list( content = paste("<div style='color: red;'>", noneFiller,"</div>"),
                        disabled = options %in% selection),
     options = pickerOptions(noneSelectedText = noneFiller)
   )
 }
 
-# UI fuer den 3D-Tab
+# UI for the 3D tab.
 ui3D <- function(id = ID3D) {
-  # Festlegen des Namespace.
+  # Set the namespace.
   # ns <- NS(namespaceID)
-  # Somit kann im weiteren Verlauf mit ns("variable")
-  # anstelle von NS(id, "variable") gearbeitet werden.
-  # Der Namespace wird verwendet um die Inputs und Outputs der Tabs
-  # der navbarPage zu separieren.
+  # This means that ns("variable") can be used instead of NS(id, "variable") later on.
+  # The namespace is used to separate the inputs and outputs of the navbarPage tabs.
   ns <- NS(ID3D)
-  # Liste an Tags, die die UI aufbauen. In diesem Fall
-  # Sidebar und MainPanel.
+  # List of tags that build the UI. In this case Sidebar and MainPanel.
   tagList(
-    #titlePanel("", windowTitle = "Iris Interaktiv"),
     sidebarLayout(
+      #TODO dynamic size possible?
       sidebarPanel(
-        h2("Einstellungen"),
-        actionButton(ns("reset"), "Zurücksetzen"),
-        actionButton(ns("showPlot"), "Plot anzeigen"),
+        h2("Options"),
+        actionButton(ns("reset"), "Reset Plot"),
         pickers,
         width = 3
       ),
       mainPanel(
         h2("ScatterPlot ", align = "center"),
-        # Der Plot wird erst erstellt, wenn der Nutzer den entsprechenden
-        # Button betaetigt
-        conditionalPanel(
-          # Im conditionalPanel wird der Namespace mittels ns=<Namespace>
-          # festgelegt
-          condition = "input.showPlot > 0", ns = ns,
-          addSpinner(plotlyOutput(ns("plot")), spin = "circle", color = "#0000DD")
-          ),
+        addSpinner(plotlyOutput(ns("plot")), spin = "circle", color = "#0000DD"),
         width = 9
       )
 
@@ -118,16 +106,16 @@ ui3D <- function(id = ID3D) {
 
 }
 
-# Server fuer den 3D-Tab
+# Server for the 3D tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
-    # Verwalten der Variable fuer das Zuruecksetzen des Plots
+    # Managing the variable for plot reset.
     observeEvent(input$reset,{
       resetPlot(T)
     })
 
-    # Jeder Parameter soll jeweils nur einmal verwendet werden koennen
-    # Ausnahme: noneFiller
+    # Each parameter should only be used once.
+    # Exception: noneFiller.
     updatePickers <- function(selection, reset){
       selection <- selection[selection != noneFiller]
 
@@ -142,17 +130,17 @@ server3D <- function(id = ID3D) {
 
 
     }
-    # Die aktuell gewaehlten Parameter
+    # The currently selected parameters.
     listenTo <- reactive({
       c(input$xaxis, input$yaxis, input$zaxis, input$color)
     })
 
-    # Button fuer das Zuruecksetzen
+    # Button for the reset.
     observeEvent(input$reset,{
       resetPlot(T)
     })
 
-    # Aktualisierung der UI
+    # Update UI.
     observeEvent(c(listenTo(), input$reset), {
       if(resetPlot()){
         updatePickers(listenTo(), T)
@@ -162,26 +150,24 @@ server3D <- function(id = ID3D) {
       }
     })
 
-    # Erstellen des Plots in Abhaengigkeit von dem entsprechenden Button
-    plot <- eventReactive(input$showPlot,{
-      # Der Plot wird nur angezeigt oder aktualisiert, wenn die entsprechende
-      # Bedingung erfuellt ist
+    output$plot <- renderPlotly({
+      # The plot is only updated if valid parameters are selected.
       req(all(listenTo() != noneFiller), cancelOutput = T)
 
-      # Plot erstellen
-      iris %>%
+      # Create plot.
+      data %>%
         plot_ly(
           type = "scatter3d",
-          # Interpretiere den aktuell, in xaxis, gewaehlten Parameter
-          # als Formel und vermeide die Abhaengigkeit des Plots
-          # von der Aenderung der Parameter
-          x = ~ get(isolate(input$xaxis)),
-          y = ~ get(isolate(input$yaxis)),
-          z = ~ get(isolate(input$zaxis)),
+          # Interpret the currently selected parameter in xaxis
+          # as a formula.
+          x = ~ get(input$xaxis),
+          y = ~ get(input$yaxis),
+          z = ~ get(input$zaxis),
           color = ~ get(isolate(input$color)),
           mode = "markers"
         )  %>%
         layout(
+          legend=list(title=list(text='<b> Species </b>')),
           scene = list(
             xaxis = list(title = isolate(input$xaxis)),
             yaxis = list(title = isolate(input$yaxis)),
@@ -191,14 +177,5 @@ server3D <- function(id = ID3D) {
           plot_bgcolor = 'lightgrey'
         )
     })
-
-    output$plot <- renderPlotly({
-      # Der Plot wird ausschliesslich dann aktualisiert,
-      # wenn valide Parameter ausgewaehlt sind.
-      plot()
-    })
-    # Wird das conditionalPanel nicht angezeigt, wird das output-Objekt
-    # nicht ausgefuehrt
-    outputOptions(output, "plot")
   })
 }

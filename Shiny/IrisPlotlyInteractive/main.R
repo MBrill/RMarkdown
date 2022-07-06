@@ -1,5 +1,6 @@
+source("prepareData.R")
 source("ui.R")
 source("server.R")
 
-# Erstellt eine Shiny App mit Hilfe eines UI/Server-Paares
+# Builds a Shiny App using a UI/Server pair.
 shinyApp(ui, server)

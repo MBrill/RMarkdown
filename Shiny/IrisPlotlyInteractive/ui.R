@@ -1,17 +1,22 @@
 library(shiny)
 library(shinydashboard)
+library(shinythemes)
 
 source("tab3D.R")
 source("tabData.R")
 source("tabSources.R")
 
-# UI-Objekt der Shiny App
+# UI-object for the Shiny App.
 ui <- shinyUI(
-  navbarPage(
-    #title = div(HTML('<img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Logo_of_Hochschule_Kaiserslautern.png" height= "35" width= "70">'), "Iris Interactiv"),
-    title = "Iris Interaktiv",
-    tabPanel("Iris Datensatz", uiData()),
-    tabPanel("3D Scatter Plot", ui3D()),
-    tabPanel("Quellen", uiSources())
+  tagList(
+    # Creates a floating Panel handling the theme selection.
+    shinythemes::themeSelector(),
+    navbarPage(
+      title = "Iris Interaktive",
+      tabPanel("Iris Data", uiData()),
+      tabPanel("3D Scatter Plot", ui3D()),
+      tabPanel("Sources", uiSources())
+    )
   )
+
 )

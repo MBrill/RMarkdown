@@ -1,6 +1,6 @@
 library(shiny)
 
-# Server-Objekt der Shiny App
+# Server object for the Shiny App.
 server <- shinyServer(function(input, output) {
   serverData()
   server3D()
