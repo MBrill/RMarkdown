@@ -90,13 +90,13 @@ ui3D <- function(id = ID3D) {
     sidebarLayout(
       #TODO dynamic size possible?
       sidebarPanel(
-        h2("Options"),
+        h3("Options"),
         actionButton(ns("reset"), "Reset Plot"),
         pickers,
         width = 3
       ),
       mainPanel(
-        h2("ScatterPlot ", align = "center"),
+        h3("ScatterPlot ", align = "center"),
         addSpinner(plotlyOutput(ns("plot")), spin = "circle", color = "#0000DD"),
         width = 9
       )
