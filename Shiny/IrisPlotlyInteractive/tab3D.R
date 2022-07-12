@@ -84,19 +84,19 @@ ui3D <- function(id = ID3D) {
   # ns <- NS(namespaceID)
   # This means that ns("variable") can be used instead of NS(id, "variable") later on.
   # The namespace is used to separate the inputs and outputs of the navbarPage tabs.
-  ns <- NS(ID3D)
+  ns <- NS(id)
   # List of tags that build the UI. In this case Sidebar and MainPanel.
   tagList(
     sidebarLayout(
       #TODO dynamic size possible?
       sidebarPanel(
-        h3("Options"),
+        h2("Options"),
         actionButton(ns("reset"), "Reset Plot"),
         pickers,
         width = 3
       ),
       mainPanel(
-        h3("ScatterPlot ", align = "center"),
+        h2("ScatterPlot ", align = "center"),
         addSpinner(plotlyOutput(ns("plot")), spin = "circle", color = "#0000DD"),
         width = 9
       )
@@ -109,12 +109,9 @@ ui3D <- function(id = ID3D) {
 # Server for the 3D tab
 server3D <- function(id = ID3D) {
   moduleServer(id, function(input, output, session) {
-    # Managing the variable for plot reset.
-    observeEvent(input$reset,{
-      resetPlot(T)
-    })
 
-    # Each parameter should only be used once.
+    # Each parameter should only be used once. To make this possible the pickers
+    # have to be update on every change of input.
     # Exception: noneFiller.
     updatePickers <- function(selection, reset){
       selection <- selection[selection != noneFiller]
@@ -141,6 +138,8 @@ server3D <- function(id = ID3D) {
     })
 
     # Update UI.
+    # TODO Bug: Sometimes it is necessary to click the button
+    # twice in order to reset the plot.
     observeEvent(c(listenTo(), input$reset), {
       if(resetPlot()){
         updatePickers(listenTo(), T)
@@ -163,15 +162,15 @@ server3D <- function(id = ID3D) {
           x = ~ get(input$xaxis),
           y = ~ get(input$yaxis),
           z = ~ get(input$zaxis),
-          color = ~ get(isolate(input$color)),
+          color = ~ get(input$color),
           mode = "markers"
         )  %>%
         layout(
           legend=list(title=list(text='<b> Species </b>')),
           scene = list(
-            xaxis = list(title = isolate(input$xaxis)),
-            yaxis = list(title = isolate(input$yaxis)),
-            zaxis = list(title = isolate(input$zaxis))
+            xaxis = list(title = input$xaxis),
+            yaxis = list(title = input$yaxis),
+            zaxis = list(title = input$zaxis)
           ),
           paper_bgcolor = 'lightgrey',
           plot_bgcolor = 'lightgrey'

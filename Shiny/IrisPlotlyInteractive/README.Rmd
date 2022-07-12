@@ -1,0 +1,19 @@
+---
+title: "README"
+author: "Julian Bernhart"
+date: '2022-07-07'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This projects consist of:
+
+* Iris Interactive.Rmd: The App in Notebook form, step by step
+* Iris interactive App: Shiny App
+* Dashboard UI folder: Unused variant of an earlier version of the app
+* rsconnect folder: In order to publish the app to shinyapps.io

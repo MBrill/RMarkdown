@@ -24,7 +24,7 @@ uiData <- function(id = IDDATA) {
       column(
         6,
         align = "center",
-        titlePanel("Der Iris Datensatz"),
+        h2("Der Iris Datensatz"),
 
         # TODO add columns + size
         p(
@@ -57,13 +57,16 @@ uiData <- function(id = IDDATA) {
       column(
         6,
         align = "center",
-        p(),
-        # TODO setosa an Petal.Width erkennbar?
-        DTOutput(ns("table")),
-        textOutput(ns("text")),
+        br(),
         HTML(
           '<center><img src="https://www.oreilly.com/library/view/python-artificial-intelligence/9781789539462/assets/462dc4fa-fd62-4539-8599-ac80a441382c.png" height= "353" width= "469"></center>'
-        )
+        ),
+        br(),
+        HTML(
+          '<center><img src="https://www.embedded-robotics.com/wp-content/uploads/2022/01/Iris-Dataset-Classification.png" height= "100%" width= "100%"></center>'
+        ),
+        br(),
+        DTOutput(ns("table"))
       ),
       column(3, align = "right")
     )
@@ -75,10 +78,6 @@ serverData <- function(id = IDDATA) {
   # It is therefore not necessary to address the corresponding
   # element using NS(id, "<id_name>").
   moduleServer(id, function(input, output, session) {
-
-      output$table <- renderDT(data)
-
-    t <- as.character(unique(data$Species))
-    output$text <- renderText(t)
+    output$table <- renderDT(data)
   })
 }

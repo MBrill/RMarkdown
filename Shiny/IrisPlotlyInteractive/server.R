@@ -5,4 +5,5 @@ server <- shinyServer(function(input, output) {
   serverData()
   server3D()
   serverSources()
+  serverSettings()
 })
