@@ -1,7 +1,7 @@
 ---
 title: "Interactive document: Iris Interactive"
 author: "Julian Bernhart"
-date: '2022-07-07'
+date: "Last compiled on: `r format(Sys.time(), '%d %B %Y')`"
 output: html_document
 runtime: shiny
 ---
@@ -10,9 +10,10 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-{r, code = readLines('tabData.R')}
-{r, file = 'external.R'}
-
+<!-- 
+{r, code = readLines('')}
+{r, file = ''}
+-->
 
 ```{r, include=FALSE, echo=FALSE}
 library(shiny)
@@ -75,8 +76,8 @@ IDTAB1 <- "tab1"
 ```
 
 With the ID the new UI and sever for Tab1 can be created:
-ID is handed to UI and server function.
-These function will define the content of the tab. 
+ID is handed to the UI and server function.
+These functions will define the content of the tab. 
 
 ```{r}
 uiTab1 <- function(id = IDTAB1){
@@ -89,11 +90,21 @@ uiTab1 <- function(id = IDTAB1){
 }
 
 serverTab1 <- function(id = IDTAB1){
-  # The namespace for the server is defined by the id. It is not necessary to address UI elements like in the uiTab1 function. All elements are addressable by input$<elementID>.
+  # The namespace for the server is defined by the id. It is not necessary to address UI elements in the same way as in the uiTab1 function. All elements are addressable by input$<elementID>.
   moduleServer(id, function(input, output, session) {
     # ...
   })
 }
+
+# In order to use these functions as a separate Shiny App:
+#   
+# ui <- shinyUI(
+#   uiTab1()
+# )
+# server <- shinyServer(function(input, output){
+#   serverTab1()
+# })
+
 ```
 
 

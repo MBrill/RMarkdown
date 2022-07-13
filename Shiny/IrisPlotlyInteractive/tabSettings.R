@@ -1,7 +1,7 @@
 # The code in this file is based on:
 # https://github.com/rstudio/shinythemes/blob/main/R/shinytheme.R
 #
-# Changes: UI of the themeselector.
+# Changes made: UI of the themeselector.
 library(shinythemes)
 
 IDSETTINGS = "settings"
