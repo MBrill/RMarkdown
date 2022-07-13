@@ -10,10 +10,9 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<!-- 
-{r, code = readLines('')}
-{r, file = ''}
--->
+<!--################################################-->
+<!--Click "Run Document" for the interactive version-->
+<!--################################################-->
 
 ```{r, include=FALSE, echo=FALSE}
 library(shiny)
