@@ -38,7 +38,7 @@ uiData <- function(id = IDDATA) {
         p(
           "Included are 150 observations of four attributes
           of three species of iris. Therefor the lengths and widths of the
-          sepals (sepalum) and the petals (petalum) were listed
+          sepals and the petals were listed
           in centimeters. In addition, the species corresponding to
           the measured value was given."
         ),

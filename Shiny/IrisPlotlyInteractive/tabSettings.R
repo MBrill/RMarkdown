@@ -65,6 +65,7 @@ uiSettings <- function(id = IDSETTINGS) {
 
 }
 
+# unused
 serverSettings <- function(id = IDSETTINGS) {
 
 }

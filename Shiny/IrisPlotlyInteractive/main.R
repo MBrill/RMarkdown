@@ -1,7 +1,7 @@
-# Loads a predefined workspace for the App.
+# Loads a predefined environment for the App.
 # In order to see changes made it is necessary to comment out this
 # command.
-load("IrisInteractive.RData")
+#load("IrisInteractive.RData")
 
 source("prepareData.R")
 source("ui.R")

@@ -1,5 +1,3 @@
-# TODO Zusammenfassung
-
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
@@ -166,7 +164,8 @@ server3D <- function(id = ID3D) {
           mode = "markers"
         )  %>%
         layout(
-          legend=list(title=list(text='<b> Species </b>')),
+          #TODO legend title for continuous values is faulty 
+          legend = list(title = list(text = paste0("<b> ", input$color," </b>"))),
           scene = list(
             xaxis = list(title = input$xaxis),
             yaxis = list(title = input$yaxis),
