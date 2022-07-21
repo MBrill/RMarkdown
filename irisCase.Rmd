@@ -2,15 +2,15 @@
 title: "Fallstudie Iris"
 author: "Manfred Brill"
 output:
+  html_document:
+    toc: yes
+    df_print: paged
   html_notebook:
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
     encoding: utf-8
-  html_document:
-    toc: yes
-    df_print: paged
 bibliography: literatur.bib
 ---
 
@@ -195,7 +195,6 @@ Wir verwenden diese Beobachtung und klassifizieren den die 150 Zeilen
 des Datensatzes. Als erste Regel können wir untersuchen, ob
 Petal.Length <= 2.5 für ein Exemplar erfüllt ist oder nicht.
 Falls ja, dann sagen wir als Spezies dieses Exemplars Iris Setosa voraus.
-
 
 Wenn wir für die Exemplare mit Petal.Length > 2.5 weiter mit Petal.Length > 4.8
 unterscheiden und als Spezies Iris Versicolor setzen, wenn diese zweite Bedingung

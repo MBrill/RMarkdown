@@ -1,7 +1,6 @@
 ---
 title: "Lineare Modelle"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
@@ -24,12 +23,12 @@ options(digits=2)
 ```
 
 # Vorbemerkungen
-Dieses Dokument ist eine interne Version, mit wir nachvollziehen, wie wir mit *lm* und den Funktionen in *modelr* vorgehen. Parallel wird es dann ein Dokument geben, das ausgeteilt werden kann. Die Darstellung folgt in weiten Teilen
+Dieses Dokument ist eine interne Version, mit der wir nachvollziehen, wie wir mit *lm* und den Funktionen in *modelr* vorgehen. Parallel wird es dann ein Dokument geben, das ausgeteilt werden kann. Die Darstellung folgt in weiten Teilen
 [@wickham_16]
 
 Als Datensatz verwenden wir das Beispiel aus den Folien. den Datensatz *Luftfeuchtigkeit*.
 
-```{r daten, echo=TRUE}
+```{r daten, echo=FALSE, warnings=FALSE}
 daten <- read_csv2("data/wassergehalt.csv")
 
 kable(daten,
@@ -76,13 +75,15 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-#ggsave(filename="wassergehaltModell3.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
+ggsave(filename="wassergehaltModell3.png", 
+       plot=last_plot(), device="png",
+       path="images/", width=16, height=9, 
+       units="cm")
 ```
 
 Wir erstellen jetzt das lineare Modell und geben das Ergebnis gemeinsam
 mit dem Streuungsdiagramm der Daten aus. Anschließend erstellen wir
-mehr Werte für ein potentielles Modell, geben dies auch aus und färben die Geraden auch mit der Abweichung, die wir durch Einsetzen in die
+mehr Werte für ein potentielles Modell, geben dies aus und färben die Geraden auch mit der Abweichung, die wir durch Einsetzen in die
 least-squares Funktion erhalten. Den Code dazu findet man in 
 *R for Data Science* ab Seite 353.
 
@@ -106,8 +107,10 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-#ggsave(filename="wassergehaltModell1.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
+ggsave(filename="wassergehaltModell1.png", 
+       plot=last_plot(), device="png",
+       path="images/", 
+       width=16, height=9, units="cm")
 
 
 ggplot(daten) +
@@ -123,8 +126,10 @@ ggplot(daten) +
     y="Wassergehalt in Prozent"
   ) 
 
-#ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
+ggsave(filename="wassergehaltModell2.png", 
+       plot=last_plot(), device="png",
+       path="images/", width=16, height=9, 
+       units="cm")
 ```
 
 Jetzt haben wir die Abbildungen und das lineare Modell erstellt, wie dies schon in den alten Folien zu diesem Thema mit Hilfe von OpenOffice durchgeführt wurde. Mit der *predict*-Funktion können wir jetzt Vorhersagen für Werte
@@ -223,8 +228,10 @@ ggplot(data=daten, aes(Luftfeuchtigkeit, Wassergehalt)) +
     y="Wassergehalt in Prozent"
   ) 
 
-#ggsave(filename="wassergehaltModell2.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
+ggsave(filename="wassergehaltModell2.png", 
+       plot=last_plot(), device="png",
+       path="images/", width=16, height=9, 
+       units="cm")
 
 # Wir geben die Gitterwerte noch als Tabelle aus
 kable(grid,
@@ -282,7 +289,7 @@ daten <- daten %>%
 daten
 
 # Histogramm für die Residuen
- ggplot(daten, aes(resid)) + 
+ggplot(daten, aes(resid)) + 
    geom_histogram(binwidth=0.4, fill="orange", color="black") +
    labs(
       title="Histogramm der Residuen", 
@@ -301,8 +308,10 @@ ggplot(daten, aes(Luftfeuchtigkeit, resid)) +
     y="Residuen"
   ) 
 
-#ggsave(filename="wassergehaltResPlot.png", plot=last_plot(), device="png",
-       #path="images/", width=16, height=9, units="cm")
+ggsave(filename="wassergehaltResPlot.png", 
+       plot=last_plot(), device="png",
+       path="images/", width=16, height=9, 
+       units="cm")
 ```
 
 # Literaturverzeichnis
