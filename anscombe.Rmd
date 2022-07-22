@@ -127,6 +127,7 @@ geringfügige Abweichungen in Nachkommastellen identisch.
 Wir erstellen jetzt vier Streuungsdiagramme und zeichnen die
 berechneten Regressionsgeraden ein.
 
+
 ```{r scatter, echo=TRUE, results='markup'}
 ggplot(one) +
   geom_point(mapping=aes(x=X, y=Y), 
