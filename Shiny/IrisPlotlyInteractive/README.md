@@ -1,3 +1,8 @@
+README
+================
+Julian Bernhart
+Last compiled on: 25 Juli 2022
+
 In order to run the Iris Interactive Shiny App run the main.R file.
 
 This projects consist of:
