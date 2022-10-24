@@ -3,8 +3,9 @@ title: "README"
 author: "Julian Bernhart"
 date: "Last compiled on: `r format(Sys.time(), '%d %B %Y')`"
 output:
-  pdf_document: default
+  github_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
