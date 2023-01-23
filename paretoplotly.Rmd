@@ -15,7 +15,7 @@ bibliography: literatur.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(kableExtra)
-library(dplyr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 library(forcats, warn.conflicts = FALSE, quietly=TRUE)
 
 library(plotly)
@@ -120,20 +120,6 @@ plot_ly(daten) %>%
          )
 ```
 
-
-
-
-```{r example, message=FALSE, results='markup'}
- x <- c("giraffes", "orangutans", "monkeys")
- y <- c(20, 14, 23)
-
-plot_ly(
-  x = ~reorder(x,y),
-  y = ~y,
-  name = "SF Zoo",
-  type = "bar"
-  ) 
-```
 
 
 # Literaturverzeichnis

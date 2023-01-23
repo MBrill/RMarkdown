@@ -34,6 +34,11 @@ maps_files/
 !README.md
 exampleGithub_files/
 
+# Quarto Stuff
+# Ignore auf HTML previews und renderings
+Quarto/**/*.html
+Quarto/**/*_files/
+
 # Shiny example
 **/Example/
 # Daten ignorieren, das sind Kopien!
