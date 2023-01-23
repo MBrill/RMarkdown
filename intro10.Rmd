@@ -7,7 +7,6 @@ output:
     toc: yes
     toc_float: yes
     fig_caption: yes
-    highligh: pygments
     theme: cosmo
     number_sections: yes
 bibliography: literatur.bib

@@ -2,20 +2,19 @@
 title: "Das Beispiel SAT Scores aus McClave-Benson"
 author: "Manfred Brill"
 output: 
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
   html_document: 
-    
     fig_caption: yes
     highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_float: yes  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
 bibliography: literatur.bib 
 ---
 

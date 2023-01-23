@@ -2,12 +2,6 @@
 title: "Beispiel für die Verwendung von eurostat und NUTS"
 author: "Manfred Brill"
 output: 
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8      
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -16,6 +10,12 @@ output:
     toc: yes
     toc_float: yes
     encoding: utf-8  
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8      
 bibliography: literatur.bib    
 ---
 
