@@ -3,14 +3,13 @@ title: "Fallstudie Tips"
 author: "Manfred Brill"
 output: 
   
-  html_notebook: default
   html_document: 
     fig_caption: yes
-    highlight: pygments
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_float: yes
+  html_notebook: default
 bibliography: literatur.bib
 encoding: utf-8
 ---

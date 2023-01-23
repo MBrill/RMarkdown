@@ -2,8 +2,8 @@
 title: "Die Größe von Diamanten"
 author: "Manfred Brill"
 output: 
-   html_notebook : default
    html_document : default
+   html_notebook : default
 ---
 ```{r setup, include=TRUE, echo=TRUE, message=FALSE}
 options(warn=-1)

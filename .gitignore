@@ -17,6 +17,9 @@ images/
 karten/
 maps_files/
 
+# plotly und andere Daten
+**/*_files/
+
 # RStudio
 .Rproj-user/
 
