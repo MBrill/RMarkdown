@@ -1,0 +1,75 @@
+---
+title: "Einführungsbeispiel für die Verwendung von parallelen Koordinaten"
+author: "Manfred Brill"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes    
+bibliography: literatur.bib    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+suppressPackageStartupMessages(library(dplyr))
+library(tidyverse)
+library(RColorBrewer)
+# MASS für die Funktion parcoord
+library(MASS)
+myPalette <- brewer.pal(8, "Set1")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Der Datensatz *4Dim*
+Wir verwenden einige Punkte aus einem vierdimensionalen Raum als Beispiel
+für die Verwendung von parallelen Koordinaten.
+
+```{r daten, message=FALSE, echo=TRUE}
+daten <- read_delim("../data/4Dim.csv", ";", 
+         escape_double = FALSE, trim_ws = TRUE)
+
+labels <- c("One", "Two", "Three", "Four", "Five", "Six", "Seven")
+glimpse(labels)
+col <- myPalette[1:7]
+```
+
+# Parallele Koordinaten mit *parcoord*
+Das Package *MASS* enthält eine Funktion für die Visualisierung mit parallelen Koordinaten.
+Wir lassen für die Darstellung die erste Spalte weg. Es ist angebracht eine Legende
+beizufügen. Dazu verwendenw ir die Funktion *legend*.
+
+```{r mass, message=FALSE, echo=TRUE}
+# Abbildung mit parcoord erzeugen, 
+# erste Spalte nicht verwenden,
+# Achsenbeschriftung anschalten, Linienstärke einstellen und
+# Überschrift erzeugen.
+# png(file="images/pc4+1.png",
+    #units = "cm", width=16, height=9, res=300)
+parcoord(x = daten[,-1], 
+         col=myPalette, 
+         var.label=FALSE, 
+         lwd=4,
+         main="Parallele Koordinaten mit parcoord")
+
+# Eine Legende
+par(xpd = TRUE)
+legend(list(x=0.8, y = -0.2), 
+      legend = labels,
+      fill = unique(col), horiz = TRUE,
+      cex = 1)
+par(xpd = NA)
+# dev.off()
+# Wenn man die Zeile mit dem Aufruf von png und dev.off() dekommentiert
+# wird eine Bitmap-Datei abgespeichert.
+```

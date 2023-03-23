@@ -1,0 +1,257 @@
+---
+title: "Visualisierungen mit ggplot"
+author: "Manfred Brill"
+date: ""
+output:
+  slidy_presentation:
+    highlight: pygments
+    footer: Datenanalyse mit R und RStudio --- Visualisierungen mit ggplot
+  ioslides_presentation:
+    highlight: pygments
+encoding: utf-8
+bibliography: ../literatur.bib
+---
+
+```{r setup, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
+# Rmd bearbeiten
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
+# Pipelines und mehr in Tidyverse
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+# Farbpaletten
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+
+liefer <- read_csv2("../data/lieferzeiten.csv")
+
+frauen <- read_csv2("../data/koerpergroesse_frauen.csv")
+
+wassergehalt <- read_csv2("../data/wassergehalt.csv")
+```
+
+# Übersicht über ggplot
+
+- ggplot implementiert die *grammar of graphics* [@wilkinson_05]. 
+- Eine Visualisierung ist eine Abbildung , eine Beziehung, zwischen den Daten und
+den visuellen Eigenschaften in einer grafischen Ausgabe. 
+- Daten sind qualitativ oder quantitativ. 
+- Die visuellen Eigenschaften der Daten werden durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben.
+
+# Verwendete Daten und Packages
+In diesen Folien verwenden wir drei Datensätze, die in OLAT verfügbar sind:
+
+- Lieferzeiten in Tagen (liefer)
+- Körpergröße von Frauen (frauen)
+- Luftfeuchtigkeit und Wassergehalt in Wolle
+
+Wir verwenden neben dem Package *ggplot* das Package *RColorBrewer* und *tidyverse*.
+
+# Ein erstes Beispiel
+
+```{r first, echo=TRUE, fig.height=4, message=FALSE}
+ggplot(liefer) + 
+    geom_bar(mapping=aes(x=Lieferzeiten))
+```
+
+*ggplot* geht davon aus, dass die Daten im *wide*-Format vorliegen. Das bedeutet,
+dass jede Zeile ein Individuum beschreibt, mit den Merkmalen als Spalte. Dies ist
+in unserem kleinen Beispielen der Lieferzeiten der Fall, so dass wir
+*ggplot* direkt anwenden können.
+
+# Vorbereitungen
+
+```{r barPrep, message=FALSE, results='markup', fig.height=5}        
+bars <-ggplot(liefer) + 
+           geom_bar(mapping=aes(x=Lieferzeiten),
+                    fill=myPalette[3])
+```
+
+Wir können eine mit *ggplot* dargestellte Grafik abspeichern und weitere Features hinzufügen. Das bereiten wir jetzt vor und speichern auf der Variable *bars*.
+
+# Farben verwenden
+
+```{r bars2, fig.height=5, message=FALSE, warning=FALSE, results='markup'}
+bars
+```
+
+Wir haben in der Grafik das Attribut *fill* verwendet und damit die Füllfarbe der Balken verändert.
+
+# Formatierung der x-Achse
+
+```{r bars3, fig.height=5, message=FALSE, warning=FALSE, results='markup'}
+bars + scale_x_discrete(limits=c(1,2,3,4,5,6,7))
+```
+
+Wir verwenden *scale_x_discrete* und formatieren damit die x-Achse.
+
+# Beschriftungen
+
+```{r bars4, message=FALSE, results='markup', warning=FALSE, fig.height=4}        
+bars + 
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Absolute Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Absolute Häufigkeiten"
+  ) 
+```
+
+# Relative Häufigkeiten mit *y = ..prop..*
+
+```{r bars5, message=FALSE, results='markup', warning=FALSE, fig.height=4}
+ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) 
+```
+
+
+# Vertikale und horizontale Ausgaben
+
+```{r bars5a, message=FALSE, echo=TRUE, results='markup', fig.height=6 , warning=FALSE}
+barVert <- ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) +
+  coord_flip()
+```
+
+Wir können mit *coord_flip()* die Achsen vertauschen!
+
+# Vertikales Balkendiagramm
+
+```{r barsVert, message=FALSE, echo=TRUE, results='markup', fig.height=6 , warning=FALSE}
+barVert
+```
+
+Vertikale und horizontale Ausgaben erzeugen wir mit *coord_flip()*.
+
+# Box-Plots
+
+```{r box, message=FALSE, warning=FALSE, results='markup', fig.height=3.5}        
+ggplot(liefer)  +
+  geom_boxplot(mapping=aes(x="", y = Lieferzeiten, fill=myPalette[2])) +
+  labs(
+    title="Box-Plot der Lieferzeiten", 
+    x="", 
+    y="Absolute Häufigkeiten"
+  ) +
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+# Empirische Verteilungsfunktionen mit *stat_ecdf*
+ 
+```{r ecdf, message=FALSE, warning=FALSE, results='markup', fig.height=4}
+ggplot(liefer, aes(x=Lieferzeiten)) + 
+  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Empirische Verteilungsfunktion der Lieferzeiten", 
+    x="Tage", 
+    y="Kumulierte relative Häufigkeiten"
+  ) 
+```
+
+# Der Datensatz Körpergröße
+ 
+```{r FrauenBars, message=FALSE, results='markup', warning=FALSE, fig.height=4}
+ggplot(frauen)  +
+  geom_bar(mapping=aes(x=Koerpergroesse), fill=myPalette[3]) +
+  scale_x_continuous(limits=c(150.0, 185.0)) +
+  labs(
+    title="Absolute Häufigkeiten der Körpergroße von Frauen", 
+    x="Körpergröße in cm", 
+    y="Häufigkeiten"
+  )
+```
+
+# Histogramme
+
+```{r FrauenHisto1, message=TRUE, results='markup', warning=FALSE, fig.height=2.5}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Default-Anzahl von Klassen",
+    x="Körpergröße in cm",
+    y="Häufigkeiten der Klassen"
+  ) 
+```
+
+# Bessere Wahl der Klassenbreite durch *breaks*
+
+```{r FrauenHisto2, message=FALSE, results='markup', warning=FALSE, fig.height=3}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          breaks=seq(152.0, 182.0, 3.0),
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Verwendete Klassenbreite: 3 cm zwischen 150 cm und 185 cm",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+# Streuungsdiagramme
+
+```{r scatter, echo=TRUE, results='markup', warning=FALSE, fig.height=3}
+ggplot(wassergehalt) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color=myPalette[4]) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+```
+
+# Abspeichern von Abbildungen
+
+```{r save, echo=FALSE, results='markup', warning=FALSE, fig.height=3}
+ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) +
+  coord_flip()
+```
+
+```{r save2, echo=TRUE, results='markup', warning=FALSE, fig.height=3}
+ggsave(filename="saveExample.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, height=9, units="cm")
+```
+
+# Unklarheiten? Fragen? Bemerkungen?
+
+![](../images/bigdata.png)
+
+# Literaturverzeichnis
+
+
+

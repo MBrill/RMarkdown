@@ -1,0 +1,120 @@
+---
+title: "Daten und Visualisierungen"
+author: "Manfred Brill"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    fig_caption: yes
+    theme: cosmo
+    number_sections: yes
+bibliography: ../literatur.bib 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+library(tidyverse)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(6, "Set2")
+# Für logarithmische Achsen
+library(scales)
+
+diamonds.cut <- 2
+smaller <- diamonds %>%
+  filter(carat <= diamonds.cut)
+
+mtcars$cyl <- as.factor(mtcars$cyl)
+```
+
+# Daten
+
+Als Datensatz verwenden wir den Datensatz *diamonds* aus dem Package *tidyverse*. Mehr Informationen zu diesen Daten finden
+wir in der Online-Hilfe.
+
+Zusätzlich verwenden wir den Datensatz *mtcars* mit Daten über
+Autos. Insbesondere verwenden wir diese Daten für Grafiken, in den nicht ganz so viele Werte sinnvoll sind!
+
+Wir orientieren uns am Kapitel 7 von [@munzner_15].
+Die Grafiken werden mit Hilfe von *ggsave* im Verzeichnis
+*images* abgespeichert!
+
+# Kardinale Daten
+
+Wir erzeugen Streuungsdiagramme wie in Munzner, p. 148 ff.
+Das erste Streuungsdiagramm zeigt die beiden kardinalen
+Merkmale Gewicht in Karat und den Preis in Dollar.
+
+```{r scatter1, echo=FALSE}
+scatter <- ggplot(diamonds) + 
+  geom_point(mapping=aes(carat, price), 
+             size = 0.5,
+             color=myPalette[1]) 
+
+scatter +
+  labs(
+    title="Streuungsdiagramm für den Datensatz diamonds", 
+    x="Gewicht der Brillanten in Karat", 
+    y="Preis der Brillanten in Dollar"
+  ) 
+
+ggsave(filename="diamondsScatter.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, height=9, 
+       units="cm")
+```
+
+Wie in Munzer in Abbildung 7.3 8 (b) verwenden wir sowohl für die x- als auch für die y-Achse logarithmische Skalen.
+
+
+```{r scatterLog, echo=FALSE}
+scatter +
+  scale_x_log10(breaks = trans_breaks("log10",                                 function(x) 10^x),
+                labels = trans_format("log10",                                       math_format(10^.x))) +
+  scale_y_log10(breaks = trans_breaks("log10",                                 function(x) 10^x),
+                labels = trans_format("log10",                                 math_format(10^.x))) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz diamonds", 
+    subtitle="Logarithmische Skalen (Basis 10)",
+    x="Gewicht der Brillanten in Karat", 
+    y="Preis der Brillanten in Dollar"
+  )
+
+ggsave(filename="diamondsLog.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, height=9,
+       units="cm")
+
+```
+
+
+## Visualisierung von mehr als 2 Merkmalen
+
+```{r scatterSmaller, echo=FALSE}
+sp<-ggplot(mtcars, aes(x=wt, y=mpg)) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz mtcars", 
+    x="Gewicht in Pound", 
+    y="Verbrauch in mpg"
+  ) 
+
+sp + geom_point()
+
+sp + geom_point(mapping = aes(color = cyl))
+
+sp + geom_point(mapping = aes(color = cyl,
+                              size=gear))
+```
+
+
+# Literaturverzeichnis
