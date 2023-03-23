@@ -1,0 +1,34 @@
+---
+title: "Die Größe von Diamanten"
+author: "Manfred Brill"
+output: 
+   html_notebook : default
+   html_document : default
+---
+```{r setup, include=TRUE, echo=TRUE, message=FALSE}
+options(warn=-1)
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+```
+
+
+```{r action, echo=TRUE, warning=TRUE, warnings=TRUE}
+diamonds.cut <- 2.5
+smaller <- diamonds %>%
+  filter(carat <= diamonds.cut)
+```
+
+Es liegen Daten über `r tally(diamonds)$n` Diamanten vor.
+Nur `r tally(diamonds)$n - tally(smaller)$n` davon sind größer als `r diamonds.cut` Karat.
+Die Verteilung der Karatzahlen unterhalb dieser Grenze ist in der
+Abbildung zu finden.
+
+```{r plot, echo = TRUE, message=FALSE, results='markup',}
+ggplot(smaller, aes(carat)) +
+  geom_histogram(binwidth = 0.05, fill="green", color="black") +
+  labs(
+    title="Datensatz diamonds - Verteilung der Karatzahlen unterhalb 2,5 Karat",
+    x = "Karat",
+    y = "Absolute Häufigkeit"
+  )
+```

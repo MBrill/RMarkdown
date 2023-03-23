@@ -1,0 +1,385 @@
+---
+title: "Visualisierungen mit ggplot"
+author: "Manfred Brill"
+date: ""
+encoding: utf-8
+output:
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+    encoding: utf-8 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8    
+bibliography: ../literatur.bib
+---
+
+```{r setup, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn=-1)
+# Rmd bearbeiten
+library(knitr, warn.conflicts = FALSE, quietly=TRUE)
+library(kableExtra, quietly=TRUE)
+# Pipelines und mehr in Tidyverse
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+# Farbpaletten
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "YlGn")
+# Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
+options(digits=3)
+```
+
+# Voraussetzungen
+Dieses Dokument setzt voraus, dass Sie die grundlegenden Konzepte von R kennen. 
+Die Darstellung orientiert sich an [@wickham_16] und [@chang_18].
+
+Als Beispieldaten verwenden wir den Datensatz *Lieferzeiten*. Sie finden die Daten in der Lernplattform. 
+Die Daten sind [@bamberg_93] entnommen. Wir lesen die Daten mit *read_csv2* ein.
+Als Datensatz für die Histogramme  verwenden wir den Datensatz
+*Körpergröße* aus [@benesch_13], den wir ebenfalls aus einer csv-Datei einlesen.
+Für die Erstellung von Streuungsdiagrammen, scatter plots, benötigen
+wir Daten mit mindestens zwei kardinalen Merkmalen. Hier
+verwenden wir den Datensatz *Luftfeuchtigkeit*. Dieser Datensatz stammt aus [@baumann_92].
+Zusätzlich verwenden wir den Datensatz *mpg*,
+der in der R-Installation als Default vorhanden ist.
+
+```{r daten, message=FALSE, echo=TRUE}
+liefer <- read_csv2("../data/lieferzeiten.csv")
+
+frauen <- read_csv2("../data/koerpergroesse_frauen.csv")
+
+wassergehalt <- read_csv2("../data/wassergehalt.csv")
+```
+
+# Übersicht über ggplot
+Das Package *ggplot* wurde ursprünglich von Wickham entwickelt. Das Package verfolgt eine ganz andere Herangehensweise an die Erstellung von Grafik als das in R enthaltene *plot*-Paket.
+Es wird eine *grammar of graphics* implementiert, wie sie von Leland Wilkinson in [@wilkinson_05] beschrieben wird. Das Ergebnis
+ist eine formale und strukturierte Sicht auf grafische Ausgaben.
+
+Diese formale Herangehensweise macht es zu Beginn nicht unbedingt einfach, sich mit *ggplot* anzufreunden. Aber wenn Sie sich auf die Struktur
+einlassen, dann erhalten Sie Abbildungen von einer hohen Qualität und ein sehr mächtiges Werkzeug. Und insbesondere arbeitet *ggplot* hervorragend mit *Tidyverse* zusammen. Aktuell wird *ggplot* überarbeitet, um die Entwicklungen aus den anderen *Tidyverse*-Paketen auch in *ggplot* zu finden.
+ 
+Eine Visualisierung ist ein Abbildung, eine Beziehung zwischen den Daten und
+den visuellen Eigenschaften in einer grafischen Ausgabe. Daten sind qualitativ oder quantitativ, während die visuellen Eigenschaften durch die x- oder y-Koordinaten eines Punkts, die verwendete Farbe, die Höhe von Balken und vieles mehr beschrieben werden.
+
+# Ein erstes Beispiel
+Wir betrachten ein erstes Beispiel. Um *ggplot* zu verwenden müssen wir
+das Package laden, mit *library(ggplot2)*. Oder wir laden einfach
+mit *library(tidyverse)* nicht nur *ggplot*, sondern auch die restlichen Packages aus diesem Projekt.
+
+*ggplot* geht davon aus, dass die Daten im *wide*-Format vorliegen. Das bedeutet,
+dass jede Zeile ein Individuum beschreibt, mit den Merkmalen als Spalte. Dies ist
+in unserem kleinen Beispielen der Lieferzeiten der Fall, so dass wir
+*ggplot* direkt anwenden können.
+
+```{r first, message=FALSE, echo=TRUE}
+ggplot(liefer) + 
+    geom_bar(mapping=aes(x=Lieferzeiten))
+```
+
+Wir beginnen eine Grafik damit, dass wir *ggplot* mitteilen, mit welchem
+Datensatz wir arbeiten. Ähnlich wie eine *Tidyverse*-Pipeline können wir anschließend sukzessive weitere Anweisungen hinzufügen. Achten Sie unbedingt darauf, dass das Zeichen *+* als letztes in einer Zeile stehen muss, wenn Sie die Anweisungen fortsetzen möchten. *ggplot* bietet sogenannte *geoms* an. Damit sind Primitive
+gemeint, auf die wir unsere Daten abbilden können. Mit *geom_bar* legen wir fest, dass wir ein Balkendiagramm verwenden möchten. Auf die *x*-Achse legen wir die
+Daten, die in der Spalte *Lieferzeiten* im Datensatz stehen. Das Schlüsselwort
+*aes* steht für *aesthetics*.
+
+Jetzt übergeben wir die Information, dass wir eine andere Farbe für
+die Balken verwenden möchten. Dazu gibt es für *geom_bar*
+das Attribut *fill*, mit dem wir die Füllfarbe der Balken festlegen.
+Wir verwenden einen  Eintrag aus der Farbpalette aus *ColorBrewer*,
+die wir im Setup dieser Markdown-Datei erzeugt haben.
+
+Wir mussten für die Ausgabe der absoluten Häufigkeiten diese Werte nicht
+mit einer Funktion wie *table* berechnen. Die Funktion *geom_bar* nimmt die Werte entgegen
+und wendet Statistik-Funktionen darauf an, bevor die Abbildung erstellt wird.
+Darum müssen wir uns nicht selbst kümmern. In *ggplot* gibt es zu
+jedem *geom* eine entsprechende *stat*-Funktion. Wir können die Zuordnung
+manipulieren, aber für die grundlegenden Funktionen wie die Erstellung
+eines Balkendiagramms passen die Zuordnungen immer.
+
+Da wir jetzt gleich
+weitere Veränderungen an unserer Abbildung vornehmen möchten speichern
+wir die Grafik in einer Variable ab. Geben wir den Namen der abgespeicherten Grafik auf der Konsole ein erhalten wir die Ausgabe.
+
+```{r bars2, message=FALSE, results='markup'}        
+bars <- ggplot(liefer) + 
+           geom_bar(mapping=aes(x=Lieferzeiten),
+                    fill=myPalette[3])
+
+bars
+```
+
+Wir möchten auf der x-Achse alle Werte zwischen 1 und 7 in den Daten sehen.
+Dazu verwenden wir die Funktion *scale_x_discrete*. Mit dieser Funktion
+können wir Eigenschaften der x-Achse verändern. Wir übergeben einen
+Vektor mit allen Werten. Da wir die Abbildung auf einer Variablen
+abgespeichert haben, können wir diese Variable verwenden
+und weitere Zeilen hinzufügen.
+
+```{r bars3, message=FALSE, results='markup'}        
+bars +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7))
+```
+
+Jede Abbildung hat eine Beschriftung. Dazu verwenden wir die Funktion *labs*,
+der wir eine Überschrift und eine Achsenbeschriftungen übergeben.
+
+```{r bars4, message=FALSE, results='markup'}        
+bars + 
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Absolute Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Absolute Häufigkeiten"
+  ) 
+```
+
+Wir erstellen eine weitere Abbildung. Dieses Mal möchten wir nicht
+die absoluten, sondern die relativen Häufigkeiten in der grafischen
+Ausgabe sehen. Dazu fügen wir in *geom_bar* die Angabe
+*y = ..prop..* hinzu. Damit legen wir fest, dass wir auf der y-Achse
+*Anteile*, *proportions*, ausgeben möchten.
+
+```{r bars5, message=FALSE, results='markup'}
+ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) 
+
+ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) +
+  coord_flip()
+```
+
+Wenn wir statt einer horizontalen eine vertikale Ausgabe möchten fügen wir einfach
+*coord_flip()* hinzu. Damit werden x- und y-Achsen getauscht. *ggplot* kennt
+auch weitere Koordinatensysteme wie logarithmische Achsen oder Polarkoordinaten. Darauf werden wir in der Veranstaltung noch eingehen.
+
+# Box-Plots, Verteilungsfunktion und Histogramme
+## Box-Plots
+Möchten wir statt einem Balkendiagramm einen Box-Plot, dann tauschen
+wir einfach das *geom* aus und verwenden *geom_boxplot*. Auch hier können
+wir eine horizontale oder vertikale Ausgabe erhalten. 
+Dazu verwenden wir wieder *coord_flip*. 
+Natürlich ist es immer
+eine gute Idee, eine Legende hinzuzufügen. In diesem Beispiel
+verzichten wir mit *theme(legend.position="none")* allerdings darauf.
+
+```{r box, message=FALSE, results='markup'}        
+box <- ggplot(liefer)  +
+  geom_boxplot(mapping=aes(x="", y = Lieferzeiten, fill=myPalette[2])) +
+  labs(
+    title="Box-Plot der Lieferzeiten", 
+    x="", 
+    y="Absolute Häufigkeiten"
+  ) +
+  theme(legend.position = "none")
+
+box
+
+box + coord_flip()
+```
+
+## Verteilungsfunktionen
+Wir hatten bereits den Zusammenhang zwischen *geom_* und *stat_*
+dargestellt. Eine empirische Verteilungsfunktion der Lieferzeiten
+können wir mit *stat_ecdf* erstellen. Dabei steht *ecdf*
+für *empirical cumulative distribution function*. 
+
+```{r ecdf, message=FALSE, results='markup'}
+ggplot(liefer, aes(x=Lieferzeiten)) + 
+  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
+  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  labs(
+    title="Empirische Verteilungsfunktion der Lieferzeiten", 
+    x="Tage", 
+    y="Kumulierte relative Häufigkeiten"
+  ) 
+```
+
+## Histogramme
+Als Beispiel für Histogramme verwenden wir die Körpergrößen von Frauen.
+Das Merkmal im Datensatz hat den Namen *Koerpergroesse*. Die x-Achse ist jetzt
+kontinuierlich, deshalb verwenden wir für diese Achse die Funktion
+*scale_x_continuous(limits=c(150.0, 185.0))*. 
+Diese Werte können wir vorher mit Hilfe der Funktionen *min* und
+*max* berechnen und bei Bedarf auch auf eine Variable speichern.
+Damit legen wir den minimalen
+und maximalen Wert für die Achse in der grafischen Ausgabe fest.
+Wir erstellen zuerst mit *geom_bar* ein Balkendiagrammm, um uns zu überzeugen, dass ein Histogramm
+deutlich sinnvoller ist.
+
+```{r FrauenBars, message=FALSE, results='markup'}
+ggplot(frauen)  +
+  geom_bar(mapping=aes(x=Koerpergroesse),
+           fill=myPalette[3]) +
+  scale_x_continuous(limits=c(150.0, 185.0)) +
+  scale_y_continuous(limits=c(0.0, 2.0), breaks=c(0.0, 1.0, 2.0)) +
+  labs(
+    title="Absolute Häufigkeiten der Körpergroße von Frauen", 
+    x="Körpergröße in cm", 
+    y="Häufigkeiten"
+  )
+```
+
+In dieser Darstellung wurde auch die y-Achse bearbeitet,
+denn es mach eigentlich keinen Sinn Markierungen wie 0.5 oder 1.5 für absolute Häufigkeiten anzugeben.
+
+In der Abbildung ist gut zu erkennen, dass wir besser ein Histogramm verwenden.
+Dazu gibt es im Package
+*ggplot2* die Funktion *geom_histogram*. Für die Farbe der Balken
+können wir eine Füllfarbe und eine Randfarbe angeben. Für die Füllfarbe
+wählen wir wie bisher eine Farbe aus unserer Palette, für den Rand wählen wir Schwarz, um die einzelnen Balken optisch zu trennen. 
+Bei der Konstruktion der Partition für das Histogramm müssen wir uns immer entscheiden, ob die verwendeten Intervalle an den Grenzen, an denen die Intervall aneinanderstoßen links oder rechts offen sind. Das können wir *geom_histogram* mit der Option *closed="left"* übergeben. 
+
+```{r FrauenHisto1, message=TRUE, results='markup'}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Default-Anzahl von Klassen",
+    x="Körpergröße in cm",
+    y="Häufigkeiten der Klassen"
+  ) 
+```
+
+*ggplot* weist uns mit einer Warnung darauf hin, dass die verwendete Default-Anzahl von Klassen vermutlich nicht besonders glücklich ist.
+Möchten wir andere Klassengrenzen verwenden übergeben wir diese mit
+Hilfe der Option *breaks* an *geom_histogram*. Wir erzeugen einen Vektor mit den Grenzen
+der Klassen mit *seq(152, 182, 3)*. Wir geben also den minimalen und maximalen Wert an und die Schrittweite, die gewünschte Klassenbreite.
+Wir können alternativ die Klassenbreite mit *binwidth* angeben, dann sucht
+*ggplot* geeignete Minima und Maxima.
+
+```{r FrauenHisto2, message=FALSE, results='markup'}
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          breaks=seq(152.0, 182.0, 3.0),
+          fill=myPalette[3], color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Verwendete Klassenbreite: 3 cm zwischen 150 cm und 185 cm",
+    x="",
+    y="absolute Häufigkeit"
+  ) 
+
+ggplot(frauen) + 
+  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+          binwidth=3.0, boundary=0,
+          fill=myPalette[3], 
+          color="black") +
+  scale_x_continuous(limits=c(150.0, 185.0)) + 
+  labs(
+    title="Körpergröße von Frauen", 
+    subtitle="Verwendete Klassenbreite: 3 cm zwischen 150 cm und 185 cm",
+    x="Körpergröße in cm",
+    y="absolute Häufigkeit"
+  ) 
+```
+
+## Streuungsdiagramme
+Als Daten für Streuungsdiagramme verwenden wir den Datensatz *Luftfeuchtigkeit*. 
+Dieser Datensatz enthält zwei kardinale Merkmale. Eines davon ist die
+Luftfeuchtigkeit, die wir auf die x-Achse legen. Das zweite Merkmal
+ist der Wassergehalt, das wir für die y-Achse verwenden.
+So erhalten wir für jedes Wertepaar einen Punkt in einem kartesischen Koordinatensystem.
+Die Wertepaare
+in einem Streuungsdiagramm geben wir mit Hilfe von *geom_point* aus.
+
+```{r scatter, echo=TRUE, results='markup'}
+ggplot(wassergehalt) +
+  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+             color=myPalette[4]) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit", 
+    x="Luftfeuchtigkeit in Prozent", 
+    y="Wassergehalt in Prozent"
+  ) 
+```
+
+Wir erkennen im Streuungsdiagramm gut, dass es eine gewisse  Korrelation zwischen
+der Luftfeuchtigkeit und dem Wassergehalt der Wolle gibt.
+
+Das folgende Beispiel zeigt wie
+wir Streuungsdiagramme erstellen können und auch eine Legende
+hinzufügen. Dabei wird die Farbe der Marker nicht wie bisher global festgelegt, sondern wir bilden ein qualitatives
+Merkmal, die Anzahl der Zylinder, auf Farben ab.
+Die Wahl der Farben überlassen wir *plotly*.
+Die grafischen Eigenschaften der Punkte stellen wir dabei
+mit *add_markers* ein, die Legende erhalten wir mit Hilfe der Funktion *colorbar*.
+Als Datensatz verwenden wir hier *mpg*.
+Mit *factor(cyl)* stellen wir sicher, dass *ggplot*
+diese Angaben als Werte mit dem Datentyp *factor*
+interpretiert. Dies beeinflusst die Wahl der Farben, 
+die *ggplot* für uns durchführt.
+
+```{r scattermpg, echo=TRUE, results='markup'}
+ggplot(mpg) +
+  geom_point(mapping=aes(x=cty, 
+                         y=hwy, 
+                         color=factor(cyl))) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz mpg", 
+    x="Verbrauch in der Stadt", 
+    y="Verbrauch auf dem Highway",
+    color="Anzahl der Zylinder"
+  ) 
+```
+
+# Abspeichern von Abbildungen
+Für das Abspeichern von Abbildungen gibt es zwei Möglichkeiten.
+Einmal können wir ein Markdown-Dokument erstellen. Dann sind die
+erstellten Abbildungen im erzeugten Ausgabeformat enthalten.
+
+Oder wir verwenden die Funktion *ggsave*:
+
+```{r save, echo=TRUE, results='markup'}
+example <- ggplot(liefer) +
+  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+           fill=myPalette[3]) +
+  scale_x_discrete(limits=factor(c(1,2,3,4,5,6,7))) +  
+  labs(
+    title="Relative Häufigkeiten der Lieferzeiten", 
+    x="Tage", 
+    y="Anteile"
+  ) +
+  coord_flip()
+
+example
+
+ggsave(filename="saveExample.png", 
+       plot=example, 
+       device="png",
+       path="../images/", 
+       width=16, height=9, units="cm")
+```
+Wir können den Namen eines Plots angeben, den wir vorher auf einer Variable
+abgelegt haben, oder mit *last_plot()* die letzte grafische Ausgabe abspeichern.
+Wir können Pfade für die Bitmaps angeben, das Format mit *device* angeben
+und natürlich mit *width* und *height* die Maße für die Bitmap, hier in Zentimetern.
+
+# Literaturverzeichnis
+
+
+
