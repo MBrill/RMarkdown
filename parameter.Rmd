@@ -1,0 +1,46 @@
+---
+title: "Parameter im YAML-Header"
+author: "Manfred Brill"
+output:
+  html_document:
+    theme: cosmo
+    number_sections: yes
+
+params:
+  my_class: "suv"
+  start: !r lubridate::ymd("22023-3-23")
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+# Tidyverse
+library(tidyverse)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+
+mtcars$cyl <- as.factor(mtcars$cyl)
+```
+
+# Wir verwenden den Parameter im YAML-Header
+
+Wir greifen im folgenden R-Chunk auf die Variable *param$my_class* zu:
+
+```{r filter}
+mpgNotFilterNR <- nrow(mpg)
+
+mpgFiltered <- mpg %>%
+  filter(
+    class == params$my_class
+    )
+
+mpgFilterNR <- nrow(mpgFiltered)
+```
+
+Vor dem Filtern haben wir `r mpgNotFilterNR` Zeilen in den Daten. Nach dem Filtern
+liegen noch `r mpgFilterNR` Zeilen vor.
+
+# Ein Datum mit lubridate::ymd
+Im Header wurde ein Datum gesetzt, das wir jetzt ausgeben:
+`r params$start`

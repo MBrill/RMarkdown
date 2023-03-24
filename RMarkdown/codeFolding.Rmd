@@ -1,10 +1,14 @@
 ---
-title: "Die Größe von Diamanten"
+title: "Beispiel für Code-Folding"
 author: "Manfred Brill"
 output:
-  html_notebook: default
-  html_document: default
+  
+  word_document: default
+  html_document:
+    code_folding: hide
 ---
+# Setup
+Wir laden die Packages *knitr* un defauld *tidyverse*.
 
 ```{r setup, include=TRUE, echo=TRUE, message=FALSE}
 options(warn=-1)
@@ -12,12 +16,17 @@ library(knitr, warn.conflicts = FALSE, quietly=TRUE)
 library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
 ```
 
+# Code-Folding
+Mit dieser Option können wir den Quelltext ausblenden. Wir erhalten
+einen Button, mit dem wir den quelltext wieder sichtbar machen!
+
 ```{r action, echo=TRUE, warning=TRUE, warnings=TRUE}
 diamonds.cut <- 2.5
 smaller <- diamonds %>%
   filter(carat <= diamonds.cut)
 ```
 
+# Text zu den Daten
 Es liegen Daten über `r tally(diamonds)$n` Diamanten vor. Nur `r tally(diamonds)$n - tally(smaller)$n` davon sind größer als `r diamonds.cut` Karat. Die Verteilung der Karatzahlen unterhalb dieser Grenze ist in der Abbildung zu finden.
 
 ```{r plot, echo = TRUE, message=FALSE, results='markup',}
