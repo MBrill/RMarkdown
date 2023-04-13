@@ -322,7 +322,7 @@ Wir erkennen im Streuungsdiagramm gut, dass es eine gewisse  Korrelation zwische
 der Luftfeuchtigkeit und dem Wassergehalt der Wolle gibt.
 
 Das folgende Beispiel zeigt wie
-wir Streuungsdiagramme erstellen können und auch eine Legende
+wir Streuungsdiagramme erstellen können und eine Legende
 hinzufügen. Dabei wird die Farbe der Marker nicht wie bisher global festgelegt, sondern wir bilden ein qualitatives
 Merkmal, die Anzahl der Zylinder, auf Farben ab.
 Die Wahl der Farben überlassen wir *plotly*.
@@ -372,7 +372,8 @@ ggsave(filename="saveExample.png",
        plot=example, 
        device="png",
        path="../images/", 
-       width=16, height=9, units="cm")
+       width=16, height=9, 
+       units="cm")
 ```
 Wir können den Namen eines Plots angeben, den wir vorher auf einer Variable
 abgelegt haben, oder mit *last_plot()* die letzte grafische Ausgabe abspeichern.

@@ -17,20 +17,9 @@ knitr::opts_chunk$set(echo = TRUE)
 options(warn=-1)
 # Rmd bearbeiten
 library(knitr, warn.conflicts = FALSE, quietly=TRUE)
-library(kableExtra, quietly=TRUE)
-# Pipelines und mehr in Tidyverse
-library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
-# Farbpaletten
-library(RColorBrewer)
-myPalette <- brewer.pal(5, "YlGn")
+
 # Ausgabe von double-Werte mit  zwei Stellen hinter dem Komma
 options(digits=3)
-
-liefer <- read_csv2("../data/lieferzeiten.csv")
-
-frauen <- read_csv2("../data/koerpergroesse_frauen.csv")
-
-wassergehalt <- read_csv2("../data/wassergehalt.csv")
 ```
 
 # Übersicht über ggplot
@@ -46,9 +35,34 @@ In diesen Folien verwenden wir drei Datensätze, die in OLAT verfügbar sind:
 
 - Lieferzeiten in Tagen (liefer)
 - Körpergröße von Frauen (frauen)
-- Luftfeuchtigkeit und Wassergehalt in Wolle
+- Luftfeuchtigkeit und Wassergehalt in Wolle (wassergehalt)
 
 Wir verwenden neben dem Package *ggplot* das Package *RColorBrewer* und *tidyverse*.
+
+# Setup
+Wir verwenden Farben aus dem Package *RColorBrewer* und laden die Daten:
+
+```{r packages, echo=TRUE, message=FALSE}
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+library(RColorBrewer)
+```
+
+Die Datensätze finden wir in OLAT. Sie verwenden das Semikolon als Spaltentrenner und das Komma als Dezimaltrenner.
+
+```{r data, echo=TRUE, message=FALSE}
+liefer <- read_csv2("../data/lieferzeiten.csv")
+frauen <- read_csv2("../data/koerpergroesse_frauen.csv")
+wassergehalt <- read_csv2("../data/wassergehalt.csv")
+```
+
+# Verwendete Farben in den Beispielen
+Wir verwenden die Farben aus dem Array *myPalette*.
+
+```{r colors, echo=TRUE, message=FALSE, fig.height=4}
+myPalette <- brewer.pal(5, "YlGn")
+
+display.brewer.pal(5, "YlGn")
+```
 
 # Ein erstes Beispiel
 
@@ -212,6 +226,7 @@ ggplot(frauen) +
 ```
 
 # Streuungsdiagramme
+Wir verwenden den Datensatz *wassergehalt*:
 
 ```{r scatter, echo=TRUE, results='markup', warning=FALSE, fig.height=3}
 ggplot(wassergehalt) +
@@ -221,6 +236,27 @@ ggplot(wassergehalt) +
     title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit", 
     x="Luftfeuchtigkeit in Prozent", 
     y="Wassergehalt in Prozent"
+  ) 
+```
+
+# Ein Streuungsdiagramm für den Datensatz mpg
+Im folgenden Beispiel verwenden wir den Datensatz *mpg*, der in R enthalten ist. Wir verwenden ein diskretes Merkmal und färben die Marker
+im Streuungsdiagramm.
+
+Auf die x-Achse legen wir den Verbrauch in der Stadt auf der Spalte
+*cty*, auf der y-Achse finden wir den Verbrauch auf dem Highway aus der Spalte *hwy*. Die Anzahl der Zylinder in *cyl* verwenden wir für das Färben der marker.
+
+# Ein Streuungsdiagramm mit Legende
+```{r scattermpg, echo=TRUE, results='markup', fig.height=3}
+ggplot(mpg) +
+  geom_point(mapping=aes(x=cty, 
+                         y=hwy, 
+                         color=factor(cyl))) +
+  labs(
+    title="Streuungsdiagramm für den Datensatz mpg", 
+    x="Verbrauch in der Stadt", 
+    y="Verbrauch auf dem Highway",
+    color="Anzahl der Zylinder"
   ) 
 ```
 

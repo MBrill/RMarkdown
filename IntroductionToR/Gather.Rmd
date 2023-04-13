@@ -1,7 +1,6 @@
 ---
 title: "Gather an Hand des Datensatzes Niederschlag"
 author: "Manfred Brill"
-date: "Sommersemester 2020"
 output: 
   html_document: 
     fig_caption: yes
