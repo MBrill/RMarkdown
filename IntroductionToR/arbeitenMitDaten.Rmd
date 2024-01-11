@@ -38,7 +38,7 @@ kennen.
 
 Wir legen ein neues Verzeichnis für das Projekt an. Auf der
 Lernplattform gibt es Links auf eine ASCII-Datei *Auto.csv* und auf
-*Auto.xlsx*. Der vorliegende Text geht davon aus, dass diese Datein im
+*Auto.xlsx*. Der vorliegende Text geht davon aus, dass diese Dateien im
 Unterverzeichnis *data* abgelegt sind.
 
 # Datentypen
@@ -260,7 +260,9 @@ Software zu importieren. Als Beispiel verwenden wir dazu den Datensatz
 *Auto*, den wir auf der Lernplattform finden. Dieser Datensatz ist im
 Package *ISLR* enthalten. Aber in diesem Abschnitt arbeiten wir zur
 Übung mit einer Version des Datensatzes, die in einer ASCII-Datei
-abgelegt ist
+abgelegt ist. Auch im ISLR-Buch finden wir diese Version der Daten,
+dort wird eine ASCII-Datei eingelesen. Da wir sehr häufig mit csv-Daten
+arbeiten werden verwenden wir eine csv-Version der Daten.
 
 ## Daten im csv-Format
 
