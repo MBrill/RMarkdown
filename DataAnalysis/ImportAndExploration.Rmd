@@ -1,5 +1,5 @@
 ---
-title: "Erste Schritte bei der Datenanalyse"
+title: "Datenanalyse - ein erstes Beispiel"
 author: "Manfred Brill"
 output: 
   html_document: 
@@ -9,6 +9,12 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
 editor_options: 
   markdown: 
     wrap: 72
@@ -171,7 +177,6 @@ setzen wir die Funktion *anyNY* einn, die in unserem Fall natürlich
 
 ```{r test2, echo=TRUE}
 anyNA(car)
-
 ```
 
 Wenn wir etwas genauer in der Ausgabe des Tibble sehen erkennen wir, dass die Fragezeichen
@@ -278,7 +283,7 @@ Es fehlt noch, die neuen Spalten *Region*,
 ```{r faktorem, message=FALSE, echo=TRUE}
 Auto$Region <- as_factor(Auto$Region)
 Auto$Zylinder <- as_factor(Auto$Zylinder)
-#Auto$Baujahr <- as_factor(Auto$Baujahr)
+Auto$Baujahr <- as_factor(Auto$Baujahr)
 ```
 
 Die ersten sechs Zeilen des überarbeitete Datensatzes sind in der folgenden Tabelle zu sehen, die wir wieder mit *kable* ausgeben.
@@ -301,7 +306,7 @@ Dazu setzen wir HTMLWidgets ein, die im Ergebnis Widgets erzeugen,
 die mit dem eingebetten JavaScript-Code Interaktivität erzeugen.
 
 ## Datentabellen
-Als erstes Widget verwenden wir die Library *DT* und die darin
+Wir verwenden die Library *DT* und die darin
 enthaltene Funktion *datatable*.
 
 ```{r DTAuto, message=FALSE, echo=TRUE}
@@ -483,7 +488,7 @@ ggplot(Drei,
                outlier.colour = "black") +
   scale_fill_brewer(palette="Set2") +
   labs(
-    title="Datensatz", 
+    title="Verbrauch in Abhängigkeit von der Anzahl der Zylinder", 
     subtitle="",
     x = "Zylinder",
     y = "Verbrauch in l/100 km"
@@ -496,84 +501,75 @@ sechs Zylinder ist sogar außerhalb der Box für vier Zylinder, was etwas über
 die Quantile dieser Gruppen aussagt.
 
 Als letztes betrachten wir noch die Entwicklung des Hubraums und der
-Verbrauchsangaben in Abhängigkeit vom Baujahr. Das ist eine sogenannte
-Zeitreihe - auf der x-Achse sind Datumsangaben, auf der y-Achse die Werte.
-Typische Zeitreihen sind zum Beispiel die Börsenkurse.
+Verbrauchsangaben in Abhängigkeit vom Baujahr. Auch hier erstellen
+wir Box-Plots, dieses Mal gruppiert nach dem Baujahr. Dabei achten wir
+darauf, dass wir die Baujahre von oben nach unten anzeigen.
 
-Wir haben für jedes Baujahr eine Menge von Einträgen. Damit wir
-einen zeitlichen Verlauf finden berechnen wir für jedes Baujahr 
-den Median und stellen den Verlauf der Mediane dar.
-
-```{r HubraumMediane, message=FALSE, echo=TRUE}
-Jahreswerte <- Auto %>%
+```{r jahresVerbrauch, message=FALSE, echo=TRUE}
+Auto %>%
   group_by(Baujahr) %>%
-  summarize(HubMedian = median(Hubraum), VerbrauchMedian = median(Verbrauch))
-
-
-Jahreswerte
-```
-Schon die Ausgabe der Werte zeigt uns,
-dass wir hier keinen sinkenden oder steigenden Trend erwarten können.
-
-Wir erstellen im ersten Versuch einen Polygonzug mit ggplot2.
-
-```{r TimelineGGHubraum, message=FALSE, echo=TRUE}
-ggplot(Jahreswerte, aes(x = Baujahr, 
-                        y = HubMedian)) + 
-  geom_line() +
-  geom_point() + 
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
   labs(
-    title="Baujahr und Hubraum",
-    x = "Baujahr",
-    y = "Hubraum in Liter"
-  )   
-```
-
-```{r TimelineVerbrauch, message=FALSE, echo=TRUE}
-ggplot(Jahreswerte, aes(x = Baujahr, 
-                        y = VerbrauchMedian)) + 
-  geom_line() +
-  geom_point() + 
-  labs(
-    title="Baujahr und Verbrauch",
+    title="Verbrauch in Abhängigkeit vom Baujahr", 
+    subtitle="",
     x = "Baujahr",
     y = "Verbrauch in l/100 km"
-  )   
+  ) +
+  coord_flip()
 ```
+Der Verbrauch wird im Median größerm wobei kein eindeutiger Trend
+zu erkennen ist. Die Streuung zwischen 1. und 3. Quartil wird im Laufe
+der Jahre auch größer. Das kann natürlich an den Daten und den ausgewählten
+Modellen liegen. Wie schon vorher filtern wir und untersuchen ausschließlich
+die Modelle aus Europa.
 
-Wir erzeugen die Werte nochmals, dieses Mal gruppieren wir aber nicht nur
-nach dem Baujahr, sondern beziehen auch die Retion ein. Wir filtern
-wie schon häufig und beschränken uns auf europäische Autos.
-
-```{r HubraumMedianGruppierte, message=FALSE, echo=TRUE}
-Jahreswerte <- Auto %>%
-  group_by(Region, Baujahr) %>%
-  summarize(HubMedian = median(Hubraum), VerbrauchMedian = median(Verbrauch))
-
-
-Jahreswerte
-```
-
-Wir erstellen wieder eine Zeitreihe:
-
-```{r TimelineVerbraucheuropa, message=FALSE, echo=TRUE}
-Jahreswerte %>%
+```{r jahresVerbrauchEuropa, message=FALSE, echo=TRUE}
+Auto %>%
+  group_by(Baujahr) %>%
   filter(Region=="Europa") %>%
-  ggplot(aes(x = Baujahr, 
-             y = VerbrauchMedian)) + 
-     geom_line() +
-     geom_point() + 
-     labs(
-         title="Baujahr und Verbrauch",
-         x = "Baujahr",
-         y = "Verbrauch in l/100 km"
-     )   
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
+  labs(
+    title="Verbrauch in Abhängigkeit vom Baujahr - Europäische Modelle", 
+    subtitle="",
+    x = "Baujahr",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
 ```
+Für die europäischen Modelle ist das Bild noch undeutlicher. 
+Wir erzeugen eine weitere Grafik und filtern die US-amerikanischen
+Modelle aus.
 
-In Europa gibt es zwar keine durchgehende Trendlinie, aber
-wie auch erwartet ist gut zu erkennen, dass über die Jahre
-die Verbrauchsangaben sinken. Der angezeigte Verlauf
-hat sicher auch mit den enthaltenen Werten zu tun.
+```{r jahresVerbrauchUSA, message=FALSE, echo=TRUE}
+Auto %>%
+  group_by(Baujahr) %>%
+  filter(Region=="USA") %>%
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
+  labs(
+    title="Verbrauch in Abhängigkeit vom Baujahr - US-amerikanische Modelle", 
+    subtitle="",
+    x = "Baujahr",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+Sieht man vom Jahr 1981 ab ist hier ein Trend zu immer größeren Verbrauch
+erkennbar.
 
 # Daten abspeichern
 Da wir mit den veränderten Daten weiter arbeiten und die Transformation
@@ -584,7 +580,6 @@ in einer neuen csv-Datei ab.
 write_csv2(Auto, file="data/AutoEU.csv", col_names = TRUE)
 ```
 
-
 # Zusammenfassung
 wir haben Daten dokumentiert, importiert und anschließend haben wir
 die Daten konsolidiert. Dabei haben wir nach fehlenden Werten gesucht,
@@ -594,10 +589,4 @@ dafür gesorgt, dass wir Angaben in den Spalten auch gut interpretieren können.
 Anschließend haben wir mit Hilfe von Tabellen und Grafiken die verschiedenen
 Thesen untersucht und eine Aussage dazu gemacht.
 
-## Bemerkung
-Wir haben Zeitreihen dargestellt, dabei haben wir *geom_line* aus *ggplot2*
-eingesetzt. Es gibt das HTMLWidget dygraph, mit dem solche Zeitreihen
-interaktiv visualisierbar sind. Darauf haben wir hier verzichtet,
-da die vorliegenden Daten nicht gut für dieses Widget geeignet sind.
-Bei großen Zeitreihen ist die Verwendung von *dygraph* unbedingt empfohlen!
 # Literaturverzeichnis
