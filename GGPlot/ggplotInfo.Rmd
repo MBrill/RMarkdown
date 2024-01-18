@@ -1,9 +1,15 @@
 ---
-title: "Visualisierungen mit ggplot"
+title: "Visualisierungen mit ggplot2"
 author: "Manfred Brill"
 date: ""
 encoding: utf-8
 output:
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8    
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -12,12 +18,6 @@ output:
     toc: yes
     toc_float: yes
     encoding: utf-8 
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8    
 bibliography: ../literatur.bib
 ---
 
@@ -125,7 +125,7 @@ und weitere Zeilen hinzufügen.
 
 ```{r bars3, message=FALSE, results='markup'}        
 bars +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7))
+  scale_x_discrete(breaks = seq(1,7))
 ```
 
 Jede Abbildung hat eine Beschriftung. Dazu verwenden wir die Funktion *labs*,
@@ -133,7 +133,7 @@ der wir eine Überschrift und eine Achsenbeschriftungen übergeben.
 
 ```{r bars4, message=FALSE, results='markup'}        
 bars + 
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  scale_x_discrete(breaks=seq(1, 7)) +
   labs(
     title="Absolute Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -144,14 +144,17 @@ bars +
 Wir erstellen eine weitere Abbildung. Dieses Mal möchten wir nicht
 die absoluten, sondern die relativen Häufigkeiten in der grafischen
 Ausgabe sehen. Dazu fügen wir in *geom_bar* die Angabe
-*y = ..prop..* hinzu. Damit legen wir fest, dass wir auf der y-Achse
-*Anteile*, *proportions*, ausgeben möchten.
+*y = after_stat(prop), group=TRUE* hinzu. Damit legen wir fest, dass wir auf der y-Achse
+*Anteile*, *proportions*, ausgeben möchten. 
+Diese Anteile sollten, falls eine Gruppierung vorhanden
+ist pro Gruppe bestimmt werden. Dafür sorgt *group=TRUE*.
 
 ```{r bars5, message=FALSE, results='markup'}
 ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  scale_x_discrete(breaks=seq(1, 7)) +
   labs(
     title="Relative Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -159,9 +162,10 @@ ggplot(liefer) +
   ) 
 
 ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  scale_x_discrete(breaks=seq(1, 7)) +  
   labs(
     title="Relative Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -207,8 +211,8 @@ für *empirical cumulative distribution function*.
 
 ```{r ecdf, message=FALSE, results='markup'}
 ggplot(liefer, aes(x=Lieferzeiten)) + 
-  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], linewidth=2) +
+  scale_x_discrete(breaks=seq(1, 7)) +
   labs(
     title="Empirische Verteilungsfunktion der Lieferzeiten", 
     x="Tage", 
@@ -356,7 +360,8 @@ Oder wir verwenden die Funktion *ggsave*:
 
 ```{r save, echo=TRUE, results='markup'}
 example <- ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
   scale_x_discrete(limits=factor(c(1,2,3,4,5,6,7))) +  
   labs(
