@@ -1,5 +1,5 @@
 ---
-title: "Visualisierungen mit ggplot"
+title: "Visualisierungen mit ggplot2"
 author: "Manfred Brill"
 date: ""
 output:
@@ -97,7 +97,7 @@ Wir haben in der Grafik das Attribut *fill* verwendet und damit die Füllfarbe d
 # Formatierung der x-Achse
 
 ```{r bars3, fig.height=5, message=FALSE, warning=FALSE, results='markup'}
-bars + scale_x_discrete(limits=c(1,2,3,4,5,6,7))
+bars + scale_x_discrete(breaks=seq(1,7))
 ```
 
 Wir verwenden *scale_x_discrete* und formatieren damit die x-Achse.
@@ -106,7 +106,7 @@ Wir verwenden *scale_x_discrete* und formatieren damit die x-Achse.
 
 ```{r bars4, message=FALSE, results='markup', warning=FALSE, fig.height=4}        
 bars + 
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+  scale_x_discrete(breaks=seq(1,7)) +
   labs(
     title="Absolute Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -114,13 +114,14 @@ bars +
   ) 
 ```
 
-# Relative Häufigkeiten mit *y = ..prop..*
+# Relative Häufigkeiten mit *y = after_stat(prop)*
 
 ```{r bars5, message=FALSE, results='markup', warning=FALSE, fig.height=4}
 ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  scale_x_discrete(breaks= seq(1, 7)) +  
   labs(
     title="Relative Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -133,9 +134,10 @@ ggplot(liefer) +
 
 ```{r bars5a, message=FALSE, echo=TRUE, results='markup', fig.height=6 , warning=FALSE}
 barVert <- ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  scale_x_discrete(breaks=seq(1,7)) +  
   labs(
     title="Relative Häufigkeiten der Lieferzeiten", 
     x="Tage", 
@@ -158,7 +160,9 @@ Vertikale und horizontale Ausgaben erzeugen wir mit *coord_flip()*.
 
 ```{r box, message=FALSE, warning=FALSE, results='markup', fig.height=3.5}        
 ggplot(liefer)  +
-  geom_boxplot(mapping=aes(x="", y = Lieferzeiten, fill=myPalette[2])) +
+  geom_boxplot(mapping=aes(x  ="", 
+                           y = Lieferzeiten,
+                           fill = myPalette[2])) +
   labs(
     title="Box-Plot der Lieferzeiten", 
     x="", 
@@ -171,9 +175,11 @@ ggplot(liefer)  +
 # Empirische Verteilungsfunktionen mit *stat_ecdf*
  
 ```{r ecdf, message=FALSE, warning=FALSE, results='markup', fig.height=4}
-ggplot(liefer, aes(x=Lieferzeiten)) + 
-  stat_ecdf(geom = "step", pad=TRUE, color=myPalette[3], size=2) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +
+ggplot(liefer, aes(x = Lieferzeiten)) + 
+  stat_ecdf(geom = "step", pad=TRUE, 
+            color = myPalette[3], 
+            linewidth = 2) +
+  scale_x_discrete(breaks=seq(1,7)) +
   labs(
     title="Empirische Verteilungsfunktion der Lieferzeiten", 
     x="Tage", 
@@ -213,7 +219,8 @@ ggplot(frauen) +
 
 ```{r FrauenHisto2, message=FALSE, results='markup', warning=FALSE, fig.height=3}
 ggplot(frauen) + 
-  geom_histogram(mapping=aes(x=Koerpergroesse), closed="left", 
+  geom_histogram(mapping=aes(x=Koerpergroesse), 
+                closed="left", 
           breaks=seq(152.0, 182.0, 3.0),
           fill=myPalette[3], color="black") +
   scale_x_continuous(limits=c(150.0, 185.0)) + 
@@ -230,7 +237,8 @@ Wir verwenden den Datensatz *wassergehalt*:
 
 ```{r scatter, echo=TRUE, results='markup', warning=FALSE, fig.height=3}
 ggplot(wassergehalt) +
-  geom_point(mapping=aes(x=Luftfeuchtigkeit, y=Wassergehalt), 
+  geom_point(mapping=aes(x = Luftfeuchtigkeit, 
+                         y = Wassergehalt), 
              color=myPalette[4]) +
   labs(
     title="Streuungsdiagramm für den Datensatz Luftfeuchtigkeit", 
@@ -264,9 +272,10 @@ ggplot(mpg) +
 
 ```{r save, echo=FALSE, results='markup', warning=FALSE, fig.height=3}
 ggplot(liefer) +
-  geom_bar(mapping=aes(x=Lieferzeiten, y = ..prop..), 
+  geom_bar(mapping=aes(x = Lieferzeiten, 
+                       y = after_stat(prop)), 
            fill=myPalette[3]) +
-  scale_x_discrete(limits=c(1,2,3,4,5,6,7)) +  
+  scale_x_discrete(breaks=seq(1, 7)) +  
   labs(
     title="Relative Häufigkeiten der Lieferzeiten", 
     x="Tage", 
