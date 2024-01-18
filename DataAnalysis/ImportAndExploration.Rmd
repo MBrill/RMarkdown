@@ -1,0 +1,594 @@
+---
+title: "Datenanalyse - ein erstes Beispiel"
+author: "Manfred Brill"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+editor_options: 
+  markdown: 
+    wrap: 72
+bibliography: literatur.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Schönere Tabellen
+library(kableExtra)
+# Tidyverse
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+# HTMLWidgets
+library(DT)
+```
+
+Dieses Dokument fasst Schritte zusammen, die bei dein Einführung in die
+Datenanalyse mit R gezeigt werden.
+
+Wie dies in der Vorlesung durchgeführt wird müssen wir noch sehen.
+Entweder machen wir Folien, oder es gibt eine Life-Vorführung. Möglich
+wäre natürlich auch ein Dashboard.
+
+Wir betrachten die folgenden Themen:
+
+-   Angaben zum Datensatz, Dokumentation, Quellenangaben. Falls bekannt
+    auch schon die Spalten und ihre Bedeutung beschreiben.
+-   Thesen formulieren, die wir an Hand der Daten überprüfen. Sonst
+    finden wir nur Dinge, die in den Daten enthalten sind.
+-   Importieren als csv-Datei, wie gehen wir mit fehlenden Einträgen um
+-   Verändern der Daten, so dass wir besser damit umgehen können. Das
+    kann bedeuten, dass wir Spalten streichen, dass wir neue erzeugen
+    oder auch wie im betrachteten Beispiel, dass wir Einheiten oder
+    andere Dinge umrechnen, um die Interpretation zu vereinfachen. Wir
+    überprüfen auch die Datentypen der Spalten, insbesondere achten wir
+    darauf, dass qualitative oder ordinale Daten als Typ *factor*
+    behandelt wird.
+-   Exploration der Daten - Berechnung von Kennzahlen, Häufigkeiten,
+    insbesondere Visualisierungen, auch von Zusammenhängen.
+-   Wir diskutieren die Thesen an Hand der Daten, wir stellen eventuell
+    auch neue auf, da wir Strukturen oder Abhängigkeiten in den Daten
+    gefunden haben.
+
+Bemerkung: Wir führen hier keine Modellierung durch, aber es ist sicher
+eine gute Idee, den Datensatz bei diesem Thema wieder aufzugreifen.
+Vorstellbar sind sicher sowohl Vorhersagen als auch Klassifikationen.
+
+# Der Datensatz
+
+Die Daten stammen aus von der Website zu [@tibshirani_23]. Es gibt auch
+ein Package mit den Datensätzen für R. Die hier verwendete Version wird
+im Buch verwendet, um zu zeigen wie wir mit fehlenden Einträgen umgehen.
+Im Buch wird ein ASCII-File eingelesen, wir verwenden eine csv-Datei,
+die aus dieser Datei erstellt wurde.
+
+Wir erhalten Daten über 397 Automodelle und 9 Attribute für jedes Modell:
+
+-   mpg gibt die miles per gallon, also den Verbrauch des Weagen, an.
+
+-   cylinders enthzält Angaben über die Anzahl der Zylinder
+
+-   displacement ist der englische Ausdruck für Hubraum.
+
+-   horsepower gibt die Anzahl der PS des Autos an.
+
+-   weight ist das Gewicht des Autos
+
+-   acceleration ist die Zeit für die Beschleunigung.
+
+-   year ist das Modelljahr des Autos
+
+-   origin kodiert mit Hilfe von natürlich Zahlen den Ursprung des
+    Autos, also USA, Europa oder Japan.
+
+-   name ist die Bezeichnung des Automodells.
+
+Wir werden auf die verwendeten Einheiten noch weiter unten eingehen.
+
+# Thesen und Vermutungen
+
+Interssant ist natürlich der Verbrauch der enthaltenen Automodelle.
+
+-   Die Leistung in PS wird für immer größeren Hubraum ebenfalls größer.
+-   Der Verbrauch sollte von Attributen wie Herkunftsland, Anzahl der
+    Zylinder oder PS-Angaben abhängen.
+-   Interessant ist auch die Frage, ob der Verbrauch oder andere
+    Attribute wie Anzahl der Zylinder oder Hubraum sich im Laufe der
+    Jahre verändert.
+
+# Daten importieren
+Wir verwenden eine csv-Version der Datei, die auf der Website des Buchs
+zu finden ist. Wir stellen sicher, dass die Datei im Verzeichnis enthalten ist,
+in dem wir nach Datensätzen suchen.
+
+Bevor wir die Daten einlesen öffnen wir die csv-Datei in einem ASCII-Editor.
+Wir sehen, dass die erste Zeile Überschriften enthält, die wir bereits
+in der Beschreibung der Daten notiert hatten. 
+Die Spalten sind mit einem Komma getrennt, was bei Daten aus dem angelsächsischen
+Raum häufig auftrett. Das bedeutet, dass der Punkt hier als Dezimalpunkt zu interpretieren ist. 
+
+Wir verwenden die Funktion
+*read_csv* aus Tidyverse. 
+Die Option *col_names* sorgt dafür, dass die erste Zeile als
+Spalten-Überschriften interpretiert werden. Nach dem Import zeigt
+*read_csv* die Typen, die beim Import für die einzelnen Spalten gesetzt
+wurden. Das können wir mit *show_col_types* auch unterdrücken. Die
+Datentypen für die Spalten werden, wenn wir sie nicht explizit angeben,
+aus den ersten 100 Zeilen geschätzt. Die Bezeichnung *NA* steht für
+**not available**. Damit sind fehlende Einträge gemeint.
+Fehlende Werte
+sind in der Praxis häufig ein Problem. Wir können mit der übergebenen
+Liste angeben, wie in den importierten Daten fehlende Einträge
+gekénnzeichnet sind. Die ersten beiden Zeichen in der Liste *NA* sind
+der Default. Aus dem Buch wissen wir, dass fehlende Einträge enthalten sind,
+die hier mit einem *?* gekennzeichnet sind, so dass wir dieses Zeichen
+bei der Option *na* mit übernehmen.
+
+```{r import, echo=TRUE}
+car <- read_csv("../data/Auto.csv",
+                col_names=TRUE,
+                show_col_types=FALSE,                
+                na=c(" ", "NA", "?"))
+```
+
+## Prüfen des Imports
+Wir überzeugen uns, dass wir die angegebene Anzahl von Zeilen und Spalten
+eingelesen haben und geben den Beginn des Tibbles *car* auf der Konsole aus.
+
+```{r test1, echo=TRUE}
+nrow(car)
+ncol(car)
+```
+Die ausgegebenen Zahlen passen auf die Angaben. Jetzt geben wir den Anfang der
+Daten aus.
+
+```{r test12, echo=TRUE}
+car
+```
+Wir erhalten nochmals die Angaben über die Anzahl von Zeilen und Spalten.
+Wichtig für uns sind die angegebenen Datentypen. Wir hätten die Typen die wir
+uns wünschen bereits beim Einlesen spezifizieren können.
+Da wir weiter unten aber auch Einheiten umrechnen und die Reihenfolge
+der Spalten verändern werden haben wir darauf verzichtet.
+
+Aus dem ISLR-Buch ist bekannt, dass es Einträge gibt, die mit einem Fragezeichen
+gekennzeichnet sind, da hier Werte fehlen.
+Aus dieem Grund wurde bei der Funktion *read_csv*
+das Fragezeichen in die Liste für das Attribut *na* aufgenommen ersetzt. D
+Die Abkürzung *na* steht für *not
+available*.
+Nach dem Import finden wir solche Einträge im Tibble *car* als *NA*.
+Falls wir nicht wissen ob solche Einträge vorhanden sind
+setzen wir die Funktion *anyNY* einn, die in unserem Fall natürlich
+*TRUE* zurückgibt. 
+
+```{r test2, echo=TRUE}
+anyNA(car)
+```
+
+Wenn wir etwas genauer in der Ausgabe des Tibble sehen erkennen wir, dass die Fragezeichen
+immer in der Spalte *horsepower* enthalten sind. 
+Wir lassen uns die Zeilen ausgeben, in denen *NA* enthalten
+ist. Wir hätten auch *summarise* verwenden und nur die 
+Anzahl dieser Zeilen bestimmen können.
+
+```{r test3, echo=TRUE}
+narows <- car %>%
+  filter(is.na(horsepower))
+
+kable(narows, 
+      align="l",
+      caption="Tabelle 1: Die Zeilen im Datensatz mit NA-Einträgen") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+Für bessere Lesbarkeit der Ausgabe verwenden wir die Funktion
+*kable*.
+Es gibt insgesamt 5 Zeilen. In unserem Fall verzichten wir darauf,
+einen Versuch zu unternehmen, die fehlenden Werte zu korrigieren oder
+durch andere Methoden durch sinnvolle Einträge zu ersetzen.
+Wir löschen die 5 Zeilen mit Hilfe der
+Funktion *is.na* und *filter*:
+
+```{r filter, echo=TRUE}
+car <- car %>% 
+  filter(!is.na(horsepower))
+
+nrow(car)
+```
+
+Wir geben zur Sicherheit die Anzahl der jetzt noch enthaltenen Zeilen
+auf der Konsole aus.
+Jetzt liegen noch 392 Zeilen vor. Dieses *tibble* entspricht jetzt dem
+Datensatz, den wir als Datensatz *Auto* im Package *ISLR* direkt einlesen können.
+
+# Anpassungen im Datensatz
+Einige der Spalten sind Faktoren, was beim Einlesen allerdings noch
+nicht gesetzt wurde. Das führen wir jetzt durch, denn mit dem Datentyp
+*factor* sind Grafiken mit *ggplot2* häufig sehr viel einfacher zu realisieren.
+Dabei werden wir auch die Namen der spalten verändern und deutsche
+Begriffe einführen.
+Es ist ok, dass die Region, aus der das Auto stammt mit Zahlen 1, 2 und 3
+codiert sind. Dies werden wir zu einem Faktor machen und Strings für die drei
+Regionen verwenden.
+
+Die Interpretation
+einiger Spalten wie *displacement* könnte uns allerdings schwer fallen.
+Und wir denken nicht in Gallonen pro 100 Meilen als Verbrauch, sondern in Europa
+wird der durschnittliche Verbrauch in Liter pro 100 Kilometer angegeben.
+Aus diesem Grund wandeln wir alle Einheiten im Datensatz in metrische
+Angaben um.
+
+Das ganze führen wir mit einer Pipeline durch, erzeugen die neuen Spalten
+und löschen ganz am Ende mit *select* die alten Einträge, da wir sie
+nicht mehr benötigen.
+Als Vorbereitung definieren wir einige Konstanten für die Umrechnung der Einheiten.
+
+```{r konstanten, message=FALSE, echo=TRUE}
+hp2PS <- 1.0/0.986
+mpg2kmh <- 235.0
+cuin2l <- 1.0/61.0237
+lbs2kg <- 1.0/2.20423
+```
+
+Das neue Tibble nennen wir *Auto*. Die Umwandlung der Zahlencodes für die Region
+führen wir mit *recode* in einem Aufruf der Funktion *mutate* durch. 
+Aus den zweistelligen Jahresangaben machen wir vierstellige Angaben
+Dann verändern wir die Einträge, die nicht-metrische Einheiten verwenden.
+
+```{r daten, message=FALSE, echo=TRUE}
+Auto <- car %>%
+  mutate(Region = recode(origin, `1`= "USA", `2` = "Europa", `3` = "Japan"),
+         year = 1900 + year,
+         mpg = mpg2kmh/mpg,
+         displacement = cuin2l*displacement,
+         horsepower = hp2PS*horsepower,
+         weight = lbs2kg*weight/1000.0
+         ) %>%
+  select(
+    Name = name, 
+    Region, 
+    Baujahr = year, 
+    Zylinder = cylinders, 
+    Hubraum = displacement, 
+    Gewicht = weight,  
+    Verbrauch = mpg,
+    PS = horsepower, 
+    Beschleunigung = acceleration
+  )
+```
+Nach der Funktion *mutate* wählen wir mit *select* die Spalten aus, die wir
+jetzt verwenden möchten und geben dabei auch gleich neue Bezeichner an.
+wir verändern auch die Reihenfolge der Spalten, es macht viel mehr Sinn
+die Bezeichnung des Modells in der ersten Spalte zu haben.
+
+Es fehlt noch, die neuen Spalten *Region*,
+*Zylinder* und *Baujahr* in den Datentyp *factor* zu casten:
+
+```{r faktorem, message=FALSE, echo=TRUE}
+Auto$Region <- as_factor(Auto$Region)
+Auto$Zylinder <- as_factor(Auto$Zylinder)
+Auto$Baujahr <- as_factor(Auto$Baujahr)
+```
+
+Die ersten sechs Zeilen des überarbeitete Datensatzes sind in der folgenden Tabelle zu sehen, die wir wieder mit *kable* ausgeben.
+
+```{r tabellenausgabe, echo='false', message=FALSE, results='asis'}
+kable(head(Auto), 
+      align="l",
+      caption="Tabelle 2: Die Zeilen im Datensatz mit NA-Einträgen") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                full_width = T, 
+                position = "center")
+```
+
+# Datenexploration
+Wir werden keine vollständige Exploration der Daten durchführen, aber 
+wir werden hier die Daten in einer interaktiven Tabelle ausgeben,
+einige Häufigkeiten bestimmen und insbesondere Grafiken erzeugen.
+
+Dazu setzen wir HTMLWidgets ein, die im Ergebnis Widgets erzeugen,
+die mit dem eingebetten JavaScript-Code Interaktivität erzeugen.
+
+## Datentabellen
+Wir verwenden die Library *DT* und die darin
+enthaltene Funktion *datatable*.
+
+```{r DTAuto, message=FALSE, echo=TRUE}
+datatable(Auto, 
+          options = list(pageLength = 5))
+```
+Diese Darstellung ist später in Dashboards sehr nützlich, denn wir können suchen
+und in den Zeilen die Werte durchscrollen. Die große Anzahl der Nachkommastellen
+ist durch unsere Umrechnung entstanden. Wir erzeugen für die Tabelle
+eine Version unseres Tibble, das weniger Stellen nach dem Komma enthält
+und damit in der Darstellung übersichtlicher wird.
+
+```{r DTAutoDigits, message=FALSE, echo=TRUE}
+numberOfDigits <- 3
+AutoLessDigits <- Auto %>%
+  mutate(across(is.numeric, round, digits = numberOfDigits))
+
+datatable(AutoLessDigits, 
+          options = list(pageLength = 5))
+```
+
+## Grafiken
+Für die grafische Ausgaben setzen wir *ggplot2* ein. Wir hatten bei der
+beschreibenden Statistik bereits Balkendiagramme für relative Häufigkeiten
+erzeugt. Hier gibt es seit der Version 3.4.1 von *ggplot2* eine Änderung.
+Wir müssen nun die Funktion *after_stat* einsetzen statt der alten
+Notation *y = ..prop..*. Und wir müssen angeben, dass die Daten
+nach den Einträgen gruppiert werden, da die Funktion *prop* gruppenweise
+zählt. Das Ergebnis ist das bekannte aus der Statistik.
+
+```{r BarRegion, message=FALSE, echo=TRUE}
+ggplot(Auto) + 
+  geom_bar(mapping=aes(x=  Region, 
+                       y = after_stat(prop), 
+                       group=TRUE),
+                       fill=myPalette[1]) +
+  labs(
+    title="Relative Häufigkeiten für die Region",
+    x = "Region",
+    y = "Relative Häufigkeit"
+  )   
+```
+
+Über 60 % der Einträge stammen von US-amerikanischen Autos. Der Anteil
+von Modellen aus Japan oder Europa ist ziemlich gleich.
+
+Wir hatten schon die These aufgestellt, dass der Verbrauch von der Region 
+abhängt. Das überprüfen wir mit Hilfe eines Box-Plots. Dabei erzeugen
+wir für jede Region eine Box, so dass wir die These gut überprüfen können.
+
+```{r BoxVerbrauch, message=FALSE, results='markup'}
+ggplot(Auto, 
+       aes(x=Region, y=Verbrauch, fill=Region)) + 
+  geom_boxplot(color="black",
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(limits=c("USA", "Japan", "Europa")) +
+  labs(
+    title="Datensatz", 
+    subtitle="",
+    x = " ",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+
+Auch wenn wir bei Europa einige interessante Ausreißer sehen, bestätigt der Boxplot
+unsere These.
+
+Wie finden wir diese Einträge mit europäischen Autos mit einem Verbrauch, der
+im Bereich des Medians für die US-amerikanischen Autos liegen. 
+Wir berechnen den Median für die Gruppe der US-amerikansichen Autos
+und filtern alle europäischen Einträge mit diesem Wert.
+Das Ergebnis geben wir mit *datatable* aus.
+
+```{r filterEuropa, message=FALSE, echo=TRUE}
+Mediane <- Auto %>%
+  group_by(Region) %>%
+  summarize(medians = median(Verbrauch))
+
+USMedian <- Mediane$medians[1]
+
+EUoutlier <- Auto %>%
+  filter(Region=="Europa" & Verbrauch >= USMedian) %>%
+  select(Name, Hubraum, Verbrauch) %>%
+  mutate(across(is.numeric, round, digits = 1))
+
+datatable(EUoutlier, 
+          options = list(pageLength = nrow(EUoutlier)))
+
+```
+
+Wir finden zwei Modelle von Volvo, einen Mercedes-Benz und ein Modell von
+Peugeot mit relativ hohen Verbrauchswerten.
+
+Eine These war, dass
+die Leistung in PS für immer größeren Hubraum immer größer wird.
+Das können wir mit Hilfe eines Streuungsdiagramms überprüfen:
+
+```{r scatterPSKubik, message=FALSE, echo=TRUE}
+ggplot(Auto, aes(x = Hubraum, 
+                  y = PS)) + 
+  geom_point(color = myPalette[1]) +
+  labs(
+    title="Hubraum und Leistung",
+    x = "Hubraum in Liter",
+    y = "Leistung in PS"
+  )   
+```
+
+Vielleicht ist es ein Vorurteil, aber wir hatten schon zu Beginn vermutet,
+dass der Hubraum der US-amerikanischen Autos größer ist als der aus Europa
+oder Japan. Das kombinieren wir mit dem Streuungsdiagramm, das wir 
+gerade erzeugt haben und färben die Punkte mit Hilfe der Region ein.
+Hier macht sich bezahlt, dass wir die Spalte Region zu einem Faktor gemacht haben.
+
+```{r ScatterPSmitRegion, message=FALSE, echo=TRUE}
+ggplot(Auto, aes(x = Hubraum, 
+                 y = PS, 
+                 color = Region)) + 
+  geom_point() +
+  labs(
+    title="Hubraum und Leistung",
+    x = "Hubraum in Liter",
+    y = "Leistung in PS"
+  )   
+```
+
+Das Bild bestätigt unsere These visuell. Ab 3 Liter auf der x-Achse finden wir
+nur noch rote Punkte, die zu USA gehören.
+
+Für den Zusammenhang zwischen Anzahl der Zylinder und dem Verbrauch verwenden
+wir einen Box-Plot. Das könnten wir auch mit einem Streuungsdiagramme machen,
+aber Box-Plots sind häufig gut zu interpretieren.
+
+```{r Zylinderverbrauch, message=FALSE, results='markup'}
+ggplot(Auto, 
+       aes(x=Zylinder, y=Verbrauch, fill=Zylinder)) + 
+  geom_boxplot(color="black",
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  labs(
+    title="Datensatz", 
+    subtitle="",
+    x = "Zylinder",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+
+Sieht man von Modellen mit drei Zylindern ab erhalten wir mit Ausreißern
+nach unten bei Autos mit sechs Zylindern eine Grafik, die die These
+bestätigt. Autos mit mehr zylindern haben einen höheren Verbrauch.
+Wir filtern die Einträge mit drei Zylinder heraus um festzustellen,
+wie viele und welche Autos dies sind.
+
+```{r filterDreiZylinder, message=FALSE, echo=TRUE}
+Drei <- Auto %>%
+  filter(Zylinder == 3) %>%
+  select(Name, Region, Hubraum, PS, Verbrauch) %>%
+  mutate(across(is.numeric, round, digits = 1))
+
+datatable(Drei, 
+          options = list(pageLength = nrow(Drei)))
+
+```
+
+Die Einträge mit drei Zylindern stammen alle aus Japan und wurden von Mazda 
+hergestellt. Auch hier finden wir einen beachtlichen Verbrauch. Mazda RX-Modelle
+sind Sportwagen, was die Werte erklärt.
+
+Wir erstellen den Boxplot nochmals und verzichten auf die Mazda-Modelle:
+
+```{r filterDreiZylinderBox, message=FALSE, echo=TRUE}
+Drei <- Auto %>%
+  filter(Zylinder != 3)
+
+ggplot(Drei, 
+       aes(x=Zylinder, y=Verbrauch, fill=Zylinder)) + 
+  geom_boxplot(color="black",
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  labs(
+    title="Verbrauch in Abhängigkeit von der Anzahl der Zylinder", 
+    subtitle="",
+    x = "Zylinder",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+
+Die Mediane steigen mit mit mehr Zylindern signifikant an. Die Box für 
+sechs Zylinder ist sogar außerhalb der Box für vier Zylinder, was etwas über
+die Quantile dieser Gruppen aussagt.
+
+Als letztes betrachten wir noch die Entwicklung des Hubraums und der
+Verbrauchsangaben in Abhängigkeit vom Baujahr. Auch hier erstellen
+wir Box-Plots, dieses Mal gruppiert nach dem Baujahr. Dabei achten wir
+darauf, dass wir die Baujahre von oben nach unten anzeigen.
+
+```{r jahresVerbrauch, message=FALSE, echo=TRUE}
+Auto %>%
+  group_by(Baujahr) %>%
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
+  labs(
+    title="Verbrauch in Abhängigkeit vom Baujahr", 
+    subtitle="",
+    x = "Baujahr",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+Der Verbrauch wird im Median größerm wobei kein eindeutiger Trend
+zu erkennen ist. Die Streuung zwischen 1. und 3. Quartil wird im Laufe
+der Jahre auch größer. Das kann natürlich an den Daten und den ausgewählten
+Modellen liegen. Wie schon vorher filtern wir und untersuchen ausschließlich
+die Modelle aus Europa.
+
+```{r jahresVerbrauchEuropa, message=FALSE, echo=TRUE}
+Auto %>%
+  group_by(Baujahr) %>%
+  filter(Region=="Europa") %>%
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
+  labs(
+    title="Verbrauch in Abhängigkeit vom Baujahr - Europäische Modelle", 
+    subtitle="",
+    x = "Baujahr",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+Für die europäischen Modelle ist das Bild noch undeutlicher. 
+Wir erzeugen eine weitere Grafik und filtern die US-amerikanischen
+Modelle aus.
+
+```{r jahresVerbrauchUSA, message=FALSE, echo=TRUE}
+Auto %>%
+  group_by(Baujahr) %>%
+  filter(Region=="USA") %>%
+  ggplot(aes(x=Baujahr, y=Verbrauch)) + 
+  geom_boxplot(color="black",
+               fill=myPalette[1],
+               outlier.colour = "black") +
+  scale_fill_brewer(palette="Set2") +
+  scale_x_discrete(labels=seq(1982, 1970, -1)) +
+  labs(
+    title="Verbrauch in Abhängigkeit vom Baujahr - US-amerikanische Modelle", 
+    subtitle="",
+    x = "Baujahr",
+    y = "Verbrauch in l/100 km"
+  ) +
+  coord_flip()
+```
+Sieht man vom Jahr 1981 ab ist hier ein Trend zu immer größeren Verbrauch
+erkennbar.
+
+# Daten abspeichern
+Da wir mit den veränderten Daten weiter arbeiten und die Transformation
+nicht jedes Mal durchführen möchten speichern wir das Tibble
+in einer neuen csv-Datei ab.
+
+```{r export, echo='false', message=FALSE, results='asis'}
+write_csv2(Auto, file="data/AutoEU.csv", col_names = TRUE)
+```
+
+# Zusammenfassung
+wir haben Daten dokumentiert, importiert und anschließend haben wir
+die Daten konsolidiert. Dabei haben wir nach fehlenden Werten gesucht,
+diese behandelt und anschließend haben wir durch Umrechnung von Einheiten
+dafür gesorgt, dass wir Angaben in den Spalten auch gut interpretieren können.
+
+Anschließend haben wir mit Hilfe von Tabellen und Grafiken die verschiedenen
+Thesen untersucht und eine Aussage dazu gemacht.
+
+# Literaturverzeichnis
