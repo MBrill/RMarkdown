@@ -66,6 +66,14 @@ ggplot(daten,
          y="Trinkgeldrate"
   ) 
 
+ggsave(filename="tipsTagRate.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten, 
        aes(x=Wochentag, y=Trinkgeldrate, color=Tageszeit)) + 
   geom_jitter(show.legend=TRUE,
@@ -77,6 +85,14 @@ ggplot(daten,
          x="",
          y="Trinkgeldrate"
   ) 
+
+ggsave(filename="tipsTagRateTageszeit.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 ggplot(daten, 
        aes(x=Anzahl, y=Trinkgeldrate)) + 
@@ -91,6 +107,14 @@ ggplot(daten,
          y="Trinkgeldrate"
   ) 
 
+ggsave(filename="tipsAnzahlRate.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten, 
        aes(x=Anzahl, y=Trinkgeldrate, color=Tageszeit)) + 
   geom_jitter(width=0.1,
@@ -101,6 +125,14 @@ ggplot(daten,
          x="Anzahl der Gäste am Tisch",
          y="Trinkgeldrate"
   ) 
+
+ggsave(filename="tipsAnzahlRateTageszeit.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 # Lineare Modelle
@@ -133,6 +165,14 @@ ggplot(daten,
          y="Trinkgeldrate"
   ) 
 
+ggsave(filename="tipsggsmooth.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 # Mit Fehler-Bereich
 ggplot(daten, 
        aes(x=Anzahl, y=Trinkgeldrate)) + 
@@ -152,6 +192,14 @@ ggplot(daten,
          y="Trinkgeldrate"
   ) 
 
+ggsave(filename="tipsggsmoothConf.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
+
 ggplot(daten, 
        aes(x=Anzahl, y=Trinkgeldrate)) + 
   geom_smooth(method=loess, 
@@ -170,6 +218,14 @@ ggplot(daten,
          x="Anzahl der Gäste am Tisch",
          y="Trinkgeldrate"
   ) 
+
+ggsave(filename="tipsggsmoothLoess.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 ## Lineare Modelle mit lm
@@ -227,6 +283,14 @@ ggplot(daten,
          x="Anzahl der Gäste am Tisch",
          y="Trinkgeldrate"
   ) 
+
+ggsave(filename="tipsabLine.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 Wir fügen jetzt unserem Datensatz die Residuen hinzu und geben einen Residualplot aus. 
@@ -248,7 +312,15 @@ ggplot(daten1, aes(Anzahl, resid)) +
     title="Residualplot für das lineare Modell Trinkgeldrate ~ Anzahl der Personen", 
     x="Anzahl der Personen", 
     y="Residuen"
-  )
+  ) 
+
+ggsave(filename="tipsResid.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 Die Werte die wir einsetzen möchten und für die wir
 eine Vorhersage erwarten speichern wir in einem tibble:
@@ -341,7 +413,15 @@ ggplot(daten,
          title="Lineares Modell Trinkgeld ~ Rechnungshöhe",
          x="Höhe der Rechnung in Dollar",
          y="Trinkgeld in Dollar"
-  )
+  ) 
+
+ggsave(filename="tipsabLine2.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 ```
 
 Wir machen einige Vorhersagen, wie schon für unser erstes Modell. 
@@ -387,7 +467,15 @@ ggplot(daten2, aes(Rechnung, resid)) +
     title="Residualplot für das lineare Modell Trinkgeld ~ Rechnung", 
     x="Rechnungshöhe in Dollar", 
     y="Residuen"
-  )
+  ) 
+
+ggsave(filename="tipsResid2.png", 
+       plot=last_plot(), 
+       device="png",
+       path="../images/", 
+       width=16, 
+       height=9, 
+       units="cm")
 
 rm(daten2)
 ```
@@ -451,7 +539,7 @@ Wir könnten natürlich auf die Idee kommen *alle* möglichen Kombinationen
 aufzubauen und dann zu vergleichen. Das ist aber keine gute Idee, denn die
 Kombinatorik sagt uns, dass dies viel zu viele Möglichkeiten sein werden.
 Deshalb gibt es insgesamt drei Strategien, wie wir solche Merkmale auswählen.
-Die Darstellung folgt dabei [@tibshirani_23] auf den Seiten 78 und 79.
+Die Darstellung folgt dabei [@tibshirani_13] auf den Seiten 78 und 79.
 Bevor wir die drei Strategien beschreiben müssen wir uns klar machen,
 dass wir natürlich auf jeden Fall ein Kriterium benötigen. Häufig legen
 wir einen p-Wert für ein Merkmal fest, der nicht überschritten werden darf.
@@ -481,9 +569,9 @@ im vorherigen Schritt vor.
 
 ## Mixed Selection
 
-Dieses Vorgehen ist eine Kombination aus forward und backward selection.
+Dieses Vorgehen ist ein Kombination aus forward und backward selection.
 
-1. Wir beginnen mit dem Null-Modell, also keiner Einflussgröße.
+1. Wir beginnen mit dem Null-Modell, also keine Einflussgrößen.
 1. Wir fügen wie in der forward selection das beste Modell mit einer Einflussgröße hinzu.
 1. Wir fügen sukzessive weitere Merkmale hinzu. Sollte es ein Merkmal geben,
 dessen p-Wert unser Kriterium verletzt, entfernen wir dieses Merkmal aus unserem Modell.
