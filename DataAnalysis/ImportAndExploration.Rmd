@@ -339,10 +339,10 @@ zählt. Das Ergebnis ist das bekannte aus der Statistik.
 
 ```{r BarRegion, message=FALSE, echo=TRUE}
 ggplot(Auto) + 
-  geom_bar(mapping=aes(x=  Region, 
+  geom_bar(mapping=aes(x =  Region, 
                        y = after_stat(prop), 
-                       group=TRUE),
-                       fill=myPalette[1]) +
+                       group = TRUE),
+                       fill = myPalette[1]) +
   labs(
     title="Relative Häufigkeiten für die Region",
     x = "Region",
