@@ -58,7 +58,6 @@ Und wir lassen die erste Spalte, die nichts anderes als eine
 Nummerierung der Zeilen enthält, einfach weg.
 
 ```{r faktoren, message=FALSE, echo=TRUE, warnings=TRUE}
-# Spalten mit deutschen Überschriften
 daten <- daten %>% 
   rename(
     Rechnung = totbill,
