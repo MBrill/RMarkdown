@@ -2,6 +2,12 @@
 title: "Datenanalyse - ein erstes Beispiel"
 author: "Manfred Brill"
 output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
   html_document: 
     fig_caption: yes
     highlight: pygments
@@ -9,12 +15,6 @@ output:
     theme: cosmo
     toc: yes
     toc_float: yes
-  html_notebook:
-    highlight: pygments
-    number_sections: yes
-    theme: cosmo
-    toc: yes
-    encoding: utf-8
 editor_options: 
   markdown: 
     wrap: 72
@@ -36,12 +36,8 @@ myPalette <- brewer.pal(8, "Set2")
 library(DT)
 ```
 
-Dieses Dokument fasst Schritte zusammen, die bei dein Einführung in die
-Datenanalyse mit R gezeigt werden.
+# Erste Schritte bei der Datenanalyse mit R
 
-Wie dies in der Vorlesung durchgeführt wird müssen wir noch sehen.
-Entweder machen wir Folien, oder es gibt eine Life-Vorführung. Möglich
-wäre natürlich auch ein Dashboard.
 
 Wir betrachten die folgenden Themen:
 
@@ -62,10 +58,6 @@ Wir betrachten die folgenden Themen:
 -   Wir diskutieren die Thesen an Hand der Daten, wir stellen eventuell
     auch neue auf, da wir Strukturen oder Abhängigkeiten in den Daten
     gefunden haben.
-
-Bemerkung: Wir führen hier keine Modellierung durch, aber es ist sicher
-eine gute Idee, den Datensatz bei diesem Thema wieder aufzugreifen.
-Vorstellbar sind sicher sowohl Vorhersagen als auch Klassifikationen.
 
 # Der Datensatz
 
@@ -583,7 +575,7 @@ write_csv2(Auto, file="data/AutoEU.csv", col_names = TRUE)
 ```
 
 # Zusammenfassung
-wir haben Daten dokumentiert, importiert und anschließend haben wir
+Wir haben Daten dokumentiert, importiert und anschließend haben wir
 die Daten konsolidiert. Dabei haben wir nach fehlenden Werten gesucht,
 diese behandelt und anschließend haben wir durch Umrechnung von Einheiten
 dafür gesorgt, dass wir Angaben in den Spalten auch gut interpretieren können.

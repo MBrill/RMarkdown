@@ -1,0 +1,287 @@
+---
+title: "Herzinfarkt-Risiko - ein Beispiel von Kaggle"
+date: Februar 2024
+author: "Manfred Brill"
+output: 
+  html_notebook:
+    highlight: pygments
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    encoding: utf-8
+editor_options: 
+  markdown: 
+    wrap: 72
+bibliography: ../literatur.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Schönere Tabellen
+library(kableExtra)
+# Tidyverse
+library(tidyverse, warn.conflicts = FALSE, quietly=TRUE)
+# Nachkommastellen in der Ausgabe
+options(digits=3)
+# Farbtabelle
+library(RColorBrewer)
+myPalette <- brewer.pal(8, "Set2")
+# HTMLWidgets
+library(DT)
+```
+
+# Der Datensatz
+
+Die Daten stammen von der Website Kaggle [@kaggle], die immer ein guter Tipp für
+interessante Daten ist. Neben einer Dokumentation der Daten finden wir
+hier auch eine ganze Menge von Vorschlägen, was wir denn mit den
+Daten anstellen können.
+
+Der Link zu 
+[Heart Attack Risk Prediction Dataset](https://www.kaggle.com/datasets/iamsouravbanerjee/heart-attack-prediction-dataset/data) führt direkt zur Dokumentation der Daten.
+Dieses Notebook wurde mit einer lokalen Version der Daten erarbeitet.
+
+Wie wir in der Dokumentation sehen sind dies keine realen Daten, sondern wurden
+von ChatGPT erzeugt. Die Dokumentation der Spalten finden wir auf der
+Webpage, aber der Vollständigkeit halber nehmen wir hier nochmals eine Liste auf.
+Wir werden die Spalten wieder umbenennen, um besser damit arbeiten zu können.
+Für Übersetzungen wurde leo.org eingesetzt; weitere Begriffe wurden
+mit Google im Netz gesucht.
+
+
+- *Patient Id*: Kennzeichnung des Patienten als String
+- *Age*: Alter des Patienten in Jahren
+- *Sex*: Geschlecht des Patienten als String (*Male*/*Female*)
+- *Cholesterol*: Cholesterin-Wert als double-Zahl
+- *Blood Pressure*: Blutdruck des Patienten als String, da immer zwei Werte ausgegeben werden
+- *Heart Rate*: Herzfrequenz als double-Zahl, als Anzahl der Schläge mit der Einheit Hertz
+- *Diabetes*: Angabe, ob der Patient an der Zuckerkrankheit leider als 1/0; 1 bedeutet
+*ja*
+- *Family History*: Familienanamnese - gibt es bekannte Herzerkrankungen in der Familie als 1/0; 1 bedeutet *ja*
+- *Smoking*: 1 bedeutet Raucher, 0 Nicht-Raucher
+- *Obesity*: Angabe über die Fettleibigkeit des Patienten; 1 bedeutet *ja*
+- *Alcohol Consuption*: Angabe über den Alkohol-Konsum des Patienten. 
+Laut Webpage in den Stufen None/Light/Moderate/Heavy. Das stimmt jedoch nicht mit
+den Daten überein. Dort finden wir ausschließlich Einträge 1/0. Wie in den vorherigen
+Spalten interpretieren wir 1 als ein Indiz für Alkoholkonsum.
+- *Exercise Hours Per Week*: Angabe über die Anzahl von Stunden von sportlichen Aktivitäten, die im Mittel
+pro Woche vom Patient ausgeführt werden in Stunden mit double-Zahlen
+- *Diet*: Angaben über die Ernährungsgewohnheiten des Patienten als String mit den Angaben Healthy/Average/Unhealthy
+- *Previous Heart Problem*: Hatte der Patient bereits Herzprobleme, gibt es also
+Vorerkrankungen als 1/0; wieder bedeutet 1 *ja*
+- *Medication Use*: Angabe mit 1/0, ob der Patient Medikamente einnimmt; 1 bedeutet *ja*
+- *Stress Level*: Angabe über das Stressniveau des Patienten mit den Stufen 1 bis 10
+- *Sedentary Hours Per Day*: Angabe über die durchschnittliche Anzahl von Stunden
+mit sitzender Tätigkeit des Patienten als double-Zahl
+- *Income*: Einkommen des Patienten als double-Zahl. Die Webpage spricht
+von Level, die Angaben erscheinen aber eher als absolute Angaben interpretierbar zu sein
+- *BMI*: der Body Mass Index des Patiennten als double-Zahl
+- *Tryglycerides*: Trygleceride, also Blutfette (schlaganfallbegleitung.de: *Triglyceride – auch Neutralfette genannt – werden bei einer Blutuntersuchung ebenso wie Cholesterin als sogenannte “Blutfettwerte” gemessen. Triglyceride sind eine Art von Fetten oder Lipiden, die im Blut zirkulieren. Sie setzen sich aus Glycerin und drei Fettsäuren zusammen*)
+- *Physical Activity Days Per Week*: Angabe über die Anzahl der Tage pro Woche,
+in der sich der Patient körperlich betätigt
+- *Sleept Hours Per Day*: Anzahl der Stunden Schlaf pro Tag
+- *Country*: Angabe über die Herkunft des Patienten als String
+- *Continent*: Angabe über den Kontinent, auf dem Patient lebt
+- *Hemisphere*: Angabe, ob der Patient auf der Nord- oder der Süd-Halbkugel lebt
+- *Heart Attack Risk*: Angabe, ob der Patient ein Risiko-Patient bezäglich Herzinfarkt ist
+
+```{r import, echo=TRUE}
+heartData <- read_csv("../data/heart_attack_prediction_dataset.csv",
+                col_names=TRUE,
+                show_col_types=FALSE)
+```
+Wir erhalten ein Tibble mit `r nrow(heartData)` Zeilen und `r ncol(heartData)` Spalten.
+Wir geben den Tibble auf der Konsole aus, dann erhalten wir die ersten Einträge und können durch die Daten scrollen.
+
+
+```{r view1, echo=TRUE}
+heartData
+```
+
+Schon die Blanks in einigen Spaltenüberschriften bieten eine Änderung der Namen
+an. Dabei werden wir die Begriffe auch in die deutsche Sprache verändern.
+Es gibt eine ganze Reihe von Spalten, die wir zu Faktoren machen.
+Die Angaben zum Blutdruck, die ja immer zwei Werte *systolisch*
+und *diastolisch* enthalten, trennen wir in zwei Spalten
+auf.
+
+Die Spalten mit den Angaben zum Einkommen verschieben wir an den Anfang,
+zu den Angaben zu Alter und Geschlecht.
+
+```{r Spalten, message=FALSE, echo=TRUE, warnings=TRUE}
+heartData <- heartData %>% 
+  rename(
+    Patient = `Patient ID`,
+    Alter = Age,
+    Geschlecht = Sex,
+    Cholesterin = Cholesterol,
+    Blutdruck = `Blood Pressure`,
+    Herzfrequenz = `Heart Rate`,
+    Diabetes = Diabetes,
+    Familienanamnese = `Family History`,
+    Raucher = Smoking,
+    Fettleibigkeit = Obesity,
+    Alkoholkonsum = `Alcohol Consumption`,
+    Training = `Exercise Hours Per Week`,
+    Ernährung = Diet,
+    Vorerkrankung = `Previous Heart Problems`,
+    Medikamentengebrauch = `Medication Use`,
+    Stressniveau = `Stress Level`,
+    Sitzen = `Sedentary Hours Per Day`,
+    Einkommen = Income,
+    BodyMassIndex = BMI,
+    Blutfette = `Triglycerides`,
+    KörperlicheTätigkeit = `Physical Activity Days Per Week`,
+    Schlafdauer = `Sleep Hours Per Day`,
+    Herkunftsland = Country,
+    Kontinent = Continent,
+    Hemisphäre = Hemisphere,
+    HerzinfarktRisiko = `Heart Attack Risk`
+    ) %>%
+  separate(Blutdruck, into=c("Systolisch", "Diastolisch"), convert=TRUE) %>%
+  select(Patient:Geschlecht, Einkommen, Cholesterin, Systolisch, Diastolisch,
+         Herzfrequenz:Sitzen, BodyMassIndex:HerzinfarktRisiko)
+
+```
+
+Wir erzeugen Faktoren für die Süalten, in denen es Sinn macht:
+
+```{r faktoren, message=FALSE, echo=TRUE, warnings=TRUE}
+heartData$Geschlecht <- factor(heartData$Geschlecht)
+levels(heartData$Geschlecht) <- c("Frau", "Mann")
+
+heartData$Diabetes <- factor(heartData$Diabetes)
+levels(heartData$Diabetes) <- c("Nein", "Ja")
+
+heartData$Familienanamnese <- factor(heartData$Familienanamnese)
+levels(heartData$Familienanamnese) <- c("Nein", "Ja")
+
+heartData$Raucher <- factor(heartData$Raucher)
+levels(heartData$Raucher) <- c("Nein", "Ja")
+
+heartData$Fettleibigkeit <- factor(heartData$Fettleibigkeit)
+levels(heartData$Fettleibigkeit) <- c("Nein", "Ja")
+
+heartData$Alkoholkonsum <- factor(heartData$Alkoholkonsum)
+levels(heartData$Alkoholkonsum) <- c("Nein", "Ja")
+
+heartData$Vorerkrankung <- factor(heartData$Vorerkrankung)
+levels(heartData$Vorerkrankung) <- c("Nein", "Ja")
+
+heartData$Medikamentengebrauch <- factor(heartData$Medikamentengebrauch)
+levels(heartData$Medikamentengebrauch) <- c("Nein", "Ja")
+
+heartData$Kontinent <- factor(heartData$Kontinent)
+levels(heartData$Kontinent) <- c("Afrika", "Asien", 
+                                            "Australien", "Europa",
+                                            "Nordamerika", "Südamerika")
+
+heartData$Hemisphäre <- factor(heartData$Hemisphäre)
+levels(heartData$Hemisphäre) <- c("Nord", "Süd")
+
+heartData$KörperlicheTätigkeit <- factor(heartData$KörperlicheTätigkeit)
+heartData$Stressniveau <- factor(heartData$Stressniveau)
+
+heartData$Training <- round(heartData$Training, digits = 1)
+heartData$Sitzen <- round(heartData$Sitzen, digits = 1)
+
+heartData$Ernährung <- factor(heartData$Ernährung)
+levels(heartData$Ernährung) <- c("Durchschnittlich", "Gesund", "Ungesund")
+```
+Wir geben jetzt das Endergebnis nochmals auf der Konsole aus. Für
+die Funktion *datatable* sind dies schon zu viele Spalten,
+deshalb wählen wir exemplarisch einige der Spalten aus, die
+wir oben verändert haben.
+
+```{r view2, echo=TRUE}
+heartData %>%
+  select(Patient, Systolisch, Diastolisch, Herzfrequenz, Diabetes) %>%
+  datatable(rownames = FALSE,
+            options = list(pageLength = 10))
+```
+
+Hier bieten sich sehr große Möglichkeiten an, denn wir haben eine
+sehr große Anzahl von möglichen Spalten. Natürlich ist das Ziel am Ende
+bei diesem Datensatz der Versuch, aus den vorhandenen Spalten
+das Risiko für den Herzinfarkt anzugeben.
+
+Bevor wir das machen schlage ich die folgenden Aktionen vor:
+- Abspeichern des neuen Datensatzes als Datei
+- Formulieren von Thesen, die wir visuell und mit Kennzahlen überprüfen können
+- Training und Vorhersagen
+
+# Thesen
+
+- Wir können mit den Spalten im Datensatz und ML Vorhersagen
+für die Spalte Herzinfarktrisiko berechnen.
+- Wir können dabei eine Klassifikation, also die Werte 0 und 1 wieder reproduzieren. Oder wir berechnen Vorhersagen und versuchen, Wahrscheinlichkeiten
+zwischen 0 und 1 zu berechnen.
+- Die p-Werte im Modell geben an, wie signifikant die einzelnen Spalten
+zum Risiko beitragen.
+- Ist das Risiko abhängig davon wo man geotrafisch wohnt?
+- Wir können nebenbei auch Grafiken über die Einkommensverteilung über die 
+Kontinente erzeugen - da die Daten ja von ChatGPT erzeugt sind sollten wir
+das unbedingt überprüfen, ob die Werte hier sinn machen. Hier können wir
+GapMinder einsetzen, um das zu prüfen.
+- Hohe blutdruckwerte oder Rauchen sollten großen Einfluss haben.
+
+# Exploration
+Mit den Daten können wir auch sehr schön Karten einführen, denn wir
+haben auch Angaben über Kontinente und Länder.  Und wir können eine
+riesige Menge von Grafiken erzeugen.
+
+## Alters- und Geschlechtsverteilungen
+Wir haben das Lebensalter und das Geschlecht der Patienten.
+Dann machen wir damit eine Pyramide, wie man sie häufig
+bei Attributen verwendet, die mit dem Alter korrespondieren.
+Da finden wir auch häufig den Begriff der "`Alterspyramide"'.
+Das gibt uns hier vor allem einen Eindruck über die Verteilung
+der Alterangaben und wir üben, mit *ggplot* geschickt
+weitere Darstellungen zu konstruieren.
+
+Wir gruppieren unsere Daten bezüglich Geschlecht und Alter
+und berechnen anschließend mit *summarise* die Häufigkeiten für
+jede Kombination. 
+Damit die Balken für das einge Geschlecht *nach links* zeigen
+teilen wir die neuen Daten auf und multiplizieren 
+in dem Teil, in dem die Männer liegen die berechnete Anzahl
+mit -1. Dann fassen wir wieder mit *bind_rows* zusammen
+und übergeben das Ergebnis an *ggplot2*.
+
+```{r agePyramid, echo=TRUE}
+pyramid <- heartData %>%
+  group_by(Geschlecht, Alter) %>%
+  summarise(Anzahl = n())
+
+pyramidFrauen <- pyramid %>%
+  filter(Geschlecht =="Frau")
+
+pyramidMänner <- pyramid %>%
+  filter(Geschlecht =="Mann") %>%
+  mutate(Anzahl2 = -Anzahl) %>%
+  select(Geschlecht, Alter, Anzahl=Anzahl2)
+
+pyramid <- bind_rows(pyramidFrauen, pyramidMänner)
+
+ggplot(pyramid) + 
+  scale_fill_brewer(palette = "Set2") +
+  geom_col(mapping=aes(x=Alter, 
+                       y = Anzahl, 
+                       fill=Geschlecht)) + 
+  scale_y_continuous(limits=c(-100, 100)) +
+  scale_x_continuous(breaks=seq(0,90,10)) + 
+  labs(
+    title="Verteilung der Altersangaben für Frauen und Männer",
+    x = "Alter",
+    y = "Anzahlen"
+  )  +
+  coord_flip()
+```
+
+Wir erhalten keine Bevölkerungspyramide, denn da müssten sich die Häufigkeiten
+in beiden Gruppen deutlich anders verteilen. Die Daten sind ja synthetisch,
+eine repräsentative Stichprobe durch die Weltbevölkerung sollte vermutlich
+schon eine andere Altersverteilung aufweisen. Auffallend ist auch,
+dass wir fast in allen Altersgruppen deutlich mehr Männer als Frauen haben.
+
+# Literaturverzeichnis
